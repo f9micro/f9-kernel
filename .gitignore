@@ -1,0 +1,15 @@
+*.o
+*.i
+*.s
+*.P
+*.elf
+*.bin
+*.hex
+*.swp
+*.fuse*
+*.pyc
+*.swo
+*.out
+out/
+tags
+core
