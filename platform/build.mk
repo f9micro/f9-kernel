@@ -18,4 +18,6 @@ platform-y = \
 	debug_uart.o \
 	mpu.o \
 	spinlock.o \
-	irq.o
+	irq.o \
+	kprobes-arch.o \
+	fpb.o

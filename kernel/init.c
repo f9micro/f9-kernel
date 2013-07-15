@@ -4,6 +4,7 @@
  */
 
 #include <platform/debug_uart.h>
+#include <platform/cortex_m.h>
 
 #include <debug.h>
 #include <error.h>
@@ -13,6 +14,7 @@
 
 extern void __l4_start();
 extern void memmanage_handler();
+extern void arch_kprobe_handler(uint32_t *stack);
 
 void busfault()
 {
@@ -28,9 +30,40 @@ void nointerrupt()
 	}
 }
 
+void debugmon_handler() __NAKED;
+void hard_fault_handler() __NAKED;
+
+#define enter_frame() \
+	uint32_t *stack;                                       \
+	__asm__ __volatile__ ("mov %0, sp" : "=r" (stack) : ); \
+	__asm__ __volatile__ ("push {lr}");                    \
+	__asm__ __volatile__ ("push {r4-r11}");
+
+#define leave_frame() \
+	__asm__ __volatile__ ("pop {r4-r11}");                 \
+	__asm__ __volatile__ ("pop {pc}");
+
+void debugmon_handler()
+{
+	enter_frame();
+
+	// break on thread-mode
+	arch_kprobe_handler(stack);
+	leave_frame();
+}
+
 void hard_fault_handler()
 {
+	enter_frame();
+	if (*SCB_HFSR & SCB_HFSR_DEBUGEVT) {
+		// break on handler-mode
+		arch_kprobe_handler(stack);
+		*SCB_HFSR = SCB_HFSR_DEBUGEVT;   // clear dbgevt
+		leave_frame();
+		return;
+	}
 	panic("Kernel panic: Hard fault. Restarting\n");
+	leave_frame();
 }
 
 void nmi_handler()
@@ -61,7 +94,7 @@ void (* const g_pfnVectors[])() = {
 	0,				/* Reserved */
 	0,				/* Reserved */
 	svc_handler,			/* SVCall handler */
-	nointerrupt,			/* Debug monitor handler */
+	debugmon_handler,		/* Debug monitor handler */
 	0,				/* Reserved */
 	nointerrupt,			/* PendSV handler */
 	ktimer_handler, 		/* SysTick handler */
