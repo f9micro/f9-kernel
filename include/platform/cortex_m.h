@@ -64,6 +64,7 @@ inline uint32_t *MSP(void) {
 #define SYSTICK_BASE                    (SCS_BASE + 0x0010)                                     /* Systick Registers Base Address */
 #define NVIC_BASE                       (SCS_BASE + 0x0100)                                     /* Nested Vector Interrupt Control */
 #define SCB_BASE                        (SCS_BASE + 0x0D00)                                     /* System Control Block Base Address */
+#define DCB_BASE                        (SCS_BASE + 0x0DF0)                                     /* Debug Control Block Base Address */
 #define MPU_BASE                        (SCB_BASE + 0x0090)                                     /* MPU Block Base Address */
 #define FPU_BASE                        (SCB_BASE + 0x0230)                                     /* FPU Block Base Address */
 
@@ -95,9 +96,16 @@ inline uint32_t *MSP(void) {
 #define SCB_SHCSR                       (volatile uint32_t *) (SCB_BASE + 0x024)                /* System Handler Control and State Register */
 #define SCB_CFSR                        (volatile uint32_t *) (SCB_BASE + 0x028)                /* Configurable fault status register - Describes Usage, Bus, and Memory faults */
 #define SCB_HFSR                        (volatile uint32_t *) (SCB_BASE + 0x02C)                /* Hard fault status register - Describes hard fault */
+#define SCB_DFSR                        (volatile uint32_t *) (SCB_BASE + 0x030)                /* Debug fault status register -- Describes debug event */
 #define SCB_MMFAR                       (volatile uint32_t *) (SCB_BASE + 0x034)                /* Memory management fault address register - Address that caused fault */
 #define SCB_BFAR                        (volatile uint32_t *) (SCB_BASE + 0x038)                /* Bus fault address register - Address that caused fault */
 #define SCB_CPACR                       (volatile uint32_t *) (SCB_BASE + 0x088)                /* Coprocessor (FPU) Access Control Register */
+
+/* Debug Control Block (DCB) */
+#define DCB_DHCSR                       (volatile uint32_t *) (DCB_BASE + 0x000)                /* Debug Halting Control and Status Register*/
+#define DCB_DCRSR                       (volatile uint32_t *) (DCB_BASE + 0x004)                /* Debug Core Register Selector Register */
+#define DCB_DCRDR                       (volatile uint32_t *) (DCB_BASE + 0x008)                /* Debug Core Register Data Register */
+#define DCB_DEMCR                       (volatile uint32_t *) (DCB_BASE + 0x00C)                /* Debug Exception and Monitor Control Register */
 
 /* Memory Protection Unit (MPU)
  * ST PM0214 (Cortex M4 Programming Manual) pg. 195 */
@@ -129,6 +137,11 @@ inline uint32_t *MSP(void) {
 /* Hard Fault Status Register */
 #define SCB_HFSR_VECTTBL                (uint32_t) (1 << 1)                                     /* Vector table hard fault.  Bus fault on vector table read during exception handling. */
 #define SCB_HFSR_FORCED                 (uint32_t) (1 << 30)                                    /* Forced hard fault.  Escalation of another fault. */
+#define SCB_HFSR_DEBUGEVT               (uint32_t) (1 << 31)                                    /* Indicates when a debug event has occured. */
+
+/* Debug Fault Status Register */
+#define SCB_DFSR_HALTED                 (uint32_t) (1 << 0)                                     /* Indicates a 'single-step' debug event was generated. */
+#define SCB_DFSR_BKPT                   (uint32_t) (1 << 1)                                     /* Indicates a breakpoint event was generated. */
 
 /* Memory Management Fault Status Register */
 #define SCB_MMFSR_IACCVIOL              (uint8_t)  (1 << 0)                                     /* Instruction access violation.  No address in MMFAR */
@@ -157,6 +170,11 @@ inline uint32_t *MSP(void) {
 
 #define SCB_CPACR_CP10_FULL             (uint32_t) (0x3 << 20)                                  /* Access privileges for coprocessor 10 (FPU) */
 #define SCB_CPACR_CP11_FULL             (uint32_t) (0x3 << 22)                                  /* Access privileges for coprocessor 11 (FPU) */
+
+/* Debug Exception and Monitor Control Register */
+#define DCB_DEMCR_MON_EN                (uint32_t) (1 << 16)                                    /* Enable the DebugMonitor Exception */
+#define DCB_DEMCR_MON_STEP              (uint32_t) (1 << 18)                                    /* Make step request pending */
+#define DCB_DEMCR_TRACENA               (uint32_t) (1 << 24)                                    /* Global enable for all DWT and ITM features */
 
 /* Memory Protection Unit */
 /* See pg. 183 in STM32F4 Prog Ref (PM0214) */

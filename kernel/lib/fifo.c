@@ -7,26 +7,26 @@
 
 uint32_t fifo_init(struct fifo_t *queue, uint8_t *addr, uint32_t size)
 {
-	queue->q_top = 0;
-	queue->q_end = 0;
-	queue->q_size = size;
-	queue->q_data = addr;
+	queue->top = 0;
+	queue->end = 0;
+	queue->size = size;
+	queue->data = addr;
 
 	return FIFO_OK;
 }
 
-uint32_t fifo_push(struct fifo_t *queue, uint8_t el)
+uint32_t fifo_push(struct fifo_t *queue, uint8_t element)
 {
-	if (fifo_length(queue) == queue->q_size) {
+	if (fifo_length(queue) == queue->size) {
 		return FIFO_OVERFLOW;
 	}
 
-	++queue->q_end;
+	++queue->end;
 
-	if (queue->q_end == (queue->q_size - 1))
-		queue->q_end = 0;
+	if (queue->end == (queue->size - 1))
+		queue->end = 0;
 
-	queue->q_data[queue->q_end] = el;
+	queue->data[queue->end] = element;
 
 	return FIFO_OK;
 }
@@ -40,25 +40,25 @@ uint32_t fifo_state(struct fifo_t *queue)
 	return FIFO_OK;
 }
 
-uint32_t fifo_pop(struct fifo_t *queue, uint8_t *el)
+uint32_t fifo_pop(struct fifo_t *queue, uint8_t *element)
 {
 	if (fifo_length(queue) == 0) {
 		return FIFO_EMPTY;
 	}
 
-	++queue->q_top;
+	++queue->top;
 
-	if (queue->q_top == (queue->q_size - 1))
-		queue->q_top = 0;
+	if (queue->top == (queue->size - 1))
+		queue->top = 0;
 
-	*el = queue->q_data[queue->q_top];
+	*element = queue->data[queue->top];
 
 	return FIFO_OK;
 }
 
 uint32_t fifo_length(struct fifo_t *queue)
 {
-	return (queue->q_end >= queue->q_top) ?
-			(queue->q_end - queue->q_top) :
-			(queue->q_size + queue->q_top - queue->q_end);
+	return (queue->end >= queue->top) ?
+			(queue->end - queue->top) :
+			(queue->size + queue->top - queue->end);
 }
