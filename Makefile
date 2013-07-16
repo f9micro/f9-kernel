@@ -49,7 +49,7 @@ LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
 
-CFLAGS += -g3 -Wall -std=gnu99 -isystem
+CFLAGS += -O0 -g3 -Wall -std=gnu99 -isystem
 CFLAGS += -mlittle-endian -mcpu=cortex-m4
 CFLAGS += -mthumb -mthumb-interwork -Xassembler -mimplicit-it=thumb
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -ffreestanding

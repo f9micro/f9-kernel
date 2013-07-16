@@ -129,7 +129,6 @@ memptr_t __USER_TEXT get_free_base(kip_t *kip_ptr)
 
 void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 {
-#if 1
 	l4_thread_t myself = utcb_ptr->t_globalid;
 	char *free_mem = (char *) get_free_base(kip_ptr);
 
@@ -165,7 +164,6 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 	while (1) {
 		L4_Ipc(L4_NILTHREAD, L4_NILTHREAD, 0, msg);
 	}
-#endif
 }
 
 DECLARE_THREAD(root_thread, __root_thread);
