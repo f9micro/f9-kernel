@@ -119,5 +119,5 @@ SECTIONS {
 		kernel_ahb_start = .;
 		*(.bitmap*)
 		kernel_ahb_end = .;
-	} > RamAHB
+	} > RamCCM
 }
