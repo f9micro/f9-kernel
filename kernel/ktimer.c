@@ -208,7 +208,6 @@ void ktimer_event_handler()
 	ktimer_event_t *last_event = NULL;
 	ktimer_event_t *next_event = NULL;
 	uint32_t h_retvalue  = 0;
-	uint32_t delta = 0;
 
 	if (!event_queue) {
 		/* That is bug if we are here */
@@ -217,8 +216,6 @@ void ktimer_event_handler()
 		ktimer_disable();
 		return;
 	}
-
-	delta = event->delta;
 
 	/* Search last event in event chain */
 	do {
