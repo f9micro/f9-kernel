@@ -6,13 +6,13 @@
 #include <kprobes.h>
 #include <error.h>
 #include <platform/cortex_m.h>
-#include <platform/fpb.h>
+#include <platform/hw_breakpoint.h>
 
 #ifdef CONFIG_KPROBES
 
 void kprobe_arch_init()
 {
-	fpb_init();
+	hw_breakpoint_init();
 }
 
 int kprobe_arch_add(struct kprobe *kp)
@@ -21,10 +21,9 @@ int kprobe_arch_add(struct kprobe *kp)
 	struct kprobe *found = kplist_search(kp->addr);
 	if (found == NULL) {
 		// the first kprobe at this address
-		id = fpb_avail_bkpt();
-		if (id >= 0 ) {
+		id = breakpoint_install((uint32_t) kp->addr);
+		if (id >= 0) {
 			kp->bkptid = id;
-			fpb_setbkpt(id, (uint32_t) kp->addr);
 		} else {
 			goto arch_add_error;   // HW bkpt is not available
 		}
@@ -44,7 +43,7 @@ int kprobe_arch_del(struct kprobe *kp)
 	struct kprobe *found = kplist_search(kp->addr);
 	if (found == NULL) {
 		// the last kprobe at this address
-		fpb_unsetbkpt(kp->bkptid);
+		breakpoint_uninstall(kp->bkptid);
 	}
 	return 0;
 }
@@ -60,8 +59,8 @@ void arch_kprobe_handler(uint32_t *stack)
 		kprobe_prebreak(addr);
 		*SCB_DFSR  =  SCB_DFSR_BKPT;     // clear BKPT status bit
 
-		fpb_disable();
-		cpu_step_enable();
+		disable_hw_breakpoint();
+		cpu_enable_single_step();
 
 	} else if (*SCB_DFSR & SCB_DFSR_HALTED) {
 		// assume no thread-switch while single-step
@@ -69,8 +68,8 @@ void arch_kprobe_handler(uint32_t *stack)
 		kprobe_postbreak(addr);
 		*SCB_DFSR  =  SCB_DFSR_HALTED;  // clear HALTED status bit
 
-		cpu_step_disable();
-		fpb_enable();
+		cpu_disable_single_step();
+		enable_hw_breakpoint();
 
 	} else {
 		panic("Kernel panic: Debug fault. Restarting\n");

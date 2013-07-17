@@ -20,4 +20,4 @@ platform-y = \
 	spinlock.o \
 	irq.o \
 	kprobes-arch.o \
-	fpb.o
+	hw_breakpoint.o

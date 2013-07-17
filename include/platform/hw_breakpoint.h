@@ -3,8 +3,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef PLATFORM_FPB_H_
-#define PLATFORM_FPB_H_
+#ifndef PLATFORM_HW_BREAKPOINT_H_
+#define PLATFORM_HW_BREAKPOINT_H_
 
 #define FPB_MAX_COMP                    6
 #define FPB_BASE                        (uint32_t) (0xE0002000)
@@ -19,17 +19,17 @@
 #define FPB_COMP_REPLACE_LOWER          (uint32_t) (1 << 30)
 #define FPB_COMP_REPLACE_UPPER          (uint32_t) (2 << 30)
 
-void fpb_init();
-void fpb_setbkpt(int id, uint32_t addr);
-void fpb_unsetbkpt(int id);
-void fpb_bkpt_enable(int id);
-void fpb_bkpt_disable(int id);
-int fpb_avail_bkpt();
+void hw_breakpoint_init();
+int breakpoint_install(uint32_t addr);
+void breakpoint_uninstall(int id);
 
-#define cpu_step_enable()            do {*DCB_DEMCR |= DCB_DEMCR_MON_STEP;} while(0)
-#define cpu_step_disable()           do {*DCB_DEMCR &= ~DCB_DEMCR_MON_STEP;} while(0)
+#define cpu_enable_single_step()        do {*DCB_DEMCR |= DCB_DEMCR_MON_STEP;} while(0)
+#define cpu_disable_single_step()       do {*DCB_DEMCR &= ~DCB_DEMCR_MON_STEP;} while(0)
 
-void fpb_enable();
-void fpb_disable();
+#define enable_bkptid(id)               do {*(FPB_COMP + (id)) |= FPB_COMP_ENABLE;} while(0)
+#define disable_bkptid(id)              do {*(FPB_COMP + (id)) &= ~FPB_COMP_ENABLE;} while(0)
 
-#endif /* PLATFORM_FPB_H_ */
+#define enable_hw_breakpoint()          do {*FPB_CTRL = FPB_CTRL_KEY | FPB_CTRL_ENABLE;} while(0)
+#define disable_hw_breakpoint()         do {*FPB_CTRL = FPB_CTRL_KEY | ~FPB_CTRL_ENABLE;} while(0)
+
+#endif /* PLATFORM_HW_BREAKPOINT_H_ */
