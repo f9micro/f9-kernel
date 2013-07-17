@@ -26,8 +26,6 @@ extern void kdb_dump_softirq();
 extern void kdb_dump_threads();
 extern void kdb_dump_mempool();
 extern void kdb_dump_as();
-extern void kdb_test_kprobe();
-extern void kdb_show_kprobe_info();
 
 struct kdb_t kdb_functions[] =
 {
@@ -72,18 +70,6 @@ struct kdb_t kdb_functions[] =
 		.name = "AS",
 		.menuentry = "dump address spaces",
 		.function = kdb_dump_as
-	},
-	{
-		.option = 'k',
-		.name = "Test kprobe",
-		.menuentry = "test kprobe function",
-		.function = kdb_test_kprobe
-	},
-	{
-		.option = '2',
-		.name = "show kprobe-test info",
-		.menuentry = "show kprobe-test info",
-		.function = kdb_show_kprobe_info
 	},
 	/* Insert KDB functions here */
 };
