@@ -47,14 +47,21 @@ void debugmon_handler()
 {
 	enter_frame();
 
+#ifdef CONFIG_KPROBES
 	// break on thread-mode
 	arch_kprobe_handler(stack);
+#else
+	panic("Kernel panic: DebugMonitor Exception. Restarting");
+#endif /* CONFIG_KPROBES */
+
 	leave_frame();
 }
 
 void hard_fault_handler()
 {
 	enter_frame();
+
+#ifdef CONFIG_KPROBES
 	if (*SCB_HFSR & SCB_HFSR_DEBUGEVT) {
 		// break on handler-mode
 		arch_kprobe_handler(stack);
@@ -62,6 +69,8 @@ void hard_fault_handler()
 		leave_frame();
 		return;
 	}
+#endif /* CONFIG_KPROBES */
+
 	panic("Kernel panic: Hard fault. Restarting\n");
 	leave_frame();
 }

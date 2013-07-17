@@ -5,6 +5,8 @@
 
 #include <kprobes.h>
 
+#ifdef CONFIG_KPROBES
+
 struct kprobe *kp_list;
 
 void kprobe_init()
@@ -87,3 +89,5 @@ void kprobe_postbreak(void *addr)
 		kp = kp->next;
 	}
 }
+
+#endif /* CONFIG_KPROBES */

@@ -8,6 +8,8 @@
 #include <platform/cortex_m.h>
 #include <platform/fpb.h>
 
+#ifdef CONFIG_KPROBES
+
 void kprobe_arch_init()
 {
 	fpb_init();
@@ -74,3 +76,5 @@ void arch_kprobe_handler(uint32_t *stack)
 		panic("Kernel panic: Debug fault. Restarting\n");
 	}
 }
+
+#endif /* CONFIG_KPROBES */

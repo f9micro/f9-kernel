@@ -9,6 +9,7 @@
 /* Debug options */
 #define CONFIG_DEBUG
 #define CONFIG_KDB
+#define CONFIG_KPROBES
 
 /* Table sizes */
 enum {

@@ -7,6 +7,7 @@
 #define KPROBES_H
 
 #include <types.h>
+#include <config.h>
 
 #define is_thumb32(inst) ((unsigned)(inst) >= 0xe800)
 

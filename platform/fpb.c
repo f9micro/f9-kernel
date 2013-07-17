@@ -3,9 +3,12 @@
  * found in the LICENSE file.
  */
 
+#include <config.h>
 #include <platform/irq.h>
 #include <platform/fpb.h>
 #include <platform/cortex_m.h>
+
+#ifdef CONFIG_KPROBES
 
 char fp_comp[FPB_MAX_COMP];
 
@@ -76,3 +79,5 @@ void fpb_disable()
 	// disable FPB unit
 	*FPB_CTRL = FPB_CTRL_KEY | ~FPB_CTRL_ENABLE ;
 }
+
+#endif /* CONFIG_KPROBES */
