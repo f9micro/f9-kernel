@@ -20,7 +20,8 @@ silent = $(if $(V),,1>/dev/null)
 # commands to build all targets
 cmd_obj_to_bin = $(OBJCOPY) -O binary $^ $(out)/$*.bin
 cmd_elf_to_list = $(OBJDUMP) -S $< > $@
-cmd_elf = $(LD) $(LDFLAGS) $(objs) -o $@ -T f9.ld \
+cmd_elf = $(LD) $(LDFLAGS) $(objs) -o $@ \
+	-L platform -T f9.ld \
 	`$(CROSS_COMPILE)gcc -print-libgcc-file-name` \
 	-Map $(out)/$*.map
 cmd_c_to_o = $(CC) $(CFLAGS) -MMD -MF $@.d -c $< -o $@
