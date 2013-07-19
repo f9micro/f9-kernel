@@ -3,8 +3,6 @@
  * found in the LICENSE file.
  */
 
-/* FIXME: move to platform specific */
-#define INC_PLAT(x)	<platform/__PLATFORM__/x>
 #include INC_PLAT(systick.h)
 
 #include <debug.h>

@@ -8,8 +8,8 @@
 #include <lib/fifo.h>
 #include <softirq.h>
 
-#define INC_PLAT(x)		<platform/__PLATFORM__/x>
-#include INC_PLAT(__BOARD_HEADER__)
+/* board speficic UART definitions */
+#include "board.h"
 
 static struct dbg_uart_t dbg_uart;
 static uint8_t dbg_uart_tx_buffer[SEND_BUFSIZE];

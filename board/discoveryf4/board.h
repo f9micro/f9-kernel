@@ -3,8 +3,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef PLATFORM_STM32F4_DISCOVERYF4_H_
-#define PLATFORM_STM32F4_DISCOVERYF4_H_
+#ifndef DISCOVERYF4_BOARD_H_
+#define DISCOVERYF4_BOARD_H_
 
 #include <platform/stm32f4/registers.h>
 #include <platform/stm32f4/gpio.h>
@@ -14,4 +14,4 @@
 
 extern struct usart_dev console_uart;
 
-#endif	/* PLATFORM_STM32F4_DISCOVERYF4_H_ */
+#endif	/* DISCOVERYF4_BOARD_H_ */

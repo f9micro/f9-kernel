@@ -16,7 +16,9 @@ CFLAGS_WARN = -Wall
 CFLAGS_DEBUG= -g3
 CFLAGS_INCLUDE=$(foreach i,$(includes),-I$(i) )
 CFLAGS_DEFINE = \
-	-D __PLATFORM__=$(CHIP) -D __BOARD_HEADER__="$(BOARD).h" \
+	-D __PLATFORM__=$(CHIP) \
+	-D __BOARD__=$(BOARD) \
+	-D'INC_PLAT(x)=<platform/__PLATFORM__/x>' \
 	-DDEBUG
 CPPFLAGS = \
 	$(CFLAGS_DEFINE) $(CFLAGS_INCLUDE) $(EXTRA_CFLAGS)

@@ -16,9 +16,9 @@ include board/$(BOARD)/build.mk
 
 # Transform the configuration into make variables
 includes = \
+	board/$(BOARD) \
 	include \
 	include/platform \
-	include/platform/$(CHIP) \
 	$(dirs) $(out)
 $(eval BOARD_$(BOARD)=y)
 

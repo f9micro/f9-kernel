@@ -5,10 +5,6 @@
 
 #include <platform/debug_uart.h>
 
-/* FIXME: move to platform specific */
-#define INC_PLAT(x)     <platform/__PLATFORM__/x>
-#include INC_PLAT(nvic.h)
-
 #include <debug.h>
 #include <error.h>
 
@@ -47,6 +43,8 @@ void nmi_handler()
  */
 
 extern void (* const g_pfnVectors[])();
+
+#include INC_PLAT(nvic.h)
 
 __ISR_VECTOR
 void (* const g_pfnVectors[])() = {

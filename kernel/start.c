@@ -7,8 +7,6 @@
  * __l4_start initializes microcontroller
  */
 
-/* FIXME: move to platform specific */
-#define INC_PLAT(x)	<platform/__PLATFORM__/x>
 #include INC_PLAT(gpio.h)
 #include INC_PLAT(rcc.h)
 
