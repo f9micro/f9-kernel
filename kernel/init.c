@@ -48,7 +48,6 @@ void debugmon_handler()
 	enter_frame();
 
 #ifdef CONFIG_KPROBES
-	// break on thread-mode
 	arch_kprobe_handler(stack);
 #else
 	panic("Kernel panic: DebugMonitor Exception. Restarting");
@@ -62,6 +61,14 @@ void hard_fault_handler()
 	enter_frame();
 
 #ifdef CONFIG_KPROBES
+	/*
+	 * We are here when currently executing
+	 * priority is higher than or equal to 
+	 * the priority of debug exception,
+	 * inhibiting normal preemption, then
+	 * processor escalates the exception 
+	 * priority to HardFault.
+	 */
 	if (*SCB_HFSR & SCB_HFSR_DEBUGEVT) {
 		// break on handler-mode
 		arch_kprobe_handler(stack);
