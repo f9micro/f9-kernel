@@ -4,7 +4,7 @@
 
 # FPU compilation flags
 # FIXME: make it configurable
-CONFIG_FPU=y
+CONFIG_FPU=n
 CFLAGS_FPU-$(CONFIG_FPU) = -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 
 # CPU specific compilation flags

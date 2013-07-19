@@ -51,7 +51,6 @@ static inline int irq_number()
  */
 #define irq_save(ctx) \
 	__asm__ __volatile__ ("cpsid i");				\
-	__asm__ __volatile__ ("mov lr, %0" : : "r" ((ctx)->ret));	\
 	__asm__ __volatile__ ("mov r0, %0" : : "r" ((ctx)->regs));	\
 	__asm__ __volatile__ ("stm r0, {r4-r11}");			\
 	__asm__ __volatile__ ("cmp lr, #0xFFFFFFF9");			\

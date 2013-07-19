@@ -24,28 +24,16 @@ struct usart_regs {
 };
 
 /* Calculates the value for the USART_BRR */
+/* TODO: Need more precise algorithm */
 static int16_t usart_baud(uint32_t baud)
 {
-	float usartdiv = (42000000) / (16 * (float) baud);
-	uint16_t mantissa = (uint16_t) usartdiv;
-	float fraction = 16 * (usartdiv-mantissa);
-	uint16_t int_fraction = (uint16_t) fraction;
+	uint16_t mantissa; 
+	uint16_t fraction;
 
-	/* Round fraction */
-	while (fraction > 1) {
-		fraction--;
-	}
+	 mantissa = (42000000) / (16 *  baud);
+	 fraction = (42000000 / baud) % 16;
 
-	if (fraction >= 0.5f) {
-		int_fraction += 1;
-	}
-
-	if (int_fraction == 16) {
-		mantissa += 1;
-		int_fraction = 0;
-	}
-
-	return (mantissa << 4) | int_fraction;
+	return (mantissa << 4) | fraction;
 }
 
 void usart_config_interrupt(struct usart_dev *usart, uint16_t it,
