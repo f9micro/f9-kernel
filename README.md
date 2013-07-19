@@ -2,11 +2,12 @@ F9 Microkernel
 ==============
 
 This is `F9`, an experimental microkernel used to construct flexible embedded
-systems inspired by famous L4 microkernel. The motivation of F9 microkernel
-is to deploy modern microkernel techniques to support running real-time and
-time-sharing applications (e.g., wireless communications) for ARM Cortex-M
-series microprocessors with efficiency (performanace + power consumption) and
-security (memory protection + isolated execution) in mind.
+systems inspired by famous [L4 microkernel](http://en.wikipedia.org/wiki/L4_microkernel_family).
+The motivation of F9 microkernel is to deploy modern microkernel techniques to
+support running real-time and time-sharing applications (for example, wireless
+communications) for ARM Cortex-M series microprocessors with efficiency
+(performanace + power consumption) and security (memory protection + isolated
+execution) in mind.
 
 
 Characteristics of F9 Microkernel
@@ -119,7 +120,7 @@ files are described as following:
   - board-specific configurations; CHIP model, periperals
 * rules.mk: the magic of build system
 
-You can modify source file board/<BOARD_NAME>/board.[ch] to specify the
+You can modify source file board/`<BOARD_NAME>`/board.[ch] to specify the
 preferable resource assignment. To get acquainted with the configuration of
 F9 Microkernel internals, file include/config.h is the entry point:
 
