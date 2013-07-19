@@ -60,8 +60,9 @@ in the `LICENSE` file.
 Quick Start
 ===========
 
-The current hardware board F9 Microkernel supports is STM32F4DISCOVERY based
-on ARM Cortex-M4, but F9 should work well on any STM32F40x microcontroller.
+The current hardware board F9 Microkernel supports is [STM32F4DISCOVERY](http://www.st.com/web/en/catalog/tools/FM116/SC959/SS1532/PF252419)
+based on ARM Cortex-M4F core, but F9 should work well on any STM32F40x
+microcontroller.
 
 Building F9 Microkernel requires an arm-none-eabi- toolchain with Cortex-M4
 hardfloat support. The known working toolchains are as following
@@ -70,14 +71,14 @@ hardfloat support. The known working toolchains are as following
   - Verified versions: arm-2012.03, arm-2013.05
 * [GNU Tools for ARM Embedded Processors](https://launchpad.net/gcc-arm-embedded)
 
-For flashing and debugging on the STM32F40x, [stlink](https://github.com/texane/stlink) is recommended.
-With `stlink` in your path, "make flash" will flash your STM32F4DISCOVERY
-board with proper F9 Microkernel configurations.
+For flashing and debugging on the STM32F40x, [stlink](https://github.com/texane/stlink) is required.
+With `stlink` in your path, command "make flash" will flash your
+STM32F4DISCOVERY board with built F9 binary image.
 
 When developing on top of F9 Microkernel, you do not have the luxury of using
 a source level debugger such as gdb. There are still a number of techniques at
 your disposal to assist debugging, however. KDB (in-kernel debugger) is built and
-run at boot by default, and here are the commands it supports:
+run at boot by default, and here are the supported commands:
 
 * a: dump address spaces
 * m: dump memory pools
