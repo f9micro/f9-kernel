@@ -92,6 +92,18 @@ using a serial to USB converter:
 * USB2TTL RX ---> PA0
 * USB2TTL TX ---> PA1
 
+Select the appropriate terminal emulator and configure it for 115200 baud,
+8 data bits, no parity, one stop bit. For GNU/Linux, program `screen` can be
+used for such purpose. Installation on Ubuntu / Debian based systems:
+
+    sudo apt-get install screen
+
+Then, attach the device file where a serial to USB converter is attached:
+
+    screen /dev/ttyUSB0 115200 8n1
+
+Once you want to quit screen, press: Ctrl-a k
+
 
 Build Configurations
 ====================
