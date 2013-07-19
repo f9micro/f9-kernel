@@ -19,16 +19,21 @@ int kprobe_arch_add(struct kprobe *kp)
 {
 	int id;
 	struct kprobe *found = kplist_search(kp->addr);
+
+	/*
+	 * If there is no kprobe at this addr,
+	 * give it a new bkpt,
+	 * otherwise share the existing bkpt.
+	 */
+
 	if (found == NULL) {
-		// the first kprobe at this address
 		id = breakpoint_install((uint32_t) kp->addr);
 		if (id >= 0) {
 			kp->bkptid = id;
 		} else {
-			goto arch_add_error;   // HW bkpt is not available
+			goto arch_add_error;
 		}
 	} else {
-		// kprobe with the same address share the same HW bkpt
 		kp->bkptid = found->bkptid;
 	}
 
@@ -41,8 +46,9 @@ arch_add_error:
 int kprobe_arch_del(struct kprobe *kp)
 {
 	struct kprobe *found = kplist_search(kp->addr);
+
+	/* Free bkpt when there is no kprobe at this addr */
 	if (found == NULL) {
-		// the last kprobe at this address
 		breakpoint_uninstall(kp->bkptid);
 	}
 	return 0;
@@ -52,21 +58,35 @@ void arch_kprobe_handler(uint32_t *stack)
 {
 	static void *addr;
 
+	/*
+	 * For convenience currently we assume
+	 * all cpu single-step is enabled/disabled
+	 * by arch_kprobe_handler.
+	 *
+	 * To execute instruction at the probed address,
+	 * we have to disable breakpoint before return
+	 * from handler, and re-enable it in the
+	 * next instruction.
+	 */
+
 	if ((*SCB_DFSR & SCB_DFSR_BKPT)) {
 
 		addr = (void *) stack[REG_PC];
 
 		kprobe_prebreak(addr);
-		*SCB_DFSR  =  SCB_DFSR_BKPT;     // clear BKPT status bit
+
+		/* Clear BKPT status bit */
+		*SCB_DFSR  =  SCB_DFSR_BKPT;
 
 		disable_hw_breakpoint();
 		cpu_enable_single_step();
 
 	} else if (*SCB_DFSR & SCB_DFSR_HALTED) {
-		// assume no thread-switch while single-step
 
 		kprobe_postbreak(addr);
-		*SCB_DFSR  =  SCB_DFSR_HALTED;  // clear HALTED status bit
+
+		/* Clear HALTED status bit */
+		*SCB_DFSR  =  SCB_DFSR_HALTED;
 
 		cpu_disable_single_step();
 		enable_hw_breakpoint();
