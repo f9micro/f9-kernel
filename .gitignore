@@ -5,11 +5,12 @@
 *.elf
 *.bin
 *.hex
+*.map
 *.swp
 *.fuse*
 *.pyc
 *.swo
 *.out
-out/
+build/
 tags
 core
