@@ -3,14 +3,37 @@ F9 Microkernel
 
 This is `F9`, an experimental microkernel used to construct flexible embedded
 systems inspired by famous L4 microkernel. The motivation of F9 microkernel
-is to support running real-time and time-sharing application as well as
-wireless communications for ARM Cortex-M series microprocessors.
+is to deploy modern microkernel techniques to support running real-time and
+time-sharing applications (e.g., wireless communications) for ARM Cortex-M
+series microprocessors with efficiency (performanace + power consumption) and
+security (memory protection + isolated execution) in mind.
 
 
 Characteristics of F9 Microkernel
 =================================
+
 * F9 follows the fundamental principles of microkernels in that it implements
   address spaces, thread management, and IPC only in the privileged kernel.
+
+* Each thread has its own TCB (Thread Control Block) and addressed by its
+  global id, tweaked for ARM Cortex-M. Also dispatcher is responsible for
+  switching contexts. Threads with the same priority are executed in a
+  round-robin fashion.
+
+* Memory management is split into three concepts:
+  - Memory pool, which represent area of physical address space with specific
+    attributes.
+  - Flexible page, which describes an always size aligned region of an address
+    space. Unlike other L4 implementations, Flexible pages in F9 represent MPU
+    (Memory Protection Unit, available on ARM Cortex-M3/M4) region instead.
+  - Address space, which is made up of these flexpages, and system calls are
+    provided to manage them:
+    + grant: The memory page is granted to a new user and cannot be used
+      anymore by its former user.
+    + map: This implements shared memory – the memory page is passed to
+      another task but can be used by both tasks.
+    + flush: The memory page that has been mapped to other users will be
+      flushed out of their address space.
 
 * Regarding the interaction between a user thread and the microkernel, the
   concept of UTCB (user-level thread-control blocks) is being taken on. A UTCB
@@ -22,8 +45,6 @@ Characteristics of F9 Microkernel
 * The kernel provides synchronous IPC (inter-process communication), for which
   short IPC carries payload in CPU registers only and full IPC copies message
   payload via the UTCBs of the communicating parties.
-
-* Threads with the same priority are executed in a round-robin fashion.
 
 
 Licensing
@@ -37,7 +58,7 @@ in the `LICENSE` file.
 Quick Start
 ===========
 
-The currentt hardware board F9 Microkernel support is STM32F4DISCOVERY based
+The current hardware board F9 Microkernel supports is STM32F4DISCOVERY based
 on ARM Cortex-M4, but F9 should work well on any STM32F40x microcontroller.
 
 Building F9 Microkernel requires an arm-none-eabi- toolchain with Cortex-M4

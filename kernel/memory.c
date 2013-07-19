@@ -21,7 +21,7 @@
  * small MCU with energy efficiency.  Therefore,
  *   - We don't have virtual memory and pages
  *   - RAM is small, but physical address space is relatively large (32-bit),
- *     which includes devices, flash, bit-bang regions
+ *     which includes devices, flash, bit-band regions
  *   - We have memory protection unit with only 8 regions
  *
  * Memory management is split into three conceptions:
