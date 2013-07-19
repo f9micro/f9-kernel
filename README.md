@@ -111,7 +111,7 @@ Build Configurations
 F9 Microkernel deploys Linux Kernel style build system, and the corresponding
 files are described as following:
 
-* Makefile.toolchain:
+* toolchain.mk:
   - toolchain-specific configurations; common cflags and ldflags
 * platform/build.mk:
   - platform-specific configurations; cflags/ldflags for CPU and FPU

@@ -6,15 +6,15 @@
 CROSS_COMPILE ?= arm-none-eabi-
 HOST_CROSS_COMPILE ?=
 
-CC=$(CROSS_COMPILE)gcc
-CPP=$(CROSS_COMPILE)cpp
-LD=$(CROSS_COMPILE)ld
-OBJCOPY=$(CROSS_COMPILE)objcopy
-OBJDUMP=$(CROSS_COMPILE)objdump
+CC = $(CROSS_COMPILE)gcc
+CPP = $(CROSS_COMPILE)cpp
+LD = $(CROSS_COMPILE)ld
+OBJCOPY = $(CROSS_COMPILE)objcopy
+OBJDUMP = $(CROSS_COMPILE)objdump
 
 CFLAGS_WARN = -Wall
-CFLAGS_DEBUG= -g3
-CFLAGS_INCLUDE=$(foreach i,$(includes),-I$(i) )
+CFLAGS_DEBUG = -g3
+CFLAGS_INCLUDE = $(foreach i,$(includes),-I$(i) )
 CFLAGS_DEFINE = \
 	-D __PLATFORM__=$(CHIP) \
 	-D __BOARD__=$(BOARD) \
