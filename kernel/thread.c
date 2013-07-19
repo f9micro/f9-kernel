@@ -30,8 +30,8 @@
  * Also dispatcher is responsible for switching contexts (but not
  * scheduling)
  *
- * Reference: A Physically addressed L4 Kernel, Abi Nourai (Technical
- * Director, OKLabs)
+ * Reference: A Physically addressed L4 Kernel, Abi Nourai, University of
+ * NSW, Sydney (2005)
  */
 
 DECLARE_KTABLE(tcb_t, thread_table, CONFIG_MAX_THREADS);
