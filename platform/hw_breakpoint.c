@@ -18,13 +18,13 @@ void hw_breakpoint_init()
 
 	*FPB_CTRL = FPB_CTRL_KEY |FPB_CTRL_ENABLE ;
 
-	// Enable DebugMonitor Exception Generation
+	/* Enable DebugMonitor exception generation */
 	*DCB_DEMCR |= DCB_DEMCR_MON_EN;
 
-	// clear status bit
-	*SCB_HFSR = SCB_HFSR_DEBUGEVT;          // clear DBGEVT
-	*SCB_DFSR = SCB_DFSR_BKPT;              // clear BKPT
-	*SCB_DFSR = SCB_DFSR_HALTED;            // clear STEP
+	/* Clear status bit */
+	*SCB_HFSR = SCB_HFSR_DEBUGEVT;
+	*SCB_DFSR = SCB_DFSR_BKPT;
+	*SCB_DFSR = SCB_DFSR_HALTED;
 
 	for (i = 0; i < FPB_MAX_COMP; i++) {
 		fp_comp[i] = 0;
@@ -45,20 +45,23 @@ int get_avail_bkpt()
 int breakpoint_install(uint32_t addr)
 {
 	int id = get_avail_bkpt();
-	if (id >= 0) {
-		fp_comp[id] = 1;                        // comp allocated
-		if (addr & 2) {
-			*(FPB_COMP + id) = FPB_COMP_REPLACE_UPPER|addr|FPB_COMP_ENABLE;
-		} else {
-			*(FPB_COMP + id) = FPB_COMP_REPLACE_LOWER|addr|FPB_COMP_ENABLE;
-		}
+
+	if (id < 0) {
+		return -1;
+	}
+
+	fp_comp[id] = 1; /* Mark comparator allocated */
+	if (addr & 2) {
+		*(FPB_COMP + id) = FPB_COMP_REPLACE_UPPER|addr|FPB_COMP_ENABLE;
+	} else {
+		*(FPB_COMP + id) = FPB_COMP_REPLACE_LOWER|addr|FPB_COMP_ENABLE;
 	}
 	return id;
 }
 
 void breakpoint_uninstall(int id)
 {
-	fp_comp[id] = 0;                        // comp free
+	fp_comp[id] = 0; /* Mark comparator free */
 	*(FPB_COMP + id) &= ~FPB_COMP_ENABLE;
 }
 

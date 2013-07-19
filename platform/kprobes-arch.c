@@ -21,8 +21,7 @@ int kprobe_arch_add(struct kprobe *kp)
 	struct kprobe *found = kplist_search(kp->addr);
 
 	/*
-	 * If there is no kprobe at this addr,
-	 * give it a new bkpt,
+	 * If there is no kprobe at this addr, give it a new bkpt,
 	 * otherwise share the existing bkpt.
 	 */
 
@@ -59,13 +58,11 @@ void arch_kprobe_handler(uint32_t *stack)
 	static void *addr;
 
 	/*
-	 * For convenience currently we assume
-	 * all cpu single-step is enabled/disabled
-	 * by arch_kprobe_handler.
+	 * For convenience currently we assume all cpu single-step is
+	 * enabled/disabled by arch_kprobe_handler.
 	 *
-	 * To execute instruction at the probed address,
-	 * we have to disable breakpoint before return
-	 * from handler, and re-enable it in the
+	 * To execute instruction at the probed address, we have to disable
+	 * breakpoint before return from handler, and re-enable it in the
 	 * next instruction.
 	 */
 
