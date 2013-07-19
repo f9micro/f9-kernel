@@ -48,7 +48,7 @@ $(out)/%.o:%.S
 $(build-utils): $(out)/%:%.c
 	$(call quiet,c_to_build,BUILDCC)
 
-PHONY: flash
+.PHONY: flash
 flash: $(out)/$(PROJECT).bin
 	$(call platform-flash-command, $<)
 
