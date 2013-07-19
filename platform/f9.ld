@@ -1,5 +1,5 @@
 /*
- * memory area definitions 
+ * memory area definitions
  */
 
 INCLUDE "f9_mem.ld"
@@ -55,15 +55,15 @@ SECTIONS {
 		*(.rodata*)
 		kernel_text_end = .;
 	} > MFlash
-	
-	.user_text 0x0800C000 : 
+
+	.user_text 0x0800C000 :
 	{
 		user_text_start = .;
 		*root_thread.o(.user_text*)
 		. = 0x00001000;
 		user_text_end = .;
 	} > MFlash
-	
+
 	.stack :
 	{
 		idle_stack_start = .;
@@ -72,10 +72,10 @@ SECTIONS {
 		. += KERNEL_STACK_SIZE;
 		kernel_stack_end = .;
 	} > RamLoc
-	
+
 	.data :
 	AT( ADDR(.text) + SIZEOF(.text) )
-	ALIGN (128) 
+	ALIGN (128)
 	{
 		kernel_data_start = .;
 		kip_start = .;
@@ -91,12 +91,12 @@ SECTIONS {
 	{
 		kernel_bss_start = .;
 		*(.bss*)
-	    *(.ktable*)			/* Statically allocated kernel table */
+		*(.ktable*)		/* Statically allocated kernel table */
 		*(COMMON)
 		kernel_bss_end = .;
 	} > RamLoc
-	
-	.user_data : 
+
+	.user_data :
 	AT( ADDR(.user_text) + SIZEOF(.user_text) )
 	ALIGN (128)
 	{
@@ -106,8 +106,8 @@ SECTIONS {
 		root_stack_end = .;
 		*(.user_data*)
 		user_data_end = .;
-	} > RamLoc 
-	
+	} > RamLoc
+
 	.user_bss (NOLOAD) :
 	ALIGN (128)
 	{
