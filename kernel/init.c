@@ -63,10 +63,10 @@ void hard_fault_handler()
 #ifdef CONFIG_KPROBES
 	/*
 	 * We are here when currently executing
-	 * priority is higher than or equal to 
+	 * priority is higher than or equal to
 	 * the priority of debug exception,
 	 * inhibiting normal preemption, then
-	 * processor escalates the exception 
+	 * processor escalates the exception
 	 * priority to HardFault.
 	 */
 	if (*SCB_HFSR & SCB_HFSR_DEBUGEVT) {
