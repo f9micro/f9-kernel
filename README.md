@@ -1,10 +1,10 @@
-F9 microkernel
+F9 Microkernel
 ==============
 
 This is `F9`, an experimental microkernel used to construct flexible embedded
 systems inspired by famous L4 microkernel. The motivation of F9 microkernel
 is to support running real-time and time-sharing application as well as
-wireless communications for ARM Cortex-M series microprocessors concurrently.
+wireless communications for ARM Cortex-M series microprocessors.
 
 
 Characteristics of F9 Microkernel
@@ -23,12 +23,84 @@ Characteristics of F9 Microkernel
   short IPC carries payload in CPU registers only and full IPC copies message
   payload via the UTCBs of the communicating parties.
 
-* Threads with the same priority are executed in a round-robin fashion
+* Threads with the same priority are executed in a round-robin fashion.
 
 
 Licensing
-==============
+=========
 
-F9 microkernel is freely redistributable under the two-clause BSD License.
+F9 Microkernel is freely redistributable under the two-clause BSD License.
 Use of this source code is governed by a BSD-style license that can be found
 in the `LICENSE` file.
+
+
+Quick Start
+===========
+
+The currentt hardware board F9 Microkernel support is STM32F4DISCOVERY based
+on ARM Cortex-M4, but F9 should work well on any STM32F40x microcontroller.
+
+Building F9 Microkernel requires an arm-none-eabi- toolchain with Cortex-M4
+hardfloat support. The known working toolchains are as following
+* [Sourcery CodeBench](http://www.mentor.com/embedded-software/sourcery-tools/sourcery-codebench/editions/lite-edition/)
+  - ARM Processors: EABI Release
+  - Verified versions: arm-2012.03, arm-2013.05
+* [GNU Tools for ARM Embedded Processors](https://launchpad.net/gcc-arm-embedded)
+
+For flashing and debugging on the STM32F40x, [stlink](https://github.com/texane/stlink) is recommended.
+With `stlink` in your path, "make flash" will flash your STM32F4DISCOVERY
+board with proper F9 Microkernel configurations.
+
+When developing on top of F9 Microkernel, you do not have the luxury of using
+a source level debugger such as gdb. There are still a number of techniques at
+your disposal to assist debugging, however. KDB (in-kernel debugger) is built and
+run at boot by default, and here are the commands it supports:
+
+* a: dump address spaces
+* m: dump memory pools
+* t: dump threads
+* s: show softirqs
+* n: show timer (now)
+* e: dump ktimer events
+* K: print kernel tables
+
+Through USART, KDB can be operated interactively on PA0 (TX) and PA1 (RX) of
+STM32F4DISCOVERY. You can established USART serial connection with the board
+using a serial to USB converter:
+
+* USB2TTL RX ---> PA0
+* USB2TTL TX ---> PA1
+
+
+Build Configurations
+====================
+
+F9 Microkernel deploys Linux Kernel style build system, and the corresponding
+files are described as following:
+
+* Makefile.toolchain:
+  - toolchain-specific configurations; common cflags and ldflags
+* platform/build.mk:
+  - platform-specific configurations; cflags/ldflags for CPU and FPU
+* board/ * /build.mk:
+  - board-specific configurations; CHIP model, periperals
+* rules.mk: the magic of build system
+
+You can modify source file board/<BOARD_NAME>/board.[ch] to specify the
+preferable resource assignment. To get acquainted with the configuration of
+F9 Microkernel internals, file include/config.h is the entry point:
+
+* `CONFIG_DEBUG`
+  - Enable serial input/out for debugging purpose. An additional system call
+    for serial I/O character operations will be included.
+* `CONFIG_KDB`
+  - Enable in-kernel debugger.
+* `CONFIG_BITMAP_BITBAND`
+  - Generate bitmap address in bit-band region
+  - Bit-banding maps a complete word of memory onto a single bit in the
+    bit-band region. For example, writing to one of the alias words will set
+    or clear the corresponding bit in the bitband region.
+  - When writing to the alias regions bit 0 of the 32 bit word is used to set
+    the value at the bit-banding region. Reading from the alias address will
+    return the value from the bit-band region in bit 0 and the other bits will
+    be cleared.
