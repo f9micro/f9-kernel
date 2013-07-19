@@ -27,14 +27,15 @@ Characteristics of F9 Microkernel
   - Flexible page, which describes an always size aligned region of an address
     space. Unlike other L4 implementations, Flexible pages in F9 represent MPU
     (Memory Protection Unit, available on ARM Cortex-M3/M4) region instead.
-  - Address space, which is made up of these flexpages, and system calls are
-    provided to manage them:
-    + grant: The memory page is granted to a new user and cannot be used
-      anymore by its former user.
-    + map: This implements shared memory – the memory page is passed to
-      another task but can be used by both tasks.
-    + flush: The memory page that has been mapped to other users will be
-      flushed out of their address space.
+  - Address space, which is made up of these flexpages.
+
+* System calls are provided to manage Address spaces:
+  - grant: The memory page is granted to a new user and cannot be used anymore
+    by its former user.
+  - map: This implements shared memory – the memory page is passed to another
+    task but can be used by both tasks.
+  - flush: The memory page that has been mapped to other users will be flushed
+    out of their address space.
 
 * Regarding the interaction between a user thread and the microkernel, the
   concept of UTCB (user-level thread-control blocks) is being taken on. A UTCB
