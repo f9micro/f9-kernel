@@ -26,3 +26,5 @@ CFLAGS = \
 	-O0 -std=gnu99 -isystem \
 	-nostdlib -ffreestanding \
 	$(CPPFLAGS) $(CFLAGS_CPU) $(CFLAGS_DEBUG) $(CFLAGS_WARN) $(CFLAGS_y)
+
+LIBGCC = $(shell $(CC) -print-libgcc-file-name)
