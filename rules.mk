@@ -56,10 +56,6 @@ flash: $(out)/$(PROJECT).bin
 clean:
 	-rm -rf $(out)
 
-.PHONY: clobber
-clobber:
-	-rm -rf build TAGS cscope.files cscope.out
-
 .SECONDARY:
 
 -include $(deps)
