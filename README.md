@@ -27,7 +27,7 @@ Characteristics of F9 Microkernel
   - Flexible page, which describes an always size aligned region of an address
     space. Unlike other L4 implementations, Flexible pages in F9 represent MPU
     (Memory Protection Unit, available on ARM Cortex-M3/M4) region instead.
-  - Address space, which is made up of these flexpages.
+  - Address space, which is made up of these flexible pages.
 
 * System calls are provided to manage Address spaces:
   - grant: The memory page is granted to a new user and cannot be used anymore
@@ -118,7 +118,7 @@ files are described as following:
   - toolchain-specific configurations; common cflags and ldflags
 * platform/build.mk:
   - platform-specific configurations; cflags/ldflags for CPU and FPU
-* board/ * /build.mk:
+* board/`<BOARD_NAME>`/build.mk:
   - board-specific configurations; CHIP model, periperals
 * rules.mk: the magic of build system
 
@@ -140,3 +140,8 @@ F9 Microkernel internals, file include/config.h is the entry point:
     the value at the bit-banding region. Reading from the alias address will
     return the value from the bit-band region in bit 0 and the other bits will
     be cleared.
+* `CONFIG_MAX_`xxx series
+  - limits of threads, ktimer events, async events, address spaces, flexible
+    pages.
+* `CONFIG_PANIC_DUMP_STACK`
+  - Dump kernel stack while panic.
