@@ -17,13 +17,13 @@ static uint8_t dbg_uart_rx_buffer[RECV_BUFSIZE];
 
 enum { DBG_ASYNC, DBG_PANIC } dbg_state;
 
-static void dbg_uart_recv(void);
+static void dbg_uart_recv();
 static void dbg_uart_send(int avail);
 
 static void __uart_irq_handler(uint32_t unused)
 {
 	/* TODO */
-	if (usart_interrupt_status(&console_uart, USART_IT_TXE)){
+	if (usart_interrupt_status(&console_uart, USART_IT_TXE)) {
 		/* USART TX */
 		dbg_uart_send(1);
 	}
@@ -44,10 +44,10 @@ void dbg_uart_init()
 	dbg_state = DBG_ASYNC;
 	usart_config_interrupt(&console_uart, USART_IT_RXNE, 1);
 
-	NVIC_SetPriority(UART4_IRQn, 2, 1);
-	NVIC_ClearPendingIRQ(UART4_IRQn);
-	NVIC_intAttached(UART4_IRQn, __uart_irq_handler, 0);
-	NVIC_EnableIRQ(UART4_IRQn);
+	NVIC_SetPriority(BOARD_UART_DEVICE, 2, 1);
+	NVIC_ClearPendingIRQ(BOARD_UART_DEVICE);
+	NVIC_intAttached(BOARD_UART_DEVICE, __uart_irq_handler, 0);
+	NVIC_EnableIRQ(BOARD_UART_DEVICE);
 }
 
 static void dbg_uart_recv()
@@ -116,7 +116,8 @@ void dbg_async_putchar(char chr)
 	 * else write directly into UART
 	 */
 	if (!dbg_uart.ready) {
-		while(fifo_push(&(dbg_uart.tx), chr) != FIFO_OK);
+		while (fifo_push(&(dbg_uart.tx), chr) != FIFO_OK)
+			/* wait */ ;
 	}
 	else {
 		usart_putc(&console_uart, chr);
