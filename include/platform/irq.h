@@ -17,6 +17,8 @@
  * 2. We always save all registers even if we do not perform context switching.
  */
 
+void irq_init();
+
 static inline void irq_disable()
 {
 	__asm__ __volatile__ ("cpsid i");
