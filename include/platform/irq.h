@@ -50,7 +50,6 @@ static inline int irq_number()
  * Saves {r4-r11}, msp, psp, EXC_RETURN
  */
 #define irq_save(ctx) \
-	__asm__ __volatile__ ("cpsid i");				\
 	__asm__ __volatile__ ("mov r0, %0" : : "r" ((ctx)->regs));	\
 	__asm__ __volatile__ ("stm r0, {r4-r11}");			\
 	__asm__ __volatile__ ("cmp lr, #0xFFFFFFF9");			\
@@ -70,7 +69,6 @@ static inline int irq_number()
 	__asm__ __volatile__ ("mov r0, %0" : : "r" ((ctx)->regs));	\
 	__asm__ __volatile__ ("ldm r0, {r4-r11}");			\
 	__asm__ __volatile__ ("msr control, r2");			\
-	__asm__ __volatile__ ("cpsie i");				\
 	__asm__ __volatile__ ("bx lr");
 
 /* Initial context switches to kernel.
