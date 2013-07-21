@@ -66,7 +66,9 @@ void arch_kprobe_handler(uint32_t *stack)
 	 * next instruction.
 	 */
 
-	if ((*SCB_DFSR & SCB_DFSR_BKPT)) {
+	if ((*SCB_DFSR & SCB_DFSR_DWTTRAP)) {
+		panic("DWT Watchpoint hit\n");
+	} else if ((*SCB_DFSR & SCB_DFSR_BKPT)) {
 
 		addr = (void *) stack[REG_PC];
 

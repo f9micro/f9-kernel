@@ -16,16 +16,17 @@ void hw_debug_init()
 {
 	int i;
 
-	/* Enable FPB */
+	/* Enable FPB breakpoint */
 	*FPB_CTRL = FPB_CTRL_KEY |FPB_CTRL_ENABLE ;
 
-	/* Enable DebugMonitor exception generation */
-	*DCB_DEMCR |= DCB_DEMCR_MON_EN;
+	/* Enable DWT watchpoint & DebugMon exception */
+	*DCB_DEMCR |= DCB_DEMCR_TRCENA | DCB_DEMCR_MON_EN;
 
 	/* Clear status bit */
 	*SCB_HFSR = SCB_HFSR_DEBUGEVT;
 	*SCB_DFSR = SCB_DFSR_BKPT;
 	*SCB_DFSR = SCB_DFSR_HALTED;
+	*SCB_DFSR = SCB_DFSR_DWTTRAP;
 
 	for (i = 0; i < FPB_MAX_COMP; i++) {
 		fp_comp[i] = 0;
