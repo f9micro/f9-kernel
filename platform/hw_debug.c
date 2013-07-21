@@ -5,7 +5,7 @@
 
 #include <config.h>
 #include <platform/irq.h>
-#include <platform/hw_breakpoint.h>
+#include <platform/hw_debug.h>
 #include <platform/cortex_m.h>
 
 #ifdef CONFIG_KPROBES

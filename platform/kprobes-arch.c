@@ -6,7 +6,7 @@
 #include <kprobes.h>
 #include <error.h>
 #include <platform/cortex_m.h>
-#include <platform/hw_breakpoint.h>
+#include <platform/hw_debug.h>
 
 #ifdef CONFIG_KPROBES
 
