@@ -66,6 +66,7 @@ void (* const g_pfnVectors[])() = {
 	nointerrupt,			/* PendSV handler */
 	ktimer_handler, 		/* SysTick handler */
 
-	/* Chip Level */
-	PLAT_NVIC_ENTRIES
+	/* Chip Level: vendor specific */
+	/* FIXME: use better IRQ vector generator */
+	#include INC_PLAT(nvic_table.h)
 };
