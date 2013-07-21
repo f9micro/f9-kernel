@@ -19,7 +19,7 @@
 #define FPB_COMP_REPLACE_LOWER          (uint32_t) (1 << 30)
 #define FPB_COMP_REPLACE_UPPER          (uint32_t) (2 << 30)
 
-void hw_breakpoint_init();
+void hw_debug_init();
 int breakpoint_install(uint32_t addr);
 void breakpoint_uninstall(int id);
 

@@ -12,7 +12,7 @@
 
 void kprobe_arch_init()
 {
-	hw_breakpoint_init();
+	hw_debug_init();
 }
 
 int kprobe_arch_add(struct kprobe *kp)

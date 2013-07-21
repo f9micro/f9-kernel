@@ -12,10 +12,11 @@
 
 char fp_comp[FPB_MAX_COMP];
 
-void hw_breakpoint_init()
+void hw_debug_init()
 {
 	int i;
 
+	/* Enable FPB */
 	*FPB_CTRL = FPB_CTRL_KEY |FPB_CTRL_ENABLE ;
 
 	/* Enable DebugMonitor exception generation */
