@@ -275,3 +275,53 @@ void kdb_dump_events(void)
 	}
 }
 #endif
+
+#ifdef CONFIG_KTIMER_TICKLESS
+
+#define KTIMER_MAXTICKS (SYSTICK_MAXRELOAD / CONFIG_KTIMER_HEARTBEAT)
+
+void ktimer_enter_tickless()
+{
+	uint32_t tickless_delta;
+	uint32_t reload;
+
+	irq_disable();
+
+	systick_disable();
+
+	if (ktimer_enabled && ktimer_delta <= KTIMER_MAXTICKS) {
+		tickless_delta = ktimer_delta;
+	}
+	else {
+		tickless_delta = KTIMER_MAXTICKS;
+	}
+
+	/* Minus 1 for current value */
+	tickless_delta -= 1;
+
+	reload = CONFIG_KTIMER_HEARTBEAT * tickless_delta;
+
+	reload += systick_now();
+
+	init_systick(reload);
+
+	wait_for_interrupt();
+
+	if (systick_flag_count()) {
+		reload = CONFIG_KTIMER_HEARTBEAT - (reload - systick_now());
+	}
+	else {
+		uint32_t tickless_rest = (systick_now() / CONFIG_KTIMER_HEARTBEAT);
+		tickless_delta = tickless_delta - tickless_rest - 1;
+		reload = systick_now() - CONFIG_KTIMER_HEARTBEAT * tickless_rest;
+	}
+
+	ktimer_time += tickless_delta;
+	ktimer_delta -= tickless_delta;
+	ktimer_now += tickless_delta;
+
+	init_systick(reload);
+
+	irq_enable();
+}
+#endif /* CONFIG_KTIMER_TICKLESS */

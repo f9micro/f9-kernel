@@ -13,3 +13,18 @@ void init_systick(uint32_t tick_reload)
 	*SYSTICK_VAL = 0;
 	*SYSTICK_CTL = 0x00000007;
 }
+
+void systick_disable()
+{
+	*SYSTICK_CTL = 0x00000000;
+}
+
+uint32_t systick_now()
+{
+	return *SYSTICK_VAL;
+}
+
+uint32_t systick_flag_count()
+{
+	return (*SYSTICK_CTL & (1 << 16)) >> 16;
+}
