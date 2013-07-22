@@ -53,7 +53,8 @@ static inline int irq_number()
 	__asm__ __volatile__ ("cpsid i");				\
 	__asm__ __volatile__ ("mov r0, %0" : : "r" ((ctx)->regs));	\
 	__asm__ __volatile__ ("stm r0, {r4-r11}");			\
-	__asm__ __volatile__ ("cmp lr, #0xFFFFFFF9");			\
+	__asm__ __volatile__ ("and r1, lr, #4");			\
+	__asm__ __volatile__ ("cmp r1, #0");				\
 	__asm__ __volatile__ ("ite eq");				\
 	__asm__ __volatile__ ("mrseq r0, msp");				\
 	__asm__ __volatile__ ("mrsne r0, psp");				\
@@ -63,7 +64,8 @@ static inline int irq_number()
 	__asm__ __volatile__ ("mov lr, %0" : : "r" ((ctx)->ret));	\
 	__asm__ __volatile__ ("mov r0, %0" : : "r" ((ctx)->sp));	\
 	__asm__ __volatile__ ("mov r2, %0" : : "r" ((ctx)->ctl));	\
-	__asm__ __volatile__ ("cmp lr, #0xFFFFFFF9");			\
+	__asm__ __volatile__ ("and r1, lr, #4");			\
+	__asm__ __volatile__ ("cmp r1, #0");				\
 	__asm__ __volatile__ ("ite eq");				\
 	__asm__ __volatile__ ("msreq msp, r0");				\
 	__asm__ __volatile__ ("msrne psp, r0");				\
