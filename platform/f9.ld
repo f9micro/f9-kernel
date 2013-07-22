@@ -89,11 +89,16 @@ SECTIONS {
 	/* zero initialized data */
 	.bss (NOLOAD) :
 	{
+		bss_start = .;
 		kernel_bss_start = .;
 		*(.bss*)
 		*(.ktable*)		/* Statically allocated kernel table */
 		*(COMMON)
 		kernel_bss_end = .;
+		bitmap_bitband_start = .;
+		*(.bitmap_bitband*)
+		bitmap_bitband_end = .;
+		bss_end = .;
 	} > RamLoc
 
 	.user_data :
@@ -119,7 +124,9 @@ SECTIONS {
 	.data_AHB (NOLOAD) :
 	{
 		kernel_ahb_start = .;
+		bitmap_start = .;
 		*(.bitmap*)
+		bitmap_end = .;
 		kernel_ahb_end = .;
 	} > RamCCM
 }

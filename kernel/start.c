@@ -92,7 +92,7 @@ void __l4_start()
 			/* USER DATA (ROM) -> USER DATA (RAM) */
 
 	/* Fill bss with zeroes */
-	init_zero_seg(&kernel_bss_start, &kernel_bss_end);
+	init_zero_seg(&bss_start, &bss_end);
 	init_zero_seg(&kernel_ahb_start, &kernel_ahb_end);
 	init_zero_seg(&user_bss_start, &user_bss_end);
 
