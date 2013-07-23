@@ -4,7 +4,6 @@
  */
 
 #include <platform/debug_uart.h>
-#include <platform/cortex_m.h>
 
 #include <debug.h>
 #include <error.h>
@@ -14,7 +13,7 @@
 
 extern void __l4_start();
 extern void memmanage_handler();
-extern void arch_kprobe_handler(uint32_t *stack);
+extern void debugmon_handler();
 
 void busfault()
 {
@@ -30,53 +29,15 @@ void nointerrupt()
 	}
 }
 
-void debugmon_handler() __NAKED;
-void hard_fault_handler() __NAKED;
-
-#define enter_frame() \
-	uint32_t *stack;                                       \
-	__asm__ __volatile__ ("mov %0, sp" : "=r" (stack) : ); \
-	__asm__ __volatile__ ("push {lr}");                    \
-	__asm__ __volatile__ ("push {r4-r11}");
-
-#define leave_frame() \
-	__asm__ __volatile__ ("pop {r4-r11}");                 \
-	__asm__ __volatile__ ("pop {pc}");
-
-void debugmon_handler()
-{
-	enter_frame();
-
-#ifdef CONFIG_KPROBES
-	arch_kprobe_handler(stack);
-#else
-	panic("Kernel panic: DebugMonitor Exception. Restarting");
-#endif /* CONFIG_KPROBES */
-
-	leave_frame();
-}
-
 void hard_fault_handler()
 {
-	enter_frame();
-
-#ifdef CONFIG_KPROBES
 	/*
-	 * We are here when currently executing priority is higher than or
-	 * equal to the priority of debug exception, inhibiting normal
+	 * If we are here, it may mean currently executing priority is higher
+	 * than or equal to the priority of fault exception, inhibiting normal
 	 * preemption, then processor escalates the exception priority to
 	 * HardFault.
 	 */
-	if (*SCB_HFSR & SCB_HFSR_DEBUGEVT) {
-		arch_kprobe_handler(stack);
-		*SCB_HFSR = SCB_HFSR_DEBUGEVT;   /* Clear status bit */
-		leave_frame();
-		return;
-	}
-#endif /* CONFIG_KPROBES */
-
 	panic("Kernel panic: Hard fault. Restarting\n");
-	leave_frame();
 }
 
 void nmi_handler()

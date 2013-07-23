@@ -10,6 +10,8 @@
 
 #ifdef CONFIG_KPROBES
 
+extern void arch_kprobe_handler(uint32_t *stack);
+
 char fp_comp[FPB_MAX_COMP];
 
 void hw_debug_init()
@@ -65,6 +67,26 @@ void breakpoint_uninstall(int id)
 {
 	fp_comp[id] = 0; /* Mark comparator free */
 	*(FPB_COMP + id) &= ~FPB_COMP_ENABLE;
+}
+
+#define enter_frame() \
+	uint32_t *stack;                                       \
+	__asm__ __volatile__ ("mov %0, sp" : "=r" (stack) : ); \
+	__asm__ __volatile__ ("push {lr}");                    \
+	__asm__ __volatile__ ("push {r4-r11}");
+
+#define leave_frame() \
+	__asm__ __volatile__ ("pop {r4-r11}");                 \
+	__asm__ __volatile__ ("pop {pc}");
+
+void debugmon_handler() __NAKED;
+void debugmon_handler()
+{
+	enter_frame();
+
+	arch_kprobe_handler(stack);
+
+	leave_frame();
 }
 
 #endif /* CONFIG_KPROBES */
