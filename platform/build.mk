@@ -17,4 +17,5 @@ platform-y = \
 	bitops.o \
 	debug_uart.o \
 	mpu.o \
-	spinlock.o
+	spinlock.o \
+	irq.o

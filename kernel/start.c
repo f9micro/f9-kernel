@@ -40,6 +40,7 @@ int main()
 	dbg_layer = DL_KDB;
 #endif
 
+	irq_init();
 	irq_disable();
 
 	sched_init();
