@@ -13,6 +13,7 @@
 
 extern void __l4_start();
 extern void memmanage_handler();
+extern void debugmon_handler();
 
 void busfault()
 {
@@ -30,6 +31,12 @@ void nointerrupt()
 
 void hard_fault_handler()
 {
+	/*
+	 * If we are here, it may mean currently executing priority is higher
+	 * than or equal to the priority of fault exception, inhibiting normal
+	 * preemption, then processor escalates the exception priority to
+	 * HardFault.
+	 */
 	panic("Kernel panic: Hard fault. Restarting\n");
 }
 
@@ -61,7 +68,7 @@ void (* const g_pfnVectors[])() = {
 	0,				/* Reserved */
 	0,				/* Reserved */
 	svc_handler,			/* SVCall handler */
-	nointerrupt,			/* Debug monitor handler */
+	debugmon_handler,		/* Debug monitor handler */
 	0,				/* Reserved */
 	nointerrupt,			/* PendSV handler */
 	ktimer_handler, 		/* SysTick handler */

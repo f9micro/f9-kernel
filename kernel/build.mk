@@ -17,4 +17,5 @@ kernel-y = \
 	start.o \
 	syscall.o \
 	systhread.o \
-	thread.o
+	thread.o \
+	kprobes.o

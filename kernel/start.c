@@ -22,6 +22,7 @@
 #include <syscall.h>
 #include <config.h>
 #include <systhread.h>
+#include <kprobes.h>
 
 #ifdef CONFIG_KDB
 void debug_kdb_handler()
@@ -48,6 +49,10 @@ int main()
 	syscall_init();
 	thread_init_subsys();
 	ktimer_event_init();
+
+#ifdef CONFIG_KPROBES
+	kprobe_init();
+#endif /* CONFIG_KPROBES */
 
 #ifdef CONFIG_KDB
 	softirq_register(KDB_SOFTIRQ, debug_kdb_handler);
