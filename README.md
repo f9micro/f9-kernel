@@ -3,7 +3,7 @@ F9 Microkernel
 
 This is `F9`, an experimental microkernel used to construct flexible embedded
 systems inspired by famous [L4 microkernel](http://en.wikipedia.org/wiki/L4_microkernel_family).
-The motivation of F9 microkernel is to deploy modern microkernel techniques to
+The motivation of F9 microkernel is to deploy modern kernel techniques to
 support running real-time and time-sharing applications (for example, wireless
 communications) for ARM Cortex-M series microprocessors with efficiency
 (performanace + power consumption) and security (memory protection + isolated
@@ -16,8 +16,8 @@ Characteristics of F9 Microkernel
 * F9 follows the fundamental principles of microkernels in that it implements
   address spaces, thread management, and IPC only in the privileged kernel.
 
-* F9 is designed and customized for ARM Cortex-M, supporting NVIC (Nested
-  Vectored Interrupt Controller), Bit Banding, MPU (Memory Protection Unit).
+* Designed and customized for ARM Cortex-M, supporting NVIC (Nested Vectored
+  Interrupt Controller), Bit Banding, MPU (Memory Protection Unit).
 
 * Energy efficient scheduling and tickless timer which allow the ARM Cortex-M
   to wake up only when needed, either at a scheduled time or on an interrupt
@@ -33,9 +33,8 @@ Characteristics of F9 Microkernel
   execution, the kernel continues normal execution.
 
 * Each thread has its own TCB (Thread Control Block) and addressed by its
-  global id, tweaked for ARM Cortex-M. Also dispatcher is responsible for
-  switching contexts. Threads with the same priority are executed in a
-  round-robin fashion.
+  global id. Also dispatcher is responsible for switching contexts. Threads
+  with the same priority are executed in a round-robin fashion.
 
 * Memory management is split into three concepts:
   - Memory pool, which represent area of physical address space with specific
@@ -45,12 +44,12 @@ Characteristics of F9 Microkernel
     region instead.
   - Address space, which is made up of these flexible pages.
 
-* System calls are provided to manage Address spaces:
-  - grant: The memory page is granted to a new user and cannot be used anymore
+* System calls are provided to manage address spaces:
+  - Grant: The memory page is granted to a new user and cannot be used anymore
     by its former user.
-  - map: This implements shared memory – the memory page is passed to another
+  - Map: This implements shared memory – the memory page is passed to another
     task but can be used by both tasks.
-  - flush: The memory page that has been mapped to other users will be flushed
+  - Flush: The memory page that has been mapped to other users will be flushed
     out of their address space.
 
 * Regarding the interaction between a user thread and the microkernel, the
@@ -63,6 +62,12 @@ Characteristics of F9 Microkernel
 * The kernel provides synchronous IPC (inter-process communication), for which
   short IPC carries payload in CPU registers only and full IPC copies message
   payload via the UTCBs of the communicating parties.
+
+* Debugging and profiling mechanisms:
+  - configurable debug console (as system call)
+  - memory dump
+  - thread profiling: name, uptime, stack allocated/current/used
+  - memory profiling: kernel table, pool free/allocated size, fragmentation
 
 
 Licensing
@@ -147,6 +152,8 @@ F9 Microkernel internals, file include/config.h is the entry point:
     for serial I/O character operations will be included.
 * `CONFIG_KDB`
   - Enable in-kernel debugger.
+* `CONFIG_KPROBES`
+  - Enable kernel probes, the lightweight dynamic instrumentation system.
 * `CONFIG_BITMAP_BITBAND`
   - Generate bitmap address in bit-band region
   - Bit-banding maps a complete word of memory onto a single bit in the
