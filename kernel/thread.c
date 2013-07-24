@@ -335,21 +335,33 @@ void thread_switch(tcb_t *thr)
  */
 static tcb_t *thread_select(tcb_t *parent)
 {
-	tcb_t *thr = parent->t_child, *child = NULL;
+	tcb_t *thr = parent->t_child;
 
-	while (thr != NULL) {
+	if (thr == NULL)
+		return NULL;
+
+	while (1) {
 		if (thread_isrunnable(thr))
 			return thr;
 
-		child = thread_select(thr);
+		if (thr->t_child != NULL) {
+			thr = thr->t_child;
+			continue;
+		}
 
-		if (child && thread_isrunnable(child))
-			return child;
+		if (thr->t_sibling != NULL) {
+			thr = thr->t_sibling;
+			continue;
+		}
+
+		do {
+			if (thr->t_parent == parent)
+				return NULL;
+			thr = thr->t_parent;
+		} while (thr->t_sibling == NULL);
 
 		thr = thr->t_sibling;
 	}
-
-	return NULL;
 }
 
 static tcb_t *thread_sched(sched_slot_t *slot)
