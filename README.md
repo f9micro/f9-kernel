@@ -16,6 +16,22 @@ Characteristics of F9 Microkernel
 * F9 follows the fundamental principles of microkernels in that it implements
   address spaces, thread management, and IPC only in the privileged kernel.
 
+* F9 is designed and customized for ARM Cortex-M, supporting NVIC (Nested
+  Vectored Interrupt Controller), Bit Banding, MPU (Memory Protection Unit).
+
+* Energy efficient scheduling and tickless timer which allow the ARM Cortex-M
+  to wake up only when needed, either at a scheduled time or on an interrupt
+  event. Therefore, it results in better current consumption than the original
+  approach using the system timer, SysTick, which require a constantly running,
+  high frequency clock.
+
+* KProbes, dynamic instrumentation system inspired by Linux Kernel, allowing
+  developers to gather additional information about kernel operation without
+  recompiling or rebooting the kernel. It enables locations in the kernel to
+  be instrumented with code, and the instrumentation code runs when the ARM
+  core encounters that probe point. Once the instrumentation code completes
+  execution, the kernel continues normal execution.
+
 * Each thread has its own TCB (Thread Control Block) and addressed by its
   global id, tweaked for ARM Cortex-M. Also dispatcher is responsible for
   switching contexts. Threads with the same priority are executed in a
@@ -25,8 +41,8 @@ Characteristics of F9 Microkernel
   - Memory pool, which represent area of physical address space with specific
     attributes.
   - Flexible page, which describes an always size aligned region of an address
-    space. Unlike other L4 implementations, Flexible pages in F9 represent MPU
-    (Memory Protection Unit, available on ARM Cortex-M3/M4) region instead.
+    space. Unlike other L4 implementations, flexible pages in F9 represent MPU
+    region instead.
   - Address space, which is made up of these flexible pages.
 
 * System calls are provided to manage Address spaces:
