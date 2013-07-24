@@ -37,8 +37,8 @@ volatile int __USER_TEXT L4_Ipc(
 {
 	uint32_t result;
 
-	 __asm__ __volatile__ ("push {r4-r11}\n"
-	                       "ldr r12, %1\n"
+	 __asm__ __volatile__ ("ldr r12, %1\n"
+	                       "push {r4-r11}\n"
 	                       "ldm r12, {r4-r11}\n"
 	                       "svc #6\n"
 	                       "pop {r4-r11}\n"
