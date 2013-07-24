@@ -27,12 +27,12 @@ int kprobe_arch_add(struct kprobe *kp)
 
 	if (found == NULL) {
 		id = breakpoint_install((uint32_t) kp->addr);
-		if (id >= 0) {
+		if (id >= 0)
 			kp->bkptid = id;
-		} else {
+		else
 			goto arch_add_error;
-		}
-	} else {
+	}
+	else {
 		kp->bkptid = found->bkptid;
 	}
 
@@ -47,9 +47,8 @@ int kprobe_arch_del(struct kprobe *kp)
 	struct kprobe *found = kplist_search(kp->addr);
 
 	/* Free bkpt when there is no kprobe at this addr */
-	if (found == NULL) {
+	if (found == NULL)
 		breakpoint_uninstall(kp->bkptid);
-	}
 	return 0;
 }
 
@@ -68,8 +67,8 @@ void arch_kprobe_handler(uint32_t *stack)
 
 	if ((*SCB_DFSR & SCB_DFSR_DWTTRAP)) {
 		panic("DWT Watchpoint hit\n");
-	} else if ((*SCB_DFSR & SCB_DFSR_BKPT)) {
-
+	}
+	else if ((*SCB_DFSR & SCB_DFSR_BKPT)) {
 		addr = (void *) stack[REG_PC];
 
 		kprobe_prebreak(addr);
@@ -79,9 +78,8 @@ void arch_kprobe_handler(uint32_t *stack)
 
 		disable_hw_breakpoint();
 		cpu_enable_single_step();
-
-	} else if (*SCB_DFSR & SCB_DFSR_HALTED) {
-
+	}
+	else if (*SCB_DFSR & SCB_DFSR_HALTED) {
 		kprobe_postbreak(addr);
 
 		/* Clear HALTED status bit */
@@ -89,8 +87,8 @@ void arch_kprobe_handler(uint32_t *stack)
 
 		cpu_disable_single_step();
 		enable_hw_breakpoint();
-
-	} else {
+	}
+	else {
 		panic("Kernel panic: Debug fault. Restarting\n");
 	}
 }

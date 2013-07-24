@@ -7,7 +7,7 @@
 
 #ifdef CONFIG_KPROBES
 
-struct kprobe *kp_list;
+static struct kprobe *kp_list;
 
 void kprobe_init()
 {
@@ -19,9 +19,8 @@ struct kprobe *kplist_search(void *addr)
 {
 	struct kprobe *cur = kp_list;
 	while (cur != NULL) {
-		if (cur->addr == addr) {
+		if (cur->addr == addr)
 			return cur;
-		}
 		cur = cur->next;
 	}
 	return NULL;
@@ -49,19 +48,19 @@ void kplist_del(struct kprobe *kp)
 	}
 }
 
-int kprobe_register(struct kprobe* kp)
+int kprobe_register(struct kprobe *kp)
 {
 	int ret;
 	kp->addr = (void *) ((uint32_t) kp->addr & ~(1UL));
 	ret = kprobe_arch_add(kp);
-	if (ret < 0) {
+	if (ret < 0)
 		return -1;
-	}
+
 	kplist_add(kp);
 	return 0;
 }
 
-int kprobe_unregister(struct kprobe* kp)
+int kprobe_unregister(struct kprobe *kp)
 {
 	kplist_del(kp);
 	kprobe_arch_del(kp);
