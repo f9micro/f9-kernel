@@ -68,7 +68,11 @@ void (* const g_pfnVectors[])() = {
 	0,				/* Reserved */
 	0,				/* Reserved */
 	svc_handler,			/* SVCall handler */
+#ifdef CONFIG_KPROBES
 	debugmon_handler,		/* Debug monitor handler */
+#else
+	nointerrupt,
+#endif
 	0,				/* Reserved */
 	nointerrupt,			/* PendSV handler */
 	ktimer_handler, 		/* SysTick handler */
