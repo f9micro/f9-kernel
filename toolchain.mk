@@ -13,6 +13,7 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
 
 CFLAGS_WARN = -Wall
+CFLAGS_OPT = -O1 -fno-toplevel-reorder
 CFLAGS_DEBUG = -g3
 CFLAGS_INCLUDE = $(foreach i,$(includes),-I$(i) )
 CFLAGS_DEFINE = \
@@ -23,8 +24,8 @@ CFLAGS_DEFINE = \
 CPPFLAGS = \
 	$(CFLAGS_DEFINE) $(CFLAGS_INCLUDE) $(EXTRA_CFLAGS)
 CFLAGS = \
-	-O0 -std=gnu99 -isystem \
+	-std=gnu99 -isystem \
 	-nostdlib -ffreestanding \
-	$(CPPFLAGS) $(CFLAGS_CPU) $(CFLAGS_DEBUG) $(CFLAGS_WARN) $(CFLAGS_y)
+	$(CPPFLAGS) $(CFLAGS_CPU) $(CFLAGS_OPT) $(CFLAGS_DEBUG) $(CFLAGS_WARN) $(CFLAGS_y)
 
 LIBGCC = $(shell $(CC) -print-libgcc-file-name)
