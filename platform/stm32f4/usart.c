@@ -104,7 +104,7 @@ void usart_init(struct usart_dev *usart)
 	uregs->CR1 |= USART_CR1_UE;
 
 	/* FIXME: Hardcode 8-bit */	
-	uregs->CR1 &= ~(USART_CR1_M9 << 12);
+	uregs->CR1 &= ~(USART_CR1_M9);
 
 	/* FIXME: Hardcode 1 stop bit */
 	uregs->CR2 &= ~(3 << 12);	
