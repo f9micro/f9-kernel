@@ -95,7 +95,7 @@ void usart_init(struct usart_dev *usart)
 {
 	struct usart_regs *uregs;
 
-	*(usart->rcc_apbenr) = usart->rcc_reset;
+	*(usart->rcc_apbenr) |= usart->rcc_reset;
 	gpio_config(&usart->tx);
 	gpio_config(&usart->rx);
 
