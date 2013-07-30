@@ -11,6 +11,7 @@ CPP = $(CROSS_COMPILE)cpp
 LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
+NM = $(CROSS_COMPILE)nm
 
 CFLAGS_WARN = -Wall
 CFLAGS_OPT = -O1 -fno-toplevel-reorder

@@ -31,6 +31,8 @@ cmd_c_to_build = $(BUILDCC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) \
 	         -MMD -MF $@.d $< -o $@
 cmd_bin = cat $^ > $@
 
+include rule-symmap.mk
+
 .PHONY: all
 all: $(out)/$(PROJECT).bin
 

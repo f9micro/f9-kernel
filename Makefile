@@ -49,4 +49,5 @@ dirs = \
 	board/$(BOARD) \
 	user
 
+CONFIG_SYMMAP=y
 include rules.mk
