@@ -5,4 +5,6 @@
 kernel-lib-y += \
 	fifo.o \
 	ktable.o \
-	stdio.o
+	stdio.o \
+	bsearch.o \
+	sort.o

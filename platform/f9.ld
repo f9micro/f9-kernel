@@ -64,6 +64,8 @@ SECTIONS {
 		user_text_end = .;
 	} > MFlash
 
+	end_of_MFlash = .;
+
 	.stack :
 	{
 		idle_stack_start = .;
