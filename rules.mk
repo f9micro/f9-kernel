@@ -18,7 +18,7 @@ quiet = $(if $(V),,@echo '  $(2)' $(subst $(out)/,,$@) ; )$(cmd_$(1))
 silent = $(if $(V),,1>/dev/null)
 
 # commands to build all targets
-cmd_obj_to_bin = $(OBJCOPY) -O binary $^ $(out)/$*.bin
+cmd_obj_to_bin = $(OBJCOPY) -O binary $< $@
 cmd_elf_to_list = $(OBJDUMP) -S $< > $@
 cmd_elf = $(LD) $(LDFLAGS) $(objs) -o $@ \
 	-L platform -T f9.ld $(LIBGCC) \
@@ -30,7 +30,7 @@ cmd_c_to_build = $(BUILDCC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) \
 .PHONY: all
 all: $(out)/$(PROJECT).bin
 
-$(out)/%.bin: $(out)/%.elf
+$(out)/%.elf.bin: $(out)/%.elf
 	$(call quiet,obj_to_bin,OBJCOPY)
 
 $(out)/%.list: $(out)/%.elf
