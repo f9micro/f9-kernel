@@ -13,6 +13,9 @@ _dir_create := $(foreach d,$(dirs),$(shell [ -d $(out)/$(d) ] || \
 _dir_y_create := $(foreach d,$(dirs-y),$(shell [ -d $(out)/$(d) ] || \
 	    mkdir -p $(out)/$(d)))
 
+bin-list-y := $(out)/$(PROJECT).elf.bin
+bin-list = $(bin-list-y)
+
 # Decrease verbosity unless you pass V=1
 quiet = $(if $(V),,@echo '  $(2)' $(subst $(out)/,,$@) ; )$(cmd_$(1))
 silent = $(if $(V),,1>/dev/null)
@@ -26,12 +29,16 @@ cmd_elf = $(LD) $(LDFLAGS) $(objs) -o $@ \
 cmd_c_to_o = $(CC) $(CFLAGS) -MMD -MF $@.d -c $< -o $@
 cmd_c_to_build = $(BUILDCC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) \
 	         -MMD -MF $@.d $< -o $@
+cmd_bin = cat $^ > $@
 
 .PHONY: all
 all: $(out)/$(PROJECT).bin
 
 $(out)/%.elf.bin: $(out)/%.elf
 	$(call quiet,obj_to_bin,OBJCOPY)
+
+$(out)/%.bin: $(bin-list)
+	$(call quiet,bin,CAT)
 
 $(out)/%.list: $(out)/%.elf
 	$(call quiet,elf_to_list,OBJDUMP)
