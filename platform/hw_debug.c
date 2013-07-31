@@ -68,24 +68,35 @@ void breakpoint_uninstall(int id)
 	*(FPB_COMP + id) &= ~FPB_COMP_ENABLE;
 }
 
-#define enter_frame() \
-	uint32_t *stack;                                       \
-	__asm__ __volatile__ ("mov %0, sp" : "=r" (stack) : ); \
-	__asm__ __volatile__ ("push {lr}");                    \
-	__asm__ __volatile__ ("push {r4-r11}");
-
-#define leave_frame() \
-	__asm__ __volatile__ ("pop {r4-r11}");                 \
-	__asm__ __volatile__ ("pop {pc}");
-
 void debugmon_handler() __NAKED;
 void debugmon_handler()
 {
-	enter_frame();
+	/* select interrupted stack */
+	__asm__ __volatile__ ("and r0, lr, #4");
+	__asm__ __volatile__ ("cmp r0, #0");
+	__asm__ __volatile__ ("ite eq");
+	__asm__ __volatile__ ("mrseq r0, msp");
+	__asm__ __volatile__ ("mrsne r0, psp");
 
-	arch_kprobe_handler(stack);
+	/* save r4-r11 */
+	__asm__ __volatile__ ("push {r4-r11}");
+	__asm__ __volatile__ ("mov r1, sp");
 
-	leave_frame();
+	/*
+	 * arch_kprobe_handler(uint32_t *stack, uint32_t *kp_regs)
+	 * r0 = r0-r3,r12,lr,pc,psr
+	 * r1 = r4-r11
+	 */
+	__asm__ __volatile__ ("push {lr}");
+	__asm__ __volatile__ ("bl arch_kprobe_handler");
+	__asm__ __volatile__ ("pop {lr}");
+
+	/* override r4-r11 */
+	__asm__ __volatile__ ("pop {r4-r11}");
+
+	/* NOTE: No support stack modification for the time being*/
+
+	__asm__ __volatile__ ("bx lr");
 }
 
 #endif /* CONFIG_KPROBES */
