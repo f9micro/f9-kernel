@@ -11,6 +11,9 @@
 #define CONFIG_KDB
 #define CONFIG_KPROBES
 
+/* Generate symbol map */
+#define CONFIG_SYMMAP
+
 /* Table sizes */
 enum {
 	CONFIG_MAX_THREADS	= 32,

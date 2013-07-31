@@ -4,7 +4,7 @@
 
 # Toolchain configuration
 CROSS_COMPILE ?= arm-none-eabi-
-HOST_CROSS_COMPILE ?=
+HOST_COMPILE ?=
 
 CC = $(CROSS_COMPILE)gcc
 CPP = $(CROSS_COMPILE)cpp
@@ -12,6 +12,8 @@ LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
 NM = $(CROSS_COMPILE)nm
+
+BUILDCC = $(HOST_COMPILE)gcc
 
 CFLAGS_WARN = -Wall
 CFLAGS_OPT = -O1 -fno-toplevel-reorder

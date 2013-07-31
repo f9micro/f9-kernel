@@ -10,7 +10,7 @@ PROJECT ?= f9
 out ?= build/$(BOARD)
 
 # toolchain specific configurations; common cflags and ldflags
-include toolchain.mk
+include mk/toolchain.mk
 
 # obtain CHIP name
 include board/$(BOARD)/build.mk
@@ -22,6 +22,9 @@ includes = \
 	include/platform \
 	$(dirs) $(out)
 $(eval BOARD_$(BOARD)=y)
+
+# Read configurations about system features and characteristics
+include mk/config.mk
 
 # Get build configuration from sub-directories
 include platform/$(CHIP)/build.mk
@@ -49,5 +52,4 @@ dirs = \
 	board/$(BOARD) \
 	user
 
-CONFIG_SYMMAP=y
-include rules.mk
+include mk/generic.mk

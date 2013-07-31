@@ -18,6 +18,10 @@ kernel-y = \
 	syscall.o \
 	systhread.o \
 	thread.o \
-	kprobes.o \
+	kprobes.o
+
+SYMMAP-$(CONFIG_SYMMAP) = \
 	sampling.o \
 	sampling_ksym.o
+
+kernel-y += $(SYMMAP-y)

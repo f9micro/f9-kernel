@@ -31,7 +31,10 @@ cmd_c_to_build = $(BUILDCC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) \
 	         -MMD -MF $@.d $< -o $@
 cmd_bin = cat $^ > $@
 
-include rule-symmap.mk
+# FIXME: include make rules by hook
+ifeq "$(CONFIG_SYMMAP)" "y"
+include mk/rules/symmap.mk
+endif
 
 .PHONY: all
 all: $(out)/$(PROJECT).bin
