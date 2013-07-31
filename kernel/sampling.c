@@ -65,6 +65,7 @@ void sampling_stat()
 
 }
 
+#ifdef CONFIG_KDB
 extern void __ktimer_handler();
 void kdb_show_sampling()
 {
@@ -93,3 +94,4 @@ void kdb_show_sampling()
 	}
 	sampling_stat();
 }
+#endif	/* ! #ifdef CONFIG_KDB */
