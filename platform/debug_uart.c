@@ -4,6 +4,7 @@
  */
 
 #include <platform/debug_uart.h>
+#include <platform/irq.h>
 #include <lib/fifo.h>
 #include <softirq.h>
 
@@ -19,9 +20,8 @@ enum { DBG_ASYNC, DBG_PANIC } dbg_state;
 static void dbg_uart_recv();
 static void dbg_uart_send(int avail);
 
-static void __uart_irq_handler(uint32_t unused)
+void __uart_irq_handler()
 {
-	/* TODO */
 	if (usart_interrupt_status(&console_uart, USART_IT_TXE)) {
 		/* USART TX */
 		dbg_uart_send(1);
@@ -31,6 +31,9 @@ static void __uart_irq_handler(uint32_t unused)
 		dbg_uart_recv();
 	}
 }
+
+
+DEVICE_IRQ_HANDLER(BOARD_UART_HANDLER, __uart_irq_handler);
 
 void dbg_uart_init()
 {
@@ -45,9 +48,9 @@ void dbg_uart_init()
 
 	NVIC_SetPriority(BOARD_UART_DEVICE, 2, 1);
 	NVIC_ClearPendingIRQ(BOARD_UART_DEVICE);
-	NVIC_intAttached(BOARD_UART_DEVICE, __uart_irq_handler, 0);
 	NVIC_EnableIRQ(BOARD_UART_DEVICE);
 }
+
 
 static void dbg_uart_recv()
 {

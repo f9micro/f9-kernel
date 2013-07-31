@@ -16,4 +16,6 @@ extern struct usart_dev console_uart;
 #define BOARD_UART_DEVICE \
 	UART4_IRQn
 
+#define BOARD_UART_HANDLER	UART4_HANDLER
+
 #endif	/* DISCOVERYF4_BOARD_H_ */

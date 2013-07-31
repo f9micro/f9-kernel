@@ -5,21 +5,19 @@
 
 #include <platform/stm32f4/nvic.h>
 #include <platform/cortex_m.h>
+#include <platform/irq.h>
 
 #define AIRCR_VECTKEY_MASK    ((uint32_t) 0x05FA0000)
 
-static PFN_ISR irq_handler[MAX_IRQn + 1];
-static uint32_t irq_handler_input[MAX_IRQn + 1];
+void _undefined_handler()
+{
+	while(1);
+}
 
-#define IRQ_VEC_N_HANDLER(n)					\
-	void nvic_handler##n() {				\
-		if (irq_handler[n])				\
-			irq_handler[n](irq_handler_input[n]);	\
-		else						\
-			while (1);				\
-	}
+#define DEFAULT_IRQ_VEC(n)	\
+	void nvic_handler##n() __attribute__((weak, alias("_undefined_handler")));
 
-#define IRQ_VEC_N_OP	IRQ_VEC_N_HANDLER
+#define IRQ_VEC_N_OP	DEFAULT_IRQ_VEC
 #include "platform/stm32f4/nvic_private.h"
 #undef IRQ_VEC_N_OP
 
@@ -46,22 +44,9 @@ void NVIC_SetPriority(IRQn_Type IRQn, uint8_t group_priority,
 	priority = (group_priority << group_shifts) |
 			(sub_priority & (0xf >> sub_shifts));
 
-	if (IRQn < 0)
-		*(SCB_SHPR + ((uint32_t)(IRQn) & 0xF)-4) = priority << 0x4;
-	else
-		NVIC->IP[IRQn] = priority << 0x4;
+	if(IRQn < 0)
+		((volatile uint8_t*)SCB_SHPR)[(((uint32_t)IRQn) & 0xf) - 4] = priority << 0x4;
+	else	
+ 		NVIC->IP[IRQn] = priority << 0x4;
 }
 
-void NVIC_intAttached(IRQn_Type IRQn, PFN_ISR handler,
-		uint32_t handler_input)
-{
-	__asm__ __volatile__ ("cpsid  i");
-
-	if (IRQn < 0 || IRQn > MAX_IRQn)
-		return;
-
-	irq_handler[IRQn] = handler;
-	irq_handler_input[IRQn] = handler_input;
-
-	__asm__ __volatile__ ("cpsie  i");
-}
