@@ -1,57 +1,67 @@
 /*
- * A fast, small, non-recursive O(nlog n) sort for the Linux kernel
+ * Copyright (c) 2013
+ *	The F9 Microkernel Project. All rights reserved.
  *
- * Jan 23 2005  Matt Mackall <mpm@selenic.com>
+ * Copyright (c) 1992, 1993
+ *	The Regents of the University of California.  All rights reserved.
+ *
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
+
 #include <stdint.h>
-typedef uint32_t size_t;
+#include <types.h>
 
-static void u32_swap(void *a, void *b, int size)
+/* Qsort routine from Bentley & McIlroy's "Engineering a Sort Function" */
+#define swapcode(TYPE, parmi, parmj, n) \
+	{	\
+		long i = (n) / sizeof (TYPE);		\
+		TYPE *pi = (TYPE *) (parmi);		\
+		TYPE *pj = (TYPE *) (parmj);		\
+		do {					\
+			TYPE t = *pi;			\
+			*pi++ = *pj;			\
+			*pj++ = t;			\
+		} while (--i > 0);			\
+	}
+
+#define SWAPINIT(a, es) \
+	swaptype = ((char *) a - (char *) 0) % sizeof(long) || \
+		es % sizeof(long) ? \
+			2 : es == sizeof(long) ? \
+				0 : 1;
+
+static inline void swapfunc(char *a, char *b, int n, int swaptype)
 {
-	uint32_t t = *(uint32_t *)a;
-	*(uint32_t *)a = *(uint32_t *)b;
-	*(uint32_t *)b = t;
+	if (swaptype <= 1)
+		swapcode(long, a, b, n)
+	else
+		swapcode(char, a, b, n)
 }
 
-static void generic_swap(void *a, void *b, int size)
-{
-	char t;
-
-	do {
-		t = *(char *)a;
-		*(char *)a++ = *(char *)b;
-		*(char *)b++ = t;
-	} while (--size > 0);
-}
+#define vecswap(a, b, n) \
+	if ((n) > 0) \
+		swapfunc(a, b, n, swaptype)
 
 /**
- * sort - sort an array of elements
- * @base: pointer to data to sort
- * @num: number of elements
- * @size: size of each element
- * @cmp_func: pointer to comparison function
- * @swap_func: pointer to swap function or NULL
+ * sorting time is O(n log n) both on average and worst-case.
  *
- * This function does a heapsort on the given array. You may provide a
- * swap_func function optimized to your element type.
- *
- * Sorting time is O(n log n) both on average and worst-case. While
- * qsort is about 20% faster on average, it suffers from exploitable
- * O(n*n) worst-case behavior and extra memory requirements that make
- * it less suitable for kernel use.
+ * Typically, qsort is faster on average, but it suffers from exploitable
+ * O(n*n) worst-case behavior and extra memory requirements that make it
+ * less suitable for kernel use.
  */
-
-void _sort(void *base, size_t num, size_t size,
-	  int (*cmp_func)(const void *, const void *),
-	  void (*swap_func)(void *, void *, int size))
+void sort(void *base, size_t num, size_t size,
+		int (*cmp_func)(const void *, const void *))
 {
-	/* pre-scale counters for performance */
-	int i = (num/2 - 1) * size, n = num * size, c, r;
+	int i = (num / 2 - 1) * size;
+	int n = num * size;
+	int c, r;
 
-	if (!swap_func)
-		swap_func = (size == 4 ? u32_swap : generic_swap);
+	int swaptype;
 
-	/* heapify */
+	SWAPINIT(base, size);
+
+	/* perform a heapsort on the given array */
 	for ( ; i >= 0; i -= size) {
 		for (r = i; r * 2 + size < n; r  = c) {
 			c = r * 2 + size;
@@ -60,13 +70,13 @@ void _sort(void *base, size_t num, size_t size,
 				c += size;
 			if (cmp_func(base + r, base + c) >= 0)
 				break;
-			swap_func(base + r, base + c, size);
+			vecswap(base + r, base + c, size);
 		}
 	}
 
 	/* sort */
 	for (i = n - size; i > 0; i -= size) {
-		swap_func(base, base + i, size);
+		vecswap(base, base + i, size);
 		for (r = 0; r * 2 + size < i; r = c) {
 			c = r * 2 + size;
 			if (c < i - size &&
@@ -74,13 +84,7 @@ void _sort(void *base, size_t num, size_t size,
 				c += size;
 			if (cmp_func(base + r, base + c) >= 0)
 				break;
-			swap_func(base + r, base + c, size);
+			vecswap(base + r, base + c, size);
 		}
 	}
-}
-
-void sort(void *base, size_t num, size_t size,
-	  int (*cmp_func)(const void *, const void *))
-{
-	_sort(base, num, size, cmp_func, 0);
 }
