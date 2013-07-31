@@ -30,6 +30,7 @@ typedef struct sched_slot {
 
 int sched_init();
 
+tcb_t* schedule_select();
 int schedule();
 void sched_slot_dispatch(sched_slot_id_t slot_id, tcb_t *thread);
 void sched_slot_set_handler(sched_slot_id_t slot_id, sched_handler_t handler);

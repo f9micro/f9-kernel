@@ -28,7 +28,7 @@ int sched_init()
 	return 0;
 }
 
-int schedule()
+tcb_t* schedule_select()
 {
 	int slot_id;
 	tcb_t *scheduled = NULL;
@@ -39,8 +39,7 @@ int schedule()
 
 		if (scheduled && thread_isrunnable(scheduled)) {
 			/* Found thread, try to dispatch it */
-			thread_switch(scheduled);
-			return 1;
+			return scheduled;
 		}
 		else if (slots[slot_id].ss_handler) {
 			/* No appropriate thread found (i.e. timeslice
@@ -51,16 +50,24 @@ int schedule()
 
 			if (scheduled) {
 				slots[slot_id].ss_scheduled = scheduled;
-				thread_switch(scheduled);
-				return 1;
+				return scheduled;
 			}
 		}
 	}
 
 	/* not reached (last slot is IDLE which is always runnable) */
 	panic("Reached end of schedule()\n");
+	return NULL;
+}
 
-	return 0;
+int schedule()
+{
+	int slot_id;
+	tcb_t *scheduled = NULL;
+
+	scheduled = schedule_select();
+	thread_switch(scheduled);
+	return 1;
 }
 
 /*
