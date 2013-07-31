@@ -1,5 +1,3 @@
-/*	$NetBSD: bsearch.c,v 1.15 2012/03/04 20:01:45 christos Exp $	*/
-
 /*
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,9 +10,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -48,16 +43,14 @@
  * have to make lim 3, then halve, obtaining 1, so that we will only
  * look at item 3.
  */
-void *
-bsearch(const void *key, const void *base0, size_t nmemb, size_t size,
-    int (*compar)(const void *, const void *))
+void *bsearch(const void *key, const void *base0, size_t nmemb, size_t size,
+		int (*compar)(const void *, const void *))
 {
 	const char *base = base0;
 	size_t lim;
 	int cmp;
 	const void *p;
 
-	//assert(key != NULL);
 	assert(base0 != NULL || nmemb == 0);
 	assert(compar != NULL);
 
@@ -71,5 +64,5 @@ bsearch(const void *key, const void *base0, size_t nmemb, size_t size,
 			lim--;
 		}		/* else move left */
 	}
-	return (NULL);
+	return NULL;
 }

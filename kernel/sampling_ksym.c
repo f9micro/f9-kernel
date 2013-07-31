@@ -9,12 +9,12 @@
 #include <lib/stdlib.h>
 
 void *sampled_pc[MAX_SAMPLING_COUNT];
-int sampled_count;
-int sampled_enabled;
+static int sampled_count;
+static int sampled_enabled;
 
-int __ksym_count;
-const ksym *__ksym_tbl;
-const char *__ksym_strings;
+static int __ksym_count;
+static const ksym *__ksym_tbl;
+static const char *__ksym_strings;
 
 void sampling_init()
 {
@@ -23,7 +23,7 @@ void sampling_init()
 		dbg_printf(DL_KDB, "ksym %d > MAX_KSYM\n", __ksym_count);
 		return;
 	}
-	for (i = 0; i < MAX_SAMPLING_COUNT; i++){
+	for (i = 0; i < MAX_SAMPLING_COUNT; i++) {
 		sampled_pc[i] = 0;
 	}
 	sampled_count = 0;
@@ -32,18 +32,16 @@ void sampling_init()
 
 void sampled_pcpush(void *pc)
 {
-	if (sampled_enabled == 0) {
+	if (sampled_enabled == 0)
 		return;
-	}
-	if (sampled_count == MAX_SAMPLING_COUNT) {
+	if (sampled_count == MAX_SAMPLING_COUNT)
 		sampled_count = 0;
-	}
 	sampled_pc[sampled_count++] = pc;
 }
 
 static int cmp_addr(const void *p1, const void *p2)
 {
-	return *(int *)p1 - *(int *)p2;
+	return *(int *) p1 - *(int *) p2;
 }
 
 void sampled_prepare()
@@ -67,8 +65,9 @@ void ksym_init(int magic, int count, ksym *tbl, char *strings)
 		__ksym_count = count;
 		__ksym_tbl = tbl;
 		__ksym_strings = strings;
-	} else {
-		static ksym _sym_tbl[] = {{0,0}};
+	}
+	else {
+		static ksym _sym_tbl[] = { { 0,0 } };
 		static char _sym_strings [] = "No symbol\0";
 		__ksym_count = 1;
 		__ksym_tbl = _sym_tbl;
@@ -87,11 +86,11 @@ static int cmp_key(const void *addr, const void *p1)
 	if (sym == (__ksym_tbl+__ksym_count-1)) {
 		return 0;
 	}
-	else if ((addr >= sym->addr) &&
-			(addr < (sym+1)->addr)) {
+	else if ((addr >= sym->addr) && (addr < (sym+1)->addr)) {
 		return 0;
-	} else {
-		return addr - ((ksym *)sym)->addr;
+	}
+	else {
+		return addr - ((ksym *) sym)->addr;
 	}
 }
 
@@ -110,7 +109,8 @@ int ksym_lookup(void *addr)
 	}
         if (found == NULL) {
 		return -1;
-	} else {
+	}
+	else {
 		return prev_index = (found - __ksym_tbl);
 	}
 }

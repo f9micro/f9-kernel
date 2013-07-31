@@ -12,14 +12,21 @@
 
 extern uint32_t end_of_MFlash;
 
-// stack overflow
-int sym_hit[MAX_KSYM];
-int sym_tophit[MAX_KSYM];
+/* stack overflow */
+static int sym_hit[MAX_KSYM];
+static int sym_tophit[MAX_KSYM];
 
 int pre_handler()
 {
 	sampled_pcpush((void *)((uint32_t *) thread_current()->ctx.sp)[REG_PC]);
 	return 0;
+}
+
+static int cmp_symhit(const void *p1, const void *p2)
+{
+	int *symid1 = (int *) p1;
+	int *symid2 = (int *) p2;
+	return sym_hit[*symid2] - sym_hit[*symid1];
 }
 
 void sampling_stat()
@@ -35,20 +42,13 @@ void sampling_stat()
 		sym_tophit[i] = i;
 	}
 
-	// symbol processing
+	/* symbol processing */
 	for_each_sampled(addr, i) {
 		symid = ksym_lookup(*addr);
 		if (symid < 0) {
 			continue;
 		}
 		sym_hit[symid]++;
-	}
-
-	int cmp_symhit(const void *p1, const void *p2)
-	{
-		int *symid1 = (int *)p1;
-		int *symid2 = (int *)p2;
-		return sym_hit[*symid2] - sym_hit[*symid1];
 	}
 
 	sort(sym_tophit, ksym_total(), sizeof(sym_tophit[0]), cmp_symhit);
