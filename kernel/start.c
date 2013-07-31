@@ -32,6 +32,10 @@ void debug_kdb_handler()
 
 int main()
 {
+
+	irq_init();
+	irq_disable();
+
 	dbg_uart_init();
 	dbg_puts("\n\n---------------------------------------"
 			 "\nF9 microkernel is ready!\n");
@@ -40,8 +44,6 @@ int main()
 	dbg_layer = DL_KDB;
 #endif
 
-	irq_init();
-	irq_disable();
 
 	sched_init();
 	memory_init();
