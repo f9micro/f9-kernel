@@ -92,25 +92,23 @@ uint8_t dbg_getchar()
 uint8_t __l4_getchar()
 	__attribute__ ((weak, alias ("dbg_getchar")));
 
-void dbg_async_putchar(char chr);
-void dbg_sync_putchar(char chr);
+static void dbg_async_putchar(char chr);
+static void dbg_sync_putchar(char chr);
 
 void dbg_putchar(char chr)
 {
 	/* During panic, we cannot use async dbg uart, so switch to
 	 * synchronious mode
 	 */
-#if 1
 	if (dbg_state != DBG_PANIC)
 		dbg_async_putchar(chr);
 	else
-#endif
 		dbg_sync_putchar(chr);
 }
 void __l4_putchar(char chr)
 	__attribute__ ((weak, alias ("dbg_putchar")));
 
-void dbg_async_putchar(char chr)
+static void dbg_async_putchar(char chr)
 {
 	/* If UART is busy, try to put chr into queue until slot is freed,
 	 * else write directly into UART
@@ -126,14 +124,14 @@ void dbg_async_putchar(char chr)
 	}
 }
 
-void dbg_sync_putchar(char chr)
+static void dbg_sync_putchar(char chr)
 {
 	if (chr == '\n')
 		dbg_sync_putchar('\r');
 
 	usart_putc(&console_uart, chr);
-	while (!usart_status(&console_uart, USART_TC));
-		/* */;
+	while (!usart_status(&console_uart, USART_TC))
+		/* wait */ ;
 }
 
 void dbg_start_panic()
