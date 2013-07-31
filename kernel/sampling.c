@@ -59,7 +59,7 @@ static void sampling_stat()
 		if (sym_hit[symid] == 0) {
 			break;
 		}
-		dbg_printf(DL_KDB, "%d [%s]\n", sym_hit[symid], ksym_name(symid));
+		dbg_printf(DL_KDB, "%5d [ %24s ]\n", sym_hit[symid], ksym_name(symid));
 	}
 	sampled_enable();
 
@@ -77,10 +77,10 @@ void kdb_show_sampling()
 		static struct kprobe k;
 
 		dbg_printf(DL_KDB, "Init sampling...\n");
-		magic = *((int *)&end_of_MFlash);
-		sym_count = *((int *)&end_of_MFlash + 1);
-		sym_tbl = (void*)&end_of_MFlash + 4 + sizeof(sym_count);
-		sym_strings = (void*)sym_tbl + sym_count * sizeof(ksym);
+		magic = *((int *) &end_of_MFlash);
+		sym_count = *((int *) &end_of_MFlash + 1);
+		sym_tbl = (void *) &end_of_MFlash + 4 + sizeof(sym_count);
+		sym_strings = (void *) sym_tbl + sym_count * sizeof(ksym);
 
 		ksym_init(magic, sym_count, sym_tbl, sym_strings);
 		sampling_init();
