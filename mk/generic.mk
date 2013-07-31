@@ -43,7 +43,7 @@ $(out)/%.elf.bin: $(out)/%.elf
 	$(call quiet,obj_to_bin,OBJCOPY)
 
 $(out)/%.bin: $(bin-list)
-	$(call quiet,bin,CAT)
+	$(call quiet,bin,CAT    )
 
 $(out)/%.list: $(out)/%.elf
 	$(call quiet,elf_to_list,OBJDUMP)

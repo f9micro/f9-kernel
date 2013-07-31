@@ -26,6 +26,6 @@ cmd_elf_to_symmap = $(NM) $< | sort | cut -d' ' -f1,3 | \
 	$(OBJCOPY) -O binary $(out)/$*_symmap.o $@
 
 $(out)/%.symmap.bin: $(out)/%.elf
-	$(call quiet,elf_to_symmap,NM)
+	$(call quiet,elf_to_symmap,NM     )
 
 bin-list-$(CONFIG_SYMMAP) += $(out)/$(PROJECT).symmap.bin
