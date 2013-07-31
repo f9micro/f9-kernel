@@ -126,6 +126,7 @@ inline uint32_t *MSP(void) {
 /* System Control Block */
 #define SCB_ICSR_PENDSVCLR              (uint32_t) (1 << 27)                                    /* Clear PendSV interrupt */
 #define SCB_ICSR_PENDSVSET              (uint32_t) (1 << 28)                                    /* Set PendSV interrupt */
+#define SCB_ICSR_RETTOBASE				(uint32_t) (1 << 11)									/* Whether there are preempted active exceptions */
 
 #define SCB_SCR_SLEEPONEXIT             (uint32_t) (1 << 1)                                     /* Sleep on return from interrupt routine */
 #define SCB_SCR_SLEEPDEEP               (uint32_t) (1 << 2)                                     /* Use deep sleep as low power mode */
