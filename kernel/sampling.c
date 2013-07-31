@@ -16,7 +16,7 @@ extern uint32_t end_of_MFlash;
 static int sym_hit[MAX_KSYM];
 static int sym_tophit[MAX_KSYM];
 
-int pre_handler()
+static int pre_handler()
 {
 	sampled_pcpush((void *)((uint32_t *) thread_current()->ctx.sp)[REG_PC]);
 	return 0;
@@ -29,7 +29,7 @@ static int cmp_symhit(const void *p1, const void *p2)
 	return sym_hit[*symid2] - sym_hit[*symid1];
 }
 
-void sampling_stat()
+static void sampling_stat()
 {
 	int i,symid;
 	void **addr;

@@ -67,7 +67,7 @@ void ksym_init(int magic, int count, ksym *tbl, char *strings)
 		__ksym_strings = strings;
 	}
 	else {
-		static ksym _sym_tbl[] = { { 0,0 } };
+		static ksym _sym_tbl[] = { { 0, 0 } };
 		static char _sym_strings [] = "No symbol\0";
 		__ksym_count = 1;
 		__ksym_tbl = _sym_tbl;
