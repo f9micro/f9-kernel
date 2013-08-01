@@ -114,14 +114,14 @@ typedef enum IRQn {
 #define WWDG_HANDLER                nvic_handler0
 #define PVD_HANDLER                 nvic_handler1
 #define TAMP_STAMP_HANDLER          nvic_handler2
-#define RTC_WKUP_HANDLER            nvic_handler3   
+#define RTC_WKUP_HANDLER            nvic_handler3
 #define FLASH_HANDLER               nvic_handler4
 #define RCC_HANDLER                 nvic_handler5
 #define EXTI0_HANDLER               nvic_handler6
 #define EXTI1_HANDLER               nvic_handler7
 #define EXTI2_HANDLER               nvic_handler8
 #define EXTI3_HANDLER               nvic_handler9
-#define EXTI4_HANDLER               nvic_handler10  
+#define EXTI4_HANDLER               nvic_handler10
 #define DMA1_Stream0_HANDLER        nvic_handler11
 #define DMA1_Stream1_HANDLER        nvic_handler12
 #define DMA1_Stream2_HANDLER        nvic_handler13

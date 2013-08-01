@@ -6,7 +6,7 @@
 #include <platform/stm32f4/systick.h>
 #include <platform/cortex_m.h>
 
-void init_systick(uint32_t tick_reload) 
+void init_systick(uint32_t tick_reload)
 {
 	/* 250us at 168Mhz */
 	*SYSTICK_RELOAD = tick_reload;

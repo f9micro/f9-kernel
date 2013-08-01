@@ -298,7 +298,7 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 
 			if (first) {
 				/* Check weather if addresses in fpage list
-				 * are sequental 
+				 * are sequental
 				 */
 				if (!addr_in_fpage(probe, fp))
 					return -1;

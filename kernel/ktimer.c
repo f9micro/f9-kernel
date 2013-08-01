@@ -18,7 +18,7 @@ DECLARE_KTABLE(ktimer_event_t, ktimer_event_table, CONFIG_MAX_KT_EVENTS);
 /* Next chain of events which will be executed */
 ktimer_event_t *event_queue = NULL;
 
-/* 
+/*
  * Simple ktimer implementation
  */
 

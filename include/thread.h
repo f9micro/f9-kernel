@@ -16,9 +16,9 @@
 /**
  * @file thread.h
  * @brief Thread dispatcher definitions
- * 
+ *
  * Thread ID type is declared in @file types.h and called l4_thread_t
- * 
+ *
  * For Global Thread ID only high 18 bits are used and lower are reserved,
  * so we call higher meaningful value TID and use GLOBALID_TO_TID and
  * TID_TO_GLOBALID macroses for convertion.
@@ -63,7 +63,7 @@ typedef struct {
 
 /**
  * Thread control block
- * 
+ *
  * TCB is a tree of threads, linked by t_sibling (siblings) and t_parent/t_child
  * Contains pointers to thread's UTCB (User TCB) and address space
  */
@@ -79,7 +79,7 @@ struct tcb {
 	struct utcb *utcb;
 
 	l4_thread_t ipc_from;
-    
+
 	struct tcb *t_sibling;
 	struct tcb *t_parent;
 	struct tcb *t_child;

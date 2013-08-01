@@ -27,7 +27,7 @@ struct usart_regs {
 /* TODO: Need more precise algorithm */
 static int16_t usart_baud(uint32_t baud)
 {
-	uint16_t mantissa; 
+	uint16_t mantissa;
 	uint16_t fraction;
 
 	 mantissa = (42000000) / (16 *  baud);
