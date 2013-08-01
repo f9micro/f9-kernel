@@ -21,9 +21,9 @@ Characteristics of F9 Microkernel
 
 * Energy efficient scheduling and tickless timer which allow the ARM Cortex-M
   to wake up only when needed, either at a scheduled time or on an interrupt
-  event. Therefore, it results in better current consumption than the original
-  approach using the system timer, SysTick, which require a constantly running,
-  high frequency clock.
+  event. Therefore, it results in better current consumption than the common
+  approach using the system timer, SysTick, which requires a constantly
+  running and high frequency clock.
 
 * KProbes, dynamic instrumentation system inspired by Linux Kernel, allowing
   developers to gather additional information about kernel operation without
