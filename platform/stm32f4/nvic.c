@@ -11,11 +11,16 @@
 
 void _undefined_handler()
 {
-	while(1);
+	while (1)
+		/* wait */ ;
 }
 
-#define DEFAULT_IRQ_VEC(n)	\
-	void nvic_handler##n() __attribute__((weak, alias("_undefined_handler")));
+/* for the sake of saving space, provide default device IRQ handler with
+ * weak alias.
+ */
+#define DEFAULT_IRQ_VEC(n)						\
+	void nvic_handler##n()						\
+		__attribute__((weak, alias("_undefined_handler")));
 
 #define IRQ_VEC_N_OP	DEFAULT_IRQ_VEC
 #include "platform/stm32f4/nvic_private.h"
