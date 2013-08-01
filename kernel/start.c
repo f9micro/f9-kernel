@@ -23,6 +23,16 @@
 #include <systhread.h>
 #include <kprobes.h>
 
+static char banner[] = 
+	"\n"
+	"====================================================\n"
+	"      Copyright(C) 2013 The F9 Microkernel Project  \n"
+	"====================================================\n"
+	"Git head: " GIT_HEAD "\n"
+	"Host: " MACH_TYPE "\n"
+	"Build: "  BUILD_TIME "\n"
+	"\n";
+
 #ifdef CONFIG_KDB
 void debug_kdb_handler()
 {
@@ -37,8 +47,7 @@ int main()
 	irq_disable();
 
 	dbg_uart_init();
-	dbg_puts("\n\n---------------------------------------"
-			 "\nF9 microkernel is ready!\n");
+	dbg_printf(DL_EMERG, "%s", banner);
 #ifdef DEBUG
 	extern dbg_layer_t dbg_layer;
 	dbg_layer = DL_KDB;
