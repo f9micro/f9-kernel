@@ -28,7 +28,7 @@ int sched_init()
 	return 0;
 }
 
-tcb_t* schedule_select()
+tcb_t *schedule_select()
 {
 	int slot_id;
 	tcb_t *scheduled = NULL;

@@ -44,9 +44,9 @@ void NVIC_SetPriority(IRQn_Type IRQn, uint8_t group_priority,
 	priority = (group_priority << group_shifts) |
 			(sub_priority & (0xf >> sub_shifts));
 
-	if(IRQn < 0)
-		((volatile uint8_t*)SCB_SHPR)[(((uint32_t)IRQn) & 0xf) - 4] = priority << 0x4;
+	if (IRQn < 0)
+		((volatile uint8_t *) SCB_SHPR)[
+			(((uint32_t) IRQn) & 0xf) - 4] = priority << 0x4;
 	else	
  		NVIC->IP[IRQn] = priority << 0x4;
 }
-
