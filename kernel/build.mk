@@ -8,7 +8,6 @@ kernel-y = \
 	fpage.o \
 	init.o \
 	ipc.o \
-	kdb.o \
 	kip.o \
 	ktimer.o \
 	memory.o \
@@ -19,6 +18,9 @@ kernel-y = \
 	systhread.o \
 	thread.o
 
+KDB-$(CONFIG_KDB) = \
+	kdb.o
+
 KPROBES-$(CONFIG_KPROBES) = \
 	kprobes.o
 
@@ -26,4 +28,4 @@ SYMMAP-$(CONFIG_SYMMAP) = \
 	sampling.o \
 	sampling_ksym.o
 
-kernel-y += $(KPROBES-y) $(SYMMAP-y)
+kernel-y += $(KDB-y) $(KPROBES-y) $(SYMMAP-y)
