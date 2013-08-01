@@ -16,9 +16,9 @@ NM = $(CROSS_COMPILE)nm
 BUILDCC = $(HOST_COMPILE)gcc
 
 # Misc Information
-GIT_HEAD = $(shell rev-parse HEAD)
-MACHTYPE = $(shell echo $(MACHTYPE))
-BUILD_TIME = $(shell --iso=seconds)
+GIT_HEAD = $(shell git rev-parse HEAD)
+MACH_TYPE = $(shell uname -m)
+BUILD_TIME = $(shell date --iso=seconds)
 
 CFLAGS_WARN = -Wall
 CFLAGS_OPT = -O1 -fno-toplevel-reorder
@@ -31,7 +31,7 @@ CFLAGS_DEFINE = \
 	-DDEBUG
 CFLAGS_MISC_DEFINE = \
 	-DGIT_HEAD=\"$(GIT_HEAD)\" \
-	-DMACHTYPE=\"$(MACHTYPE)\" \
+	-DMACH_TYPE=\"$(MACH_TYPE)\" \
 	-DBUILD_TIME=\"$(BUILD_TIME)\"
 CPPFLAGS = \
 	-include include/config.h \
