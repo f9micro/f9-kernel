@@ -62,7 +62,6 @@ tcb_t *schedule_select()
 
 int schedule()
 {
-	int slot_id;
 	tcb_t *scheduled = NULL;
 
 	scheduled = schedule_select();
