@@ -7,7 +7,6 @@
 #include <platform/irq.h>
 #include <platform/bitops.h>
 #include <softirq.h>
-#include <config.h>
 #include <debug.h>
 #include <systhread.h>
 

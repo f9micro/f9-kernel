@@ -5,7 +5,6 @@
 
 #include <memory.h>
 #include <error.h>
-#include <config.h>
 #include <debug.h>
 #include <thread.h>
 #include <lib/ktable.h>

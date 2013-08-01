@@ -5,7 +5,6 @@
 
 #include <platform/armv7m.h>
 #include <platform/bitops.h>
-#include <config.h>
 
 #ifdef CONFIG_SMP
 

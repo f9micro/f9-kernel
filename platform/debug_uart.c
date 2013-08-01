@@ -4,7 +4,6 @@
  */
 
 #include <platform/debug_uart.h>
-#include <config.h>
 #include <lib/fifo.h>
 #include <softirq.h>
 

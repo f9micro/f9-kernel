@@ -20,7 +20,6 @@
 #include <ktimer.h>
 #include <softirq.h>
 #include <syscall.h>
-#include <config.h>
 #include <systhread.h>
 #include <kprobes.h>
 

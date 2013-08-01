@@ -5,7 +5,6 @@
 
 #include <thread.h>
 #include <lib/ktable.h>
-#include <config.h>
 #include <error.h>
 #include <debug.h>
 #include <sched.h>

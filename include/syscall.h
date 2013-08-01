@@ -6,8 +6,6 @@
 #ifndef SYSCALL_H_
 #define SYSCALL_H_
 
-#include <config.h>
-
 typedef enum {
 	SYS_KERNEL_INTERFACE,		/* Not used, KIP is mapped */
 	SYS_EXCHANGE_REGISTERS,

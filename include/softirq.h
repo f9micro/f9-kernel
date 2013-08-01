@@ -6,7 +6,6 @@
 #ifndef SOFTIRQ_H_
 #define SOFTIRQ_H_
 
-#include <config.h>
 #include <types.h>
 
 typedef enum {

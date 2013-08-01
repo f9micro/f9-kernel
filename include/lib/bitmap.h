@@ -9,7 +9,6 @@
 #include <platform/link.h>
 #include <platform/bitops.h>
 #include <types.h>
-#include <config.h>
 
 /**
  * @file 	bitmap.h

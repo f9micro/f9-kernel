@@ -6,7 +6,6 @@
 #ifndef PLATFORM_LINK_H_
 #define PLATFORM_LINK_H_
 
-#include <config.h>
 #include <types.h>
 
 /*

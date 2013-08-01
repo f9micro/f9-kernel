@@ -4,7 +4,6 @@
  */
 
 #include <lib/ktable.h>
-#include <config.h>
 #include <debug.h>
 
 #ifdef CONFIG_KDB

@@ -5,7 +5,6 @@
 
 #include <error.h>
 #include <thread.h>
-#include <config.h>
 #include <debug.h>
 #include <kdb.h>
 #include <platform/irq.h>

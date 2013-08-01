@@ -5,7 +5,6 @@
 
 #include <types.h>
 #include <kdb.h>
-#include <config.h>
 #include <debug.h>
 
 #ifdef CONFIG_KDB

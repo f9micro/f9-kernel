@@ -1,5 +1,4 @@
 #include <kip.h>
-#include <config.h>
 #include <platform/link.h>
 
 kip_t kip __KIP = {

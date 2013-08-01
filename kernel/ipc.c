@@ -9,7 +9,6 @@
 #include <types.h>
 #include <thread.h>
 #include <memory.h>
-#include <config.h>
 #include <ipc.h>
 #include <sched.h>
 

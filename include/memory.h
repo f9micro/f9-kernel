@@ -6,7 +6,6 @@
 #ifndef MEMORY_H_
 #define MEMORY_H_
 
-#include <config.h>
 #include <types.h>
 #include <fpage.h>
 #include <platform/link.h>

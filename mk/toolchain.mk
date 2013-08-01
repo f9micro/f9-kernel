@@ -25,6 +25,7 @@ CFLAGS_DEFINE = \
 	-D'INC_PLAT(x)=<platform/__PLATFORM__/x>' \
 	-DDEBUG
 CPPFLAGS = \
+	-include include/config.h \
 	$(CFLAGS_DEFINE) $(CFLAGS_INCLUDE) $(EXTRA_CFLAGS)
 CFLAGS = \
 	-std=gnu99 -isystem \

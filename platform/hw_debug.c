@@ -3,7 +3,6 @@
  * found in the LICENSE file.
  */
 
-#include <config.h>
 #include <platform/irq.h>
 #include <platform/hw_debug.h>
 #include <platform/cortex_m.h>
