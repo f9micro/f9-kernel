@@ -64,7 +64,7 @@ Characteristics of F9 Microkernel
   payload via the UTCBs of the communicating parties.
 
 * Debugging and profiling mechanisms:
-  - configurable debug console (as system call)
+  - configurable debug console
   - memory dump
   - thread profiling: name, uptime, stack allocated/current/used
   - memory profiling: kernel table, pool free/allocated size, fragmentation
@@ -148,8 +148,8 @@ preferable resource assignment. To get acquainted with the configuration of
 F9 Microkernel internals, file include/config.h is the entry point:
 
 * `CONFIG_DEBUG`
-  - Enable serial input/out for debugging purpose. An additional system call
-    for serial I/O character operations will be included.
+  - Enable serial input/out for debugging purpose. An additional service for
+    serial I/O character operations will be included.
 * `CONFIG_KDB`
   - Enable in-kernel debugger.
 * `CONFIG_KPROBES`

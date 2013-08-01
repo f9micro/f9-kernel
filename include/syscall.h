@@ -19,9 +19,6 @@ typedef enum {
 	SYS_SPACE_CONTROL,
 	SYS_PROCESSOR_CONTROL,
 	SYS_MEMORY_CONTROL,
-#ifdef CONFIG_DEBUG
-	SYS_DBG_PUTSTRING
-#endif
 } syscall_t;
 
 void svc_handler();
