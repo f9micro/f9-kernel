@@ -47,8 +47,6 @@ int main()
 	irq_disable();
 
 	dbg_uart_init();
-	/* dbg_puts("\n\n---------------------------------------"
-			 "\nF9 DGFGFGDGJDKJ is ready!\n"); */
 	dbg_printf(DL_EMERG, "%s", banner);
 #ifdef DEBUG
 	extern dbg_layer_t dbg_layer;
