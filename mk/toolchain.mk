@@ -15,6 +15,11 @@ NM = $(CROSS_COMPILE)nm
 
 BUILDCC = $(HOST_COMPILE)gcc
 
+# Misc Information
+GIT_HEAD = $(shell rev-parse HEAD)
+MACHTYPE = $(shell echo $(MACHTYPE))
+BUILD_TIME = $(shell --iso=seconds)
+
 CFLAGS_WARN = -Wall
 CFLAGS_OPT = -O1 -fno-toplevel-reorder
 CFLAGS_DEBUG = -g3
@@ -24,12 +29,16 @@ CFLAGS_DEFINE = \
 	-D __BOARD__=$(BOARD) \
 	-D'INC_PLAT(x)=<platform/__PLATFORM__/x>' \
 	-DDEBUG
+CFLAGS_MISC_DEFINE = \
+	-DGIT_HEAD=\"$(GIT_HEAD)\" \
+	-DMACHTYPE=\"$(MACHTYPE)\" \
+	-DBUILD_TIME=\"$(BUILD_TIME)\"
 CPPFLAGS = \
 	-include include/config.h \
 	$(CFLAGS_DEFINE) $(CFLAGS_INCLUDE) $(EXTRA_CFLAGS)
 CFLAGS = \
 	-std=gnu99 -isystem \
 	-nostdlib -ffreestanding \
-	$(CPPFLAGS) $(CFLAGS_CPU) $(CFLAGS_OPT) $(CFLAGS_DEBUG) $(CFLAGS_WARN) $(CFLAGS_y)
+	$(CPPFLAGS) $(CFLAGS_CPU) $(CFLAGS_OPT) $(CFLAGS_DEBUG) $(CFLAGS_WARN) $(CFLAGS_y) $(CFLAGS_MISC_DEFINE)
 
 LIBGCC = $(shell $(CC) -print-libgcc-file-name)

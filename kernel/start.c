@@ -23,6 +23,16 @@
 #include <systhread.h>
 #include <kprobes.h>
 
+static char banner[] = 
+	"\n"
+	"====================================================\n"
+	"      Copyright(C) 2013 The F9 Microkernel Project  \n"
+	"====================================================\n"
+	"Git head: " GIT_HEAD "\n"
+	" Host: " MACHTYPE "\n"
+	"Build: "  BUILD_TIME "\n"
+	"\n";
+
 #ifdef CONFIG_KDB
 void debug_kdb_handler()
 {
