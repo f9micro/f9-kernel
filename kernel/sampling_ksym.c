@@ -117,7 +117,7 @@ int ksym_lookup(void *addr)
 
 char *ksym_name(int symid)
 {
-	return (char *)&__ksym_strings[__ksym_tbl[symid].strid];
+	return (char *) &__ksym_strings[__ksym_tbl[symid].strid];
 }
 
 void *ksym_addr(int symid)

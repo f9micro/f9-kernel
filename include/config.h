@@ -9,6 +9,8 @@
 /* Debug options */
 #define CONFIG_DEBUG
 #define CONFIG_KDB
+
+/* Enable KProbes, dynamic instrumentation system */
 #define CONFIG_KPROBES
 
 /* Generate symbol map */
@@ -37,5 +39,11 @@ enum {
 #define CONFIG_BITMAP_BITBAND
 
 #define CONFIG_PANIC_DUMP_STACK
+
+/* resolve depenedency of the above configurations */
+#if defined(CONFIG_SYMMAP) && !defined(CONFIG_KPROBES)
+/* sampling/symmap depends on KProbes */
+#undef CONFIG_SYMMAP
+#endif
 
 #endif /* CONFIG_H_ */

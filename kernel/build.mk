@@ -17,11 +17,13 @@ kernel-y = \
 	start.o \
 	syscall.o \
 	systhread.o \
-	thread.o \
+	thread.o
+
+KPROBES-$(CONFIG_KPROBES) = \
 	kprobes.o
 
 SYMMAP-$(CONFIG_SYMMAP) = \
 	sampling.o \
 	sampling_ksym.o
 
-kernel-y += $(SYMMAP-y)
+kernel-y += $(KPROBES-y) $(SYMMAP-y)
