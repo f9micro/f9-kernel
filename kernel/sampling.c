@@ -8,6 +8,10 @@
 #include <thread.h>
 #include <debug.h>
 #include <lib/stdlib.h>
+
+#if !defined(CONFIG_KPROBES)
+#error "Sampling feature depends on CONFIG_KPROBES"
+#endif
 #include <kprobes.h>
 
 extern uint32_t end_of_MFlash;
@@ -45,9 +49,8 @@ static void sampling_stat()
 	/* symbol processing */
 	for_each_sampled(addr, i) {
 		symid = ksym_lookup(*addr);
-		if (symid < 0) {
+		if (symid < 0)
 			continue;
-		}
 		sym_hit[symid]++;
 	}
 
@@ -56,9 +59,8 @@ static void sampling_stat()
 	for (i = 0; i < ksym_total(); i++) {
 		int symid;
 		symid = sym_tophit[i];
-		if (sym_hit[symid] == 0) {
+		if (sym_hit[symid] == 0)
 			break;
-		}
 		dbg_printf(DL_KDB, "%5d [ %24s ]\n", sym_hit[symid], ksym_name(symid));
 	}
 	sampled_enable();
@@ -94,4 +96,4 @@ void kdb_show_sampling()
 	}
 	sampling_stat();
 }
-#endif	/* ! #ifdef CONFIG_KDB */
+#endif	/* ! CONFIG_KDB */
