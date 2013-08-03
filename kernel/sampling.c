@@ -13,6 +13,7 @@
 #error "Sampling feature depends on CONFIG_KPROBES"
 #endif
 #include <kprobes.h>
+#include <platform/cortex_m.h>
 
 extern uint32_t end_of_MFlash;
 
@@ -20,9 +21,17 @@ extern uint32_t end_of_MFlash;
 static int sym_hit[MAX_KSYM];
 static int sym_tophit[MAX_KSYM];
 
-static int pre_handler()
+static int pre_handler(struct kprobe *kp, uint32_t *stack, uint32_t *kp_regs)
 {
-	sampled_pcpush((void *)((uint32_t *) thread_current()->ctx.sp)[REG_PC]);
+	uint32_t *target_stack;
+
+	/* examine KTIMER LR */
+	if (stack[REG_LR] & 0x4)
+		target_stack = PSP();
+	else
+		target_stack = stack + 8;
+
+	sampled_pcpush((void *) target_stack[REG_PC]);
 	return 0;
 }
 
@@ -68,7 +77,7 @@ static void sampling_stat()
 }
 
 #ifdef CONFIG_KDB
-extern void __ktimer_handler();
+extern void ktimer_handler();
 void kdb_show_sampling()
 {
 	static int init = 0;
@@ -88,7 +97,7 @@ void kdb_show_sampling()
 		sampling_init();
 		init++;
 
-		k.addr = __ktimer_handler;
+		k.addr = ktimer_handler;
 		k.pre_handler = pre_handler;
 		k.post_handler = NULL;
 		kprobe_register(&k);
