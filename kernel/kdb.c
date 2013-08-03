@@ -71,14 +71,14 @@ struct kdb_t kdb_functions[] =
 		.menuentry = "dump address spaces",
 		.function = kdb_dump_as
 	},
-#ifdef CONFIG_SYMMAP
+#if defined(CONFIG_SYMMAP) && defined(CONFIG_KDB)
 	{
 		.option = 'p',
 		.name = "TOP",
 		.menuentry = "show sampling",
 		.function = kdb_show_sampling
 	},
-#endif	/* ! CONFIG_SYMMAP */
+#endif /* ! CONFIG_SYMMAP && CONFIG_KDB */
 	/* Insert KDB functions here */
 };
 

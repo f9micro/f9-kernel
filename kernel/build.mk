@@ -25,7 +25,8 @@ KPROBES-$(CONFIG_KPROBES) = \
 	kprobes.o
 
 SYMMAP-$(CONFIG_SYMMAP) = \
+	ksym.o \
 	sampling.o \
-	sampling_ksym.o
+	sampling-kdb.o
 
 kernel-y += $(KDB-y) $(KPROBES-y) $(SYMMAP-y)

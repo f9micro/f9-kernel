@@ -22,6 +22,7 @@
 #include <syscall.h>
 #include <systhread.h>
 #include <kprobes.h>
+#include <ksym.h>
 
 static char banner[] = 
 	"\n"
@@ -42,7 +43,6 @@ void debug_kdb_handler()
 
 int main()
 {
-
 	irq_init();
 	irq_disable();
 
@@ -53,7 +53,9 @@ int main()
 	dbg_layer = DL_KDB;
 #endif
 
-
+#ifdef CONFIG_SYMMAP
+	ksym_init();
+#endif
 	sched_init();
 	memory_init();
 	syscall_init();

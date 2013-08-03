@@ -3,106 +3,89 @@
  * found in the LICENSE file.
  */
 
+#include <ksym.h>
 #include <sampling.h>
-#include <types.h>
-#include <thread.h>
 #include <debug.h>
 #include <lib/stdlib.h>
 
-#if !defined(CONFIG_KPROBES)
-#error "Sampling feature depends on CONFIG_KPROBES"
-#endif
-#include <kprobes.h>
-#include <platform/cortex_m.h>
+#if defined(CONFIG_SYMMAP) && defined(CONFIG_KDB)
 
-extern uint32_t end_of_MFlash;
+static void *sampled_pc[MAX_SAMPLING_COUNT];
+static int sampled_count;
+static int __sampling_enabled;
 
-/* stack overflow */
-static int sym_hit[MAX_KSYM];
-static int sym_tophit[MAX_KSYM];
+static int ksym_hitcount[MAX_KSYM];
+static int ksymid_sortedlist[MAX_KSYM];
 
-static int pre_handler(struct kprobe *kp, uint32_t *stack, uint32_t *kp_regs)
+void sampling_enable()
 {
-	uint32_t *target_stack;
+	__sampling_enabled = 1;
+}
 
-	/* examine KTIMER LR */
-	if (stack[REG_LR] & 0x4)
-		target_stack = PSP();
-	else
-		target_stack = stack + 8;
+void sampling_disable()
+{
+	__sampling_enabled = 0;
+}
 
-	sampled_pcpush((void *) target_stack[REG_PC]);
-	return 0;
+void sampling_init()
+{
+	int i ;
+	if (ksym_total() > MAX_KSYM) {
+		dbg_printf(DL_KDB, "ksym %d > MAX_KSYM\n", ksym_total());
+		return;
+	}
+	for (i = 0; i < MAX_SAMPLING_COUNT; i++) {
+		sampled_pc[i] = 0;
+	}
+	sampled_count = 0;
+}
+
+void sampled_pcpush(void *pc)
+{
+	if (__sampling_enabled == 0)
+		return;
+	if (sampled_count == MAX_SAMPLING_COUNT)
+		sampled_count = 0;
+	sampled_pc[sampled_count++] = pc;
+}
+
+static int cmp_addr(const void *p1, const void *p2)
+{
+	return *(int *) p1 - *(int *) p2;
 }
 
 static int cmp_symhit(const void *p1, const void *p2)
 {
 	int *symid1 = (int *) p1;
 	int *symid2 = (int *) p2;
-	return sym_hit[*symid2] - sym_hit[*symid1];
+	return ksym_hitcount[*symid2] - ksym_hitcount[*symid1];
 }
 
-static void sampling_stat()
+void sampling_stats(int **hitcountp, int **symid_list)
 {
 	int i,symid;
-	void **addr;
 
-	sampled_disable();
-	sampled_prepare();
+	/* init data */
+	sort(sampled_pc, MAX_SAMPLING_COUNT, sizeof(sampled_pc[0]), cmp_addr);
 
 	for (i = 0; i < MAX_KSYM; i++) {
-		sym_hit[i] = 0;
-		sym_tophit[i] = i;
+		ksym_hitcount[i] = 0;
+		ksymid_sortedlist[i] = i;
 	}
 
-	/* symbol processing */
-	for_each_sampled(addr, i) {
-		symid = ksym_lookup(*addr);
+	/* calculation total hit for each ksym */
+	for (i = 0; i < MAX_SAMPLING_COUNT; i++) {
+		symid = ksym_lookup(sampled_pc[i]);
 		if (symid < 0)
 			continue;
-		sym_hit[symid]++;
+		ksym_hitcount[symid]++;
 	}
 
-	sort(sym_tophit, ksym_total(), sizeof(sym_tophit[0]), cmp_symhit);
+	/* create a list from highest hit to lowest hit */
+	sort(ksymid_sortedlist, ksym_total(), sizeof(ksymid_sortedlist[0]), cmp_symhit);
 
-	for (i = 0; i < ksym_total(); i++) {
-		int symid;
-		symid = sym_tophit[i];
-		if (sym_hit[symid] == 0)
-			break;
-		dbg_printf(DL_KDB, "%5d [ %24s ]\n", sym_hit[symid], ksym_name(symid));
-	}
-	sampled_enable();
-
+	/* output the result */
+	*hitcountp = ksym_hitcount;
+	*symid_list = ksymid_sortedlist;
 }
-
-#ifdef CONFIG_KDB
-extern void ktimer_handler();
-void kdb_show_sampling()
-{
-	static int init = 0;
-	if (init == 0) {
-		int magic, sym_count;
-		char *sym_strings;
-		ksym *sym_tbl;
-		static struct kprobe k;
-
-		dbg_printf(DL_KDB, "Init sampling...\n");
-		magic = *((int *) &end_of_MFlash);
-		sym_count = *((int *) &end_of_MFlash + 1);
-		sym_tbl = (void *) &end_of_MFlash + 4 + sizeof(sym_count);
-		sym_strings = (void *) sym_tbl + sym_count * sizeof(ksym);
-
-		ksym_init(magic, sym_count, sym_tbl, sym_strings);
-		sampling_init();
-		init++;
-
-		k.addr = ktimer_handler;
-		k.pre_handler = pre_handler;
-		k.post_handler = NULL;
-		kprobe_register(&k);
-		return;
-	}
-	sampling_stat();
-}
-#endif	/* ! CONFIG_KDB */
+#endif	/* ! CONFIG_SYMMAP && CONFIG_KDB */
