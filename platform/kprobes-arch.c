@@ -52,10 +52,8 @@ int kprobe_arch_del(struct kprobe *kp)
 	return 0;
 }
 
-void arch_kprobe_handler(uint32_t *stack)
+void arch_kprobe_handler(uint32_t *stack, uint32_t *kp_regs)
 {
-	static void *addr;
-
 	/*
 	 * For convenience currently we assume all cpu single-step is
 	 * enabled/disabled by arch_kprobe_handler.
@@ -69,9 +67,8 @@ void arch_kprobe_handler(uint32_t *stack)
 		panic("DWT Watchpoint hit\n");
 	}
 	else if ((*SCB_DFSR & SCB_DFSR_BKPT)) {
-		addr = (void *) stack[REG_PC];
 
-		kprobe_prebreak(addr);
+		kprobe_prebreak(stack, kp_regs);
 
 		/* Clear BKPT status bit */
 		*SCB_DFSR  =  SCB_DFSR_BKPT;
@@ -80,7 +77,7 @@ void arch_kprobe_handler(uint32_t *stack)
 		cpu_enable_single_step();
 	}
 	else if (*SCB_DFSR & SCB_DFSR_HALTED) {
-		kprobe_postbreak(addr);
+		kprobe_postbreak(stack, kp_regs);
 
 		/* Clear HALTED status bit */
 		*SCB_DFSR  =  SCB_DFSR_HALTED;
@@ -89,7 +86,10 @@ void arch_kprobe_handler(uint32_t *stack)
 		enable_hw_breakpoint();
 	}
 	else {
-		panic("Kernel panic: Debug fault. Restarting\n");
+		/*
+		 * sometimes DWT generates faults
+		 * without setting SCB_DFSR_DWTTRAP
+		 */
 	}
 }
 

@@ -4,6 +4,7 @@
  */
 
 #include <kprobes.h>
+#include <platform/armv7m.h>
 
 #ifdef CONFIG_KPROBES
 
@@ -52,6 +53,11 @@ int kprobe_register(struct kprobe *kp)
 {
 	int ret;
 	kp->addr = (void *) ((uint32_t) kp->addr & ~(1UL));
+	if (is_thumb32(*(uint16_t *)kp->addr))
+		kp->step_addr = kp->addr + 4;
+	else
+		kp->step_addr = kp->addr + 2;
+
 	ret = kprobe_arch_add(kp);
 	if (ret < 0)
 		return -1;
@@ -67,23 +73,23 @@ int kprobe_unregister(struct kprobe *kp)
 	return 0;
 }
 
-void kprobe_prebreak(void *addr)
+void kprobe_prebreak(uint32_t *stack, uint32_t *kp_regs)
 {
 	struct kprobe *kp = kp_list;
 	while (kp != NULL) {
-		if (kp->addr == addr && kp->pre_handler) {
-			kp->pre_handler();
+		if ((uint32_t)kp->addr == stack[REG_PC] && kp->pre_handler) {
+			kp->pre_handler(kp, stack, kp_regs);
 		}
 		kp = kp->next;
 	}
 }
 
-void kprobe_postbreak(void *addr)
+void kprobe_postbreak(uint32_t *stack, uint32_t *kp_regs)
 {
 	struct kprobe *kp = kp_list;
 	while (kp != NULL) {
-		if (kp->addr == addr && kp->post_handler) {
-			kp->post_handler();
+		if ((uint32_t)kp->step_addr == stack[REG_PC] && kp->post_handler) {
+			kp->post_handler(kp, stack, kp_regs);
 		}
 		kp = kp->next;
 	}
