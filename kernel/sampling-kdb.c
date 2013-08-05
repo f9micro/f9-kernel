@@ -10,15 +10,14 @@
 #include <debug.h>
 #include <lib/stdlib.h>
 
-#if defined(CONFIG_SYMMAP) && defined(CONFIG_KDB)
-
 #if !defined(CONFIG_KPROBES)
 #error "Sampling feature depends on CONFIG_KPROBES"
 #endif
 #include <kprobes.h>
 #include <platform/cortex_m.h>
 
-static int sampling_handler(struct kprobe *kp, uint32_t *stack, uint32_t *kp_regs)
+static int sampling_handler(struct kprobe *kp, uint32_t *stack,
+		uint32_t *kp_regs)
 {
 	uint32_t *target_stack;
 
@@ -42,7 +41,6 @@ void kdb_show_sampling()
 	static struct kprobe k;
 
 	if (init == 0) {
-
 		dbg_printf(DL_KDB, "Init sampling...\n");
 		sampling_init();
 		sampling_enable();
@@ -68,4 +66,3 @@ void kdb_show_sampling()
 
 	sampling_enable();
 }
-#endif	/* ! CONFIG_SYMMAP && CONFIG_KDB */

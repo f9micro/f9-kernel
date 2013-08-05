@@ -7,8 +7,6 @@
 #include <kdb.h>
 #include <debug.h>
 
-#ifdef CONFIG_KDB
-
 typedef void (*kdb_function_t)();
 
 struct kdb_t {
@@ -130,5 +128,3 @@ int kdb_dump_error()
 
 	return 0;
 }
-
-#endif

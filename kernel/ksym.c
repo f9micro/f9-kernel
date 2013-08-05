@@ -3,7 +3,6 @@
  * found in the LICENSE file.
  */
 
-#ifdef CONFIG_SYMMAP
 #include <ksym.h>
 #include <types.h>
 #include <lib/stdlib.h>
@@ -16,7 +15,7 @@ extern int *end_of_MFlash;
 
 void ksym_init()
 {
-	void *ksym_addr = (void *)&end_of_MFlash;
+	void *ksym_addr = (void *) &end_of_MFlash;
 
 	if (*((int *) ksym_addr) == KSYM_MAGIC) {
 		__ksym_count = *((int *) ksym_addr + 1);
@@ -84,4 +83,3 @@ void *ksym_id2addr(int symid)
 {
 	return __ksym_tbl[symid].addr;
 }
-#endif /* CONFIG_SYMMAP */

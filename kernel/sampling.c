@@ -8,8 +8,6 @@
 #include <debug.h>
 #include <lib/stdlib.h>
 
-#if defined(CONFIG_SYMMAP) && defined(CONFIG_KDB)
-
 static void *sampled_pc[MAX_SAMPLING_COUNT];
 static int sampled_count;
 static int __sampling_enabled;
@@ -82,10 +80,10 @@ void sampling_stats(int **hitcountp, int **symid_list)
 	}
 
 	/* create a list from highest hit to lowest hit */
-	sort(ksymid_sortedlist, ksym_total(), sizeof(ksymid_sortedlist[0]), cmp_symhit);
+	sort(ksymid_sortedlist, ksym_total(),
+			sizeof(ksymid_sortedlist[0]), cmp_symhit);
 
 	/* output the result */
 	*hitcountp = ksym_hitcount;
 	*symid_list = ksymid_sortedlist;
 }
-#endif	/* ! CONFIG_SYMMAP && CONFIG_KDB */
