@@ -203,10 +203,6 @@ typedef enum IRQn {
 #include "platform/stm32f4/nvic_private.h"
 #undef IRQ_VEC_N_OP
 
-
-#define DEVICE_IRQ_HANDLER(name, sub)	\
-	IRQ_HANDLER(name, sub)
-
 typedef struct {
 	volatile uint32_t ISER[8];	/*!< Offset: 0x000 (R/W)  Interrupt Set Enable Register */
 	uint32_t RESERVED0[24];

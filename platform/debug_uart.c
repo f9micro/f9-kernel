@@ -32,8 +32,7 @@ void __uart_irq_handler()
 	}
 }
 
-
-DEVICE_IRQ_HANDLER(BOARD_UART_HANDLER, __uart_irq_handler);
+IRQ_HANDLER(BOARD_UART_HANDLER, __uart_irq_handler);
 
 void dbg_uart_init()
 {
