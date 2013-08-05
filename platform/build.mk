@@ -18,6 +18,10 @@ platform-y = \
 	debug_uart.o \
 	mpu.o \
 	spinlock.o \
-	irq.o \
+	irq.o
+
+platform-KPROBES-$(CONFIG_KPROBES) = \
 	kprobes-arch.o \
 	hw_debug.o
+
+platform-y += $(platform-KPROBES-y)

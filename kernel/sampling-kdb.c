@@ -3,16 +3,16 @@
  * found in the LICENSE file.
  */
 
+#if !defined(CONFIG_KPROBES)
+#error __FILE__ " depends on CONFIG_KPROBES"
+#endif
+
 #include <ksym.h>
 #include <sampling.h>
 #include <types.h>
 #include <thread.h>
 #include <debug.h>
 #include <lib/stdlib.h>
-
-#if !defined(CONFIG_KPROBES)
-#error "Sampling feature depends on CONFIG_KPROBES"
-#endif
 #include <kprobes.h>
 #include <platform/cortex_m.h>
 

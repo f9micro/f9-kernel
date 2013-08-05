@@ -3,11 +3,13 @@
  * found in the LICENSE file.
  */
 
+#if !defined(CONFIG_KPROBES)
+#error __FILE__ " is the part of KProbes implementation."
+#endif
+
 #include <platform/irq.h>
 #include <platform/hw_debug.h>
 #include <platform/cortex_m.h>
-
-#ifdef CONFIG_KPROBES
 
 extern void arch_kprobe_handler(uint32_t *stack);
 
@@ -94,9 +96,7 @@ void debugmon_handler()
 	/* override r4-r11 */
 	__asm__ __volatile__ ("pop {r4-r11}");
 
-	/* NOTE: No support stack modification for the time being*/
+	/* NOTE: No support stack modification for the time being */
 
 	__asm__ __volatile__ ("bx lr");
 }
-
-#endif /* CONFIG_KPROBES */

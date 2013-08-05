@@ -3,12 +3,14 @@
  * found in the LICENSE file.
  */
 
+#if !defined(CONFIG_KPROBES)
+#error __FILE__ " is the part of KProbes implementation."
+#endif
+
 #include <kprobes.h>
 #include <error.h>
 #include <platform/cortex_m.h>
 #include <platform/hw_debug.h>
-
-#ifdef CONFIG_KPROBES
 
 void kprobe_arch_init()
 {
@@ -92,5 +94,3 @@ void arch_kprobe_handler(uint32_t *stack, uint32_t *kp_regs)
 		 */
 	}
 }
-
-#endif /* CONFIG_KPROBES */
