@@ -38,16 +38,16 @@ struct kprobe {
 	int bkptid;
 };
 
-void kprobe_init();
+void kprobe_init(void);
 int kprobe_register(struct kprobe *p);
 int kprobe_unregister(struct kprobe *p);
 void kprobe_prebreak(uint32_t *stack, uint32_t *kp_regs);
 void kprobe_postbreak(uint32_t *stack, uint32_t *kp_regs);
 struct kprobe *kplist_search(void *addr);
 
-void kprobe_arch_init();
+void kprobe_arch_init(void);
 int kprobe_arch_add(struct kprobe *kp);
 int kprobe_arch_del(struct kprobe *kp);
-void arch_kprobe_handler();
+void arch_kprobe_handler(uint32_t *stack, uint32_t *kp_regs);
 
 #endif /* KPROBE_H */
