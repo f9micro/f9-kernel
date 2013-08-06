@@ -390,7 +390,7 @@ static char *kdb_get_thread_type(tcb_t *thr)
 	return "???";
 }
 
-void kdb_dump_threads()
+void kdb_dump_threads(void)
 {
 	tcb_t *thr;
 	int idx;

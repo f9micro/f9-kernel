@@ -30,7 +30,7 @@ static int fp_addr_log2(memptr_t addr)
 	return 31 - shift;
 }
 
-void fpages_init()
+void fpages_init(void)
 {
 	ktable_init(&fpage_table);
 }

@@ -13,8 +13,8 @@
 #define L4_ANYTHREAD		0xFFFFFFFF
 
 #define DECLARE_THREAD(name, sub) \
-	void name() __attribute__ ((naked));		\
-	void __USER_TEXT name()				\
+	void name(void) __attribute__ ((naked));	\
+	void __USER_TEXT name(void)			\
 	{						\
 		register void *kip_ptr asm ("r0");	\
 		register void *utcb_ptr asm ("r1");	\

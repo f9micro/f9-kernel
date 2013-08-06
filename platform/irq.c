@@ -5,7 +5,7 @@
 
 #include "board.h"
 
-void irq_init()
+void irq_init(void)
 {
 	/* Set all 4-bit to pre-emption priority bit */
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);

@@ -20,7 +20,12 @@ GIT_HEAD = $(shell git rev-parse HEAD)
 MACH_TYPE = $(shell uname -m)
 BUILD_TIME = $(shell date --iso=seconds)
 
-CFLAGS_WARN = -Wall
+CFLAGS_WARN = \
+	-Wall -Werror -Wundef -Wstrict-prototypes -Wno-trigraphs	\
+	-fno-strict-aliasing -fno-common				\
+	-Werror-implicit-function-declaration -Wno-format-security	\
+	-fno-delete-null-pointer-checks -Wdeclaration-after-statement	\
+	-Wno-pointer-sign -fno-strict-overflow -fconserve-stack
 CFLAGS_OPT = -O1 -fno-toplevel-reorder
 CFLAGS_DEBUG = -g3
 CFLAGS_INCLUDE = $(foreach i,$(includes),-I$(i) )

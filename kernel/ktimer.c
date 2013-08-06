@@ -29,12 +29,12 @@ static long long ktimer_time = 0;
 
 extern uint32_t SystemCoreClock;
 
-static void ktimer_init()
+static void ktimer_init(void)
 {
 	init_systick(CONFIG_KTIMER_HEARTBEAT);
 }
 
-static void ktimer_disable()
+static void ktimer_disable(void)
 {
 	if (ktimer_enabled) {
 		ktimer_enabled = 0;
@@ -50,7 +50,7 @@ static void ktimer_enable(uint32_t delta)
 	}
 }
 
-void __ktimer_handler()
+void __ktimer_handler(void)
 {
 	++ktimer_now;
 
@@ -69,7 +69,7 @@ void __ktimer_handler()
 IRQ_HANDLER(ktimer_handler, __ktimer_handler);
 
 #ifdef CONFIG_KDB
-void kdb_show_ktimer()
+void kdb_show_ktimer(void)
 {
 	dbg_printf(DL_KDB, "Now is %ld\n", ktimer_now);
 
@@ -261,7 +261,7 @@ void ktimer_event_init()
 }
 
 #ifdef CONFIG_KDB
-void kdb_dump_events()
+void kdb_dump_events(void)
 {
 	ktimer_event_t *event = event_queue;
 

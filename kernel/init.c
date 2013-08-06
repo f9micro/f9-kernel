@@ -11,25 +11,23 @@
 #include <syscall.h>
 #include <ktimer.h>
 
-extern void __l4_start();
-extern void memmanage_handler();
-extern void debugmon_handler();
+extern void __l4_start(void);
+extern void memmanage_handler(void);
+extern void debugmon_handler(void);
 
-void busfault()
+void busfault(void)
 {
-	while (1) {
+	while (1)
 		/* wait */ ;
-	}
 }
 
-void nointerrupt()
+void nointerrupt(void)
 {
-	while (1) {
+	while (1)
 		/* wait */ ;
-	}
 }
 
-void hard_fault_handler()
+void hard_fault_handler(void)
 {
 	/*
 	 * If we are here, it may mean currently executing priority is higher
@@ -40,7 +38,7 @@ void hard_fault_handler()
 	panic("Kernel panic: Hard fault. Restarting\n");
 }
 
-void nmi_handler()
+void nmi_handler(void)
 {
 	panic("Kernel panic: NMI. Restarting\n");
 }
@@ -49,12 +47,12 @@ void nmi_handler()
  * Declare NVIC table
  */
 
-extern void (* const g_pfnVectors[])();
+extern void (* const g_pfnVectors[])(void);
 
 #include INC_PLAT(nvic.h)
 
 __ISR_VECTOR
-void (* const g_pfnVectors[])() = {
+void (* const g_pfnVectors[])(void) = {
 	/* Core Level - ARM Cortex-M */
 	(void *) &kernel_stack_end,	/* initial stack pointer */
 	__l4_start,			/* reset handler */

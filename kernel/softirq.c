@@ -70,7 +70,7 @@ retry:
 }
 
 #ifdef CONFIG_KDB
-void kdb_dump_softirq()
+void kdb_dump_softirq(void)
 {
 	int i;
 

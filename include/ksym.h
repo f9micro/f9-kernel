@@ -14,8 +14,8 @@ typedef struct ksym {
 	int strid;
 } ksym_t;
 
-void ksym_init();
-int ksym_total();
+void ksym_init(void);
+int ksym_total(void);
 int ksym_lookup(void *addr);
 char *ksym_id2name(int symid);
 void *ksym_id2addr(int symid);

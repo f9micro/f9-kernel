@@ -9,6 +9,6 @@
 /* Simple in-kernel debugger */
 
 int kdb_handler(char c);
-int kdb_dump_error();
+int kdb_dump_error(void);
 
 #endif /* KDB_H_ */

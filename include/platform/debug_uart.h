@@ -40,10 +40,10 @@ struct dbg_uart_t {
 	struct fifo_t rx;
 };
 
-void dbg_uart_init();
-void dbg_uart_interrupt();
+void dbg_uart_init(void);
+void dbg_uart_interrupt(void);
 
 typedef int (*dbg_handler_t)(char);
-void dbg_start_panic();
+void dbg_start_panic(void);
 
 #endif /* PLATFORM_DEBUG_UART_H_ */

@@ -17,10 +17,10 @@ static uint8_t dbg_uart_rx_buffer[RECV_BUFSIZE];
 
 enum { DBG_ASYNC, DBG_PANIC } dbg_state;
 
-static void dbg_uart_recv();
+static void dbg_uart_recv(void);
 static void dbg_uart_send(int avail);
 
-void __uart_irq_handler()
+void __uart_irq_handler(void)
 {
 	if (usart_interrupt_status(&console_uart, USART_IT_TXE)) {
 		/* USART TX */
@@ -34,7 +34,7 @@ void __uart_irq_handler()
 
 IRQ_HANDLER(BOARD_UART_HANDLER, __uart_irq_handler);
 
-void dbg_uart_init()
+void dbg_uart_init(void)
 {
 	usart_init(&console_uart);	
 
@@ -51,7 +51,7 @@ void dbg_uart_init()
 }
 
 
-static void dbg_uart_recv()
+static void dbg_uart_recv(void)
 {
 	uint8_t chr = usart_getc(&console_uart);
 
@@ -81,7 +81,7 @@ static void dbg_uart_send(int avail)
 	}
 }
 
-uint8_t dbg_getchar()
+uint8_t dbg_getchar(void)
 {
 	uint8_t chr = 0;
 
@@ -90,7 +90,7 @@ uint8_t dbg_getchar()
 	return chr;
 
 }
-uint8_t __l4_getchar()
+uint8_t __l4_getchar(void)
 	__attribute__ ((weak, alias ("dbg_getchar")));
 
 static void dbg_async_putchar(char chr);
@@ -135,7 +135,7 @@ static void dbg_sync_putchar(char chr)
 		/* wait */ ;
 }
 
-void dbg_start_panic()
+void dbg_start_panic(void)
 {
 	unsigned char chr;
 

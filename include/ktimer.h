@@ -6,7 +6,7 @@
 #ifndef KTIMER_H_
 #define KTIMER_H_
 
-void ktimer_handler();
+void ktimer_handler(void);
 
 /* Returns 0 if successfully handled
  * or number ticks if need to be rescheduled
@@ -22,10 +22,10 @@ typedef struct ktimer_event {
 	void *data;
 } ktimer_event_t;
 
-void ktimer_event_init();
+void ktimer_event_init(void);
 
 int ktimer_event_schedule(uint32_t ticks, ktimer_event_t *kte);
 int ktimer_event_create(uint32_t ticks, ktimer_event_handler_t handler, void *data);
-void ktimer_event_handler();
+void ktimer_event_handler(void);
 
 #endif /* KTIMER_H_ */

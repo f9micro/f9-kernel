@@ -16,8 +16,10 @@
 #define PLL_Q	7	/*!< USB OTG FS, SDIO and RNG Clock =
 			     PLL_VCO / PLLQ */
 
-void sys_clock_init()
+void sys_clock_init(void)
 {
+	volatile uint32_t startup_count, HSE_status;
+
 	/* Enable the FPU */
 	*SCB_CPACR |= (0xf << 20);
 	/* Enable floating point state preservation */
@@ -43,7 +45,8 @@ void sys_clock_init()
 	*RCC_CIR = 0x00000000;
 
 	/* Set up the clock */
-	volatile uint32_t startup_count = 0, HSE_status = 0;
+	startup_count = 0;
+	HSE_status = 0;
 
 	/* Enable HSE */
 	*RCC_CR |= RCC_CR_HSEON;

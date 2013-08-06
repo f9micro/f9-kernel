@@ -31,8 +31,8 @@ static int sampling_handler(struct kprobe *kp, uint32_t *stack,
 	return 0;
 }
 
-extern void ktimer_handler();
-void kdb_show_sampling()
+extern void ktimer_handler(void);
+void kdb_show_sampling(void)
 {
 	int i;
 	int symid;

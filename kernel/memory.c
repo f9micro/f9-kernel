@@ -372,7 +372,7 @@ static char *kdb_mempool_prop(mempool_t *mp)
 	return mempool;
 }
 
-void kdb_dump_mempool()
+void kdb_dump_mempool(void)
 {
 	int i = 0;
 
@@ -389,7 +389,7 @@ void kdb_dump_mempool()
 	}
 }
 
-void kdb_dump_as()
+void kdb_dump_as(void)
 {
 	int idx = 0, nl = 0;
 	as_t *as = NULL;

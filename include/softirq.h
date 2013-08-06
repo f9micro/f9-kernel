@@ -20,7 +20,7 @@ typedef enum {
 	NR_SOFTIRQ
 } softirq_type_t;
 
-typedef void (*softirq_handler_t)();
+typedef void (*softirq_handler_t)(void);
 
 typedef struct {
 	uint32_t 		  schedule;
@@ -29,6 +29,6 @@ typedef struct {
 
 void softirq_register(softirq_type_t type, softirq_handler_t handler);
 void softirq_schedule(softirq_type_t type);
-int softirq_execute();
+int softirq_execute(void);
 
 #endif /* SOFTIRQ_H_ */

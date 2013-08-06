@@ -9,7 +9,7 @@
 
 #define AIRCR_VECTKEY_MASK    ((uint32_t) 0x05FA0000)
 
-void _undefined_handler()
+void _undefined_handler(void)
 {
 	while (1)
 		/* wait */ ;
@@ -19,7 +19,7 @@ void _undefined_handler()
  * weak alias.
  */
 #define DEFAULT_IRQ_VEC(n)						\
-	void nvic_handler##n()						\
+	void nvic_handler##n(void)					\
 		__attribute__((weak, alias("_undefined_handler")));
 
 #define IRQ_VEC_N_OP	DEFAULT_IRQ_VEC

@@ -87,7 +87,7 @@ struct tcb {
 };
 typedef struct tcb tcb_t;
 
-void thread_init_subsys();
+void thread_init_subsys(void);
 
 tcb_t *thread_by_globalid(l4_thread_t globalid);
 
@@ -100,8 +100,8 @@ void thread_switch(tcb_t *thr);
 
 int thread_ispriviliged(tcb_t *thr);
 int thread_isrunnable(tcb_t *thr);
-tcb_t *thread_current();
+tcb_t *thread_current(void);
 
-int schedule();
+int schedule(void);
 
 #endif /* THREAD_H_ */

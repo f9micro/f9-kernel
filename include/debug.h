@@ -35,7 +35,7 @@ typedef enum {
 } dbg_layer_t;
 
 #define dbg_puts(x)	__l4_puts(x)
-uint8_t dbg_getchar();
+uint8_t dbg_getchar(void);
 void dbg_putchar(char chr);
 void dbg_printf(dbg_layer_t layer, char *fmt, ...);
 void dbg_vprintf(dbg_layer_t layer, char *fmt, va_list va);

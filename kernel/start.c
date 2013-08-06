@@ -35,13 +35,17 @@ static char banner[] =
 	"\n";
 
 #ifdef CONFIG_KDB
-void debug_kdb_handler()
+void debug_kdb_handler(void)
 {
 	kdb_handler(dbg_getchar());
 }
 #endif
 
-int main()
+#ifdef DEBUG
+extern dbg_layer_t dbg_layer;
+#endif
+
+int main(void)
 {
 	irq_init();
 	irq_disable();
@@ -49,7 +53,6 @@ int main()
 	dbg_uart_init();
 	dbg_printf(DL_EMERG, "%s", banner);
 #ifdef DEBUG
-	extern dbg_layer_t dbg_layer;
 	dbg_layer = DL_KDB;
 #endif
 
@@ -98,7 +101,7 @@ static void init_copy_seg(uint32_t *src, uint32_t *dst, uint32_t *dst_end)
 		*dst++ = *src++;
 }
 
-void __l4_start()
+void __l4_start(void)
 {
 	/* Copy data segments */
 

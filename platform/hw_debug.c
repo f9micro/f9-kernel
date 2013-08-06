@@ -15,7 +15,7 @@ extern void arch_kprobe_handler(uint32_t *stack);
 
 char fp_comp[FPB_MAX_COMP];
 
-void hw_debug_init()
+void hw_debug_init(void)
 {
 	int i;
 
@@ -36,7 +36,7 @@ void hw_debug_init()
 	}
 }
 
-int get_avail_bkpt()
+int get_avail_bkpt(void)
 {
 	int i;
 	for (i = 0; i < FPB_MAX_COMP; i++) {
@@ -70,8 +70,8 @@ void breakpoint_uninstall(int id)
 	*(FPB_COMP + id) &= ~FPB_COMP_ENABLE;
 }
 
-void debugmon_handler() __NAKED;
-void debugmon_handler()
+void debugmon_handler(void) __NAKED;
+void debugmon_handler(void)
 {
 	/* select interrupted stack */
 	__asm__ __volatile__ ("and r0, lr, #4");

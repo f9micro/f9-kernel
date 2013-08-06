@@ -107,7 +107,7 @@ typedef enum {
 	MPU_ENABLED
 } mpu_state_t;
 
-void memory_init();
+void memory_init(void);
 
 memptr_t mempool_align(int mpid, memptr_t addr);
 int mempool_search(memptr_t base, size_t size);

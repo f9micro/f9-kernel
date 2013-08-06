@@ -12,24 +12,24 @@
 #include <platform/link.h>
 #include <platform/cortex_m.h>
 
-void irq_init();
+void irq_init(void);
 
-static inline void irq_disable()
+static inline void irq_disable(void)
 {
 	__asm__ __volatile__ ("cpsid i");
 }
 
-static inline void irq_enable()
+static inline void irq_enable(void)
 {
 	__asm__ __volatile__ ("cpsie i");
 }
 
-static inline void irq_svc()
+static inline void irq_svc(void)
 {
 	__asm__ __volatile__ ("svc #0");
 }
 
-static inline int irq_number()
+static inline int irq_number(void)
 {
 	int irqno;
 
@@ -119,12 +119,12 @@ static inline int irq_number()
  * */
 
 #define IRQ_HANDLER(name, sub)						\
-	void name() __NAKED;						\
-	void name()							\
+	void name(void) __NAKED;					\
+	void name(void)							\
 	{								\
 		irq_enter();						\
 		sub();							\
-		if(NO_PREEMPTED_IRQ)					\
+		if (NO_PREEMPTED_IRQ)					\
 			schedule_in_irq();				\
 		irq_return();						\
 	}

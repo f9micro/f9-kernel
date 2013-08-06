@@ -8,12 +8,12 @@
 
 #include <types.h>
 
-static inline void wait_for_interrupt()
+static inline void wait_for_interrupt(void)
 {
 	__asm__ __volatile__ ("wfi");
 }
 
-static inline uint32_t read_msp()
+static inline uint32_t read_msp(void)
 {
 	uint32_t result;
 

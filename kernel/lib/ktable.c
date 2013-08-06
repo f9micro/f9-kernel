@@ -20,7 +20,7 @@ static void kdb_register_ktable(ktable_t *kt)
 	}
 }
 
-void kdb_dump_ktable()
+void kdb_dump_ktable(void)
 {
 	int i = 0, j;
 	ktable_t *kt;

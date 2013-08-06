@@ -8,11 +8,11 @@
 
 #include <thread.h>
 
-void create_root_thread();
-void create_kernel_thread();
-void create_idle_thread();
+void create_root_thread(void);
+void create_kernel_thread(void);
+void create_idle_thread(void);
 
-void switch_to_kernel();
+void switch_to_kernel(void);
 void set_kernel_state(thread_state_t state);
 
 #endif /* SYSTHREAD_H_ */

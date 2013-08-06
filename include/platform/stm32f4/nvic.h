@@ -197,7 +197,7 @@ typedef enum IRQn {
 
 
 #define IRQ_VEC_N_HANDLER_DECLARE(n) \
-	void nvic_handler##n ();
+	void nvic_handler##n (void);
 
 #define IRQ_VEC_N_OP	IRQ_VEC_N_HANDLER_DECLARE
 #include "platform/stm32f4/nvic_private.h"

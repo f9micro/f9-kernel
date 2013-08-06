@@ -56,7 +56,7 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 	return 1;
 }
 
-void __memmanage_handler()
+void __memmanage_handler(void)
 {
 	uint32_t mmsr = *((uint32_t *) MPU_FAULT_STATUS_ADDR);
 	uint32_t mmar = *((uint32_t *) MPU_FAULT_ADDRESS_ADDR);

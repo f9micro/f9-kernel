@@ -31,7 +31,7 @@ void set_caller_error(enum user_error_t error)
 }
 
 #ifdef CONFIG_PANIC_DUMP_STACK
-static void panic_dump_stack()
+static void panic_dump_stack(void)
 {
 	uint32_t *current_sp = (uint32_t *) read_msp();
 	int word = 0;

@@ -7,7 +7,7 @@
 #include <kdb.h>
 #include <debug.h>
 
-typedef void (*kdb_function_t)();
+typedef void (*kdb_function_t)(void);
 
 struct kdb_t {
 	char option;
@@ -16,14 +16,14 @@ struct kdb_t {
 	kdb_function_t function;
 };
 
-extern void kdb_dump_events();
-extern void kdb_dump_ktable();
-extern void kdb_show_ktimer();
-extern void kdb_dump_softirq();
-extern void kdb_dump_threads();
-extern void kdb_dump_mempool();
-extern void kdb_dump_as();
-extern void kdb_show_sampling();
+extern void kdb_dump_events(void);
+extern void kdb_dump_ktable(void);
+extern void kdb_show_ktimer(void);
+extern void kdb_dump_softirq(void);
+extern void kdb_dump_threads(void);
+extern void kdb_dump_mempool(void);
+extern void kdb_dump_as(void);
+extern void kdb_show_sampling(void);
 
 struct kdb_t kdb_functions[] =
 {
@@ -80,7 +80,7 @@ struct kdb_t kdb_functions[] =
 	/* Insert KDB functions here */
 };
 
-static void kdb_print_menu()
+static void kdb_print_menu(void)
 {
 	int i;
 

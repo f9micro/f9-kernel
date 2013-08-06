@@ -15,7 +15,7 @@
 
 tcb_t *caller;
 
-void __svc_handler()
+void __svc_handler(void)
 {
 	extern tcb_t *kernel;
 

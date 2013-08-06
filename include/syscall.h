@@ -21,8 +21,8 @@ typedef enum {
 	SYS_MEMORY_CONTROL,
 } syscall_t;
 
-void svc_handler();
-void syscall_init();
-void syscall_handler();
+void svc_handler(void);
+void syscall_init(void);
+void syscall_handler(void);
 
 #endif /* SYSCALL_H_ */

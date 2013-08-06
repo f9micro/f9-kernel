@@ -10,7 +10,7 @@
 #include <lib/stdarg.h>
 
 void __l4_putchar(uint8_t chr);
-uint8_t __l4_getchar();
+uint8_t __l4_getchar(void);
 void __l4_puts(char *str);
 void __l4_printf(char *fmt, ...);
 void __l4_vprintf(char *fmt, va_list va);
