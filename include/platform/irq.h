@@ -100,7 +100,7 @@ static inline int irq_number(void)
 
 #define schedule_in_irq()						\
 	{								\
-		register tcb_t *sel;					\
+		register tcb_t *sel asm ("r1");				\
 		sel = schedule_select();				\
 		if (sel != current)					\
 			context_switch(current, sel);			\
