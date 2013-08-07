@@ -52,4 +52,9 @@ dirs = \
 	board/$(BOARD) \
 	user
 
+# Get special rules
+dir-rules := mk/rules
+$(foreach rule, $(shell ls $(dir-rules)), \
+	$(eval include $(dir-rules)/$(rule)))
+
 include mk/generic.mk

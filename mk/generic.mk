@@ -13,7 +13,6 @@ _dir_create := $(foreach d,$(dirs),$(shell [ -d $(out)/$(d) ] || \
 _dir_y_create := $(foreach d,$(dirs-y),$(shell [ -d $(out)/$(d) ] || \
 	    mkdir -p $(out)/$(d)))
 
-bin-list-y := $(out)/$(PROJECT).elf.bin
 bin-list = $(bin-list-y)
 
 # Decrease verbosity unless you pass V=1
@@ -31,19 +30,14 @@ cmd_c_to_build = $(BUILDCC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) \
 	         -MMD -MF $@.d $< -o $@
 cmd_bin = cat $^ > $@
 
-# FIXME: include make rules by hook
-ifeq "$(CONFIG_SYMMAP)" "y"
-include mk/rules/symmap.mk
-endif
-
 .PHONY: all
 all: $(out)/$(PROJECT).bin
 
+$(out)/%.bin: $(out)/%.elf.bin $(bin-list)
+	$(call quiet,bin,CAT    )
+
 $(out)/%.elf.bin: $(out)/%.elf
 	$(call quiet,obj_to_bin,OBJCOPY)
-
-$(out)/%.bin: $(bin-list)
-	$(call quiet,bin,CAT    )
 
 $(out)/%.list: $(out)/%.elf
 	$(call quiet,elf_to_list,OBJDUMP)

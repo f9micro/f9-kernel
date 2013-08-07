@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+ifeq "$(CONFIG_SYMMAP)" "y"
+
 cmd_elf_to_symmap = $(NM) $< | sort | cut -d' ' -f1,3 | \
 	sed -n "H;/kernel_text_start/h;/end_of_MFlash/{x;p}"| \
 	awk 'BEGIN { STRCOUNT = 0; COUNT = 0; } \
@@ -29,3 +31,5 @@ $(out)/%.symmap.bin: $(out)/%.elf
 	$(call quiet,elf_to_symmap,NM     )
 
 bin-list-$(CONFIG_SYMMAP) += $(out)/$(PROJECT).symmap.bin
+
+endif
