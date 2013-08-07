@@ -90,7 +90,7 @@ void kdb_show_ktimer(void)
 	}
 }
 
-void kdb_show_tickless_verify()
+void kdb_show_tickless_verify(void)
 {
 	static int init = 0;
 	int32_t avg;

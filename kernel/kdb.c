@@ -24,7 +24,7 @@ extern void kdb_dump_threads(void);
 extern void kdb_dump_mempool(void);
 extern void kdb_dump_as(void);
 extern void kdb_show_sampling(void);
-extern void kdb_show_tickless_verify();
+extern void kdb_show_tickless_verify(void);
 
 struct kdb_t kdb_functions[] =
 {
