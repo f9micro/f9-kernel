@@ -16,7 +16,8 @@ kernel-y = \
 	start.o \
 	syscall.o \
 	systhread.o \
-	thread.o
+	thread.o \
+	tickless_verify.o
 
 KDB-$(CONFIG_KDB) = \
 	kdb.o

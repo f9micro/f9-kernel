@@ -12,6 +12,8 @@
 #include <platform/armv7m.h>
 #include <platform/bitops.h>
 #include <platform/irq.h>
+#include <config.h>
+#include <tickless_verify.h>
 
 DECLARE_KTABLE(ktimer_event_t, ktimer_event_table, CONFIG_MAX_KT_EVENTS);
 
@@ -76,6 +78,23 @@ void kdb_show_ktimer(void)
 	if (ktimer_enabled) {
 		dbg_printf(DL_KDB,
 			"Ktimer T=%d D=%d\n", ktimer_time, ktimer_delta);
+	}
+}
+
+void kdb_show_tickless_verify()
+{
+	static int init = 0;
+	int32_t avg;
+	int times;
+
+	if (init == 0) {
+		dbg_printf(DL_KDB, "Init tickless verification...\n");
+		tickless_verify_init();
+		init++;
+	}
+	else {
+		avg = tickless_verify_stat(&times);
+		dbg_printf(DL_KDB, "Times: %d\nAverage: %d\n", times, avg);
 	}
 }
 #endif	/* CONFIG_KDB */
@@ -287,6 +306,10 @@ void ktimer_enter_tickless()
 
 	irq_disable();
 
+#ifdef CONFIG_KDB
+	tickless_verify_start(ktimer_now);
+#endif	/* CONFIG_KDB */
+
 	systick_disable();
 
 	if (ktimer_enabled && ktimer_delta <= KTIMER_MAXTICKS) {
@@ -319,6 +342,10 @@ void ktimer_enter_tickless()
 	ktimer_time += tickless_delta;
 	ktimer_delta -= tickless_delta;
 	ktimer_now += tickless_delta;
+
+#ifdef CONFIG_KDB
+	tickless_verify_stop(ktimer_now);
+#endif	/* CONFIG_KDB */
 
 	init_systick(reload);
 

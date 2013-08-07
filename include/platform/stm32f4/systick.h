@@ -8,6 +8,7 @@
 void init_systick(uint32_t tick_reload);
 void systick_disable();
 uint32_t systick_now();
+uint32_t systick_load();
 uint32_t systick_flag_count();
 
 #endif

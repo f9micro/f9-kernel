@@ -24,6 +24,11 @@ uint32_t systick_now()
 	return *SYSTICK_VAL;
 }
 
+uint32_t systick_load()
+{
+	return *SYSTICK_RELOAD;
+}
+
 uint32_t systick_flag_count()
 {
 	return (*SYSTICK_CTL & (1 << 16)) >> 16;
