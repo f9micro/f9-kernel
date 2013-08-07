@@ -17,7 +17,6 @@ kernel-y = \
 	syscall.o \
 	systhread.o \
 	thread.o \
-	tickless_verify.o
 
 KDB-$(CONFIG_KDB) = \
 	kdb.o
@@ -30,4 +29,7 @@ SYMMAP-$(CONFIG_SYMMAP) = \
 	sampling.o \
 	sampling-kdb.o
 
-kernel-y += $(KDB-y) $(KPROBES-y) $(SYMMAP-y)
+TICKLESS-VERIFY-$(CONFIG_KTIMER_TICKLESS) = \
+	tickless_verify.o
+
+kernel-y += $(KDB-y) $(KPROBES-y) $(SYMMAP-y) $(TICKLESS-VERIFY-y)

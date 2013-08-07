@@ -78,12 +78,14 @@ struct kdb_t kdb_functions[] =
 		.function = kdb_show_sampling
 	},
 #endif
+#ifdef CONFIG_KTIMER_TICKLESS
 	{
 		.option = 'v',
 		.name = "TICKLESS VERIFY",
 		.menuentry = "show tickless scheduling stat",
 		.function = kdb_show_tickless_verify
 	},
+#endif
 	/* Insert KDB functions here */
 };
 

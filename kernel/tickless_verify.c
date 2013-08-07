@@ -3,12 +3,10 @@
  * found in the LICENSE file.
  */
 
-
 #include <debug.h>
 #include <tickless_verify.h>
 #include <platform/stm32f4/registers.h>
 #include <platform/stm32f4/systick.h>
-#include <config.h>
 
 #define TICKLESS_VERIFY_MAX_RECORD 16
 
