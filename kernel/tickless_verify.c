@@ -62,7 +62,7 @@ void tickless_verify_stop(uint32_t ktimer_now)
 	uint32_t systick = systick_load() - systick_now();
 	uint32_t hwtimer = *TIM2_CNT;
 
-	uint32_t ktimer_diff = (ktimer_now + 1 - tickless_verify_start_ktimer) * CONFIG_KTIMER_HEARTBEAT
+	uint32_t ktimer_diff = (ktimer_now - tickless_verify_start_ktimer) * CONFIG_KTIMER_HEARTBEAT
 							+ systick - tickless_verify_start_systick;
 
 	uint32_t hwtimer_diff = (hwtimer - tickless_verify_start_hwtimer) * 2;

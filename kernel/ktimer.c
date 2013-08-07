@@ -49,6 +49,10 @@ static void ktimer_enable(uint32_t delta)
 		ktimer_delta = delta;
 		ktimer_time = 0;
 		ktimer_enabled = 1;
+
+#ifdef CONFIG_KDB
+		tickless_verify_start(ktimer_now);
+#endif	/* CONFIG_KDB */
 	}
 }
 
@@ -63,6 +67,11 @@ void __ktimer_handler(void)
 		if (ktimer_delta == 0) {
 			ktimer_enabled = 0;
 			ktimer_time = ktimer_delta = 0;
+
+#ifdef CONFIG_KDB
+			tickless_verify_stop(ktimer_now);
+#endif	/* CONFIG_KDB */
+
 			softirq_schedule(KTE_SOFTIRQ);
 		}
 	}
@@ -306,10 +315,6 @@ void ktimer_enter_tickless()
 
 	irq_disable();
 
-#ifdef CONFIG_KDB
-	tickless_verify_start(ktimer_now);
-#endif	/* CONFIG_KDB */
-
 	systick_disable();
 
 	if (ktimer_enabled && ktimer_delta <= KTIMER_MAXTICKS) {
@@ -342,10 +347,6 @@ void ktimer_enter_tickless()
 	ktimer_time += tickless_delta;
 	ktimer_delta -= tickless_delta;
 	ktimer_now += tickless_delta;
-
-#ifdef CONFIG_KDB
-	tickless_verify_stop(ktimer_now);
-#endif	/* CONFIG_KDB */
 
 	init_systick(reload);
 
