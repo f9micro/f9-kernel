@@ -64,12 +64,12 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	make -C $(kconfig) -f Makefile.f9micro distclean
+	make -C $(kconfig) -f Makefile.f9 distclean
 	-rm -f $(CONFIG) $(CONFIG).old
 
 $(kconfig)/$(conf):
 	cd $(kconfig) && \
-	  make -f Makefile.f9micro $(conf) obj=`pwd` \
+	  make -f Makefile.f9 $(conf) obj=`pwd` \
 	  CC="gcc" HOSTCC="gcc" LKC_GENPARSER=1
 
 config: $(kconfig)/$(conf)
