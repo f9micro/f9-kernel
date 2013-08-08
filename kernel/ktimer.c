@@ -51,7 +51,7 @@ static void ktimer_enable(uint32_t delta)
 		ktimer_enabled = 1;
 
 #ifdef CONFIG_KDB
-		tickless_verify_start(ktimer_now);
+		tickless_verify_start(ktimer_now, ktimer_delta);
 #endif	/* CONFIG_KDB */
 	}
 }

@@ -12,7 +12,7 @@
 #define TICKLESS_VERIFY_MAX_RECORD 16
 
 void tickless_verify_init(void);
-void tickless_verify_start(uint32_t ktimer_now);
+void tickless_verify_start(uint32_t ktimer_now, uint32_t need);
 void tickless_verify_stop(uint32_t ktimer_now);
 int32_t tickless_verify_stat(int *times);
 
