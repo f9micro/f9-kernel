@@ -33,7 +33,7 @@ extern uint32_t SystemCoreClock;
 
 static void ktimer_init(void)
 {
-	init_systick(CONFIG_KTIMER_HEARTBEAT);
+	init_systick(CONFIG_KTIMER_HEARTBEAT, 0);
 }
 
 static void ktimer_disable(void)
@@ -331,24 +331,21 @@ void ktimer_enter_tickless()
 
 	reload += systick_now();
 
-	init_systick(reload);
+	init_systick(reload, CONFIG_KTIMER_HEARTBEAT);
 
 	wait_for_interrupt();
 
-	if (systick_flag_count()) {
-		reload = CONFIG_KTIMER_HEARTBEAT - (reload - systick_now());
-	}
-	else {
+	if (!systick_flag_count()) {
 		uint32_t tickless_rest = (systick_now() / CONFIG_KTIMER_HEARTBEAT);
-		tickless_delta = tickless_delta - tickless_rest - 1;
-		reload = systick_now() - CONFIG_KTIMER_HEARTBEAT * tickless_rest;
+		tickless_delta = tickless_delta - tickless_rest;
+		reload = systick_now() % CONFIG_KTIMER_HEARTBEAT;
+
+		init_systick(reload, CONFIG_KTIMER_HEARTBEAT);
 	}
 
 	ktimer_time += tickless_delta;
 	ktimer_delta -= tickless_delta;
 	ktimer_now += tickless_delta;
-
-	init_systick(reload);
 
 	irq_enable();
 }
