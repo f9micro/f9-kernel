@@ -1,0 +1,2 @@
+This is a copy of the kconfig code in the kernel (currently 2.6.37-rc1) tweaked
+to suit olibc.
