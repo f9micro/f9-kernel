@@ -62,6 +62,19 @@ flash: $(out)/$(PROJECT).bin
 clean:
 	-rm -rf $(out)
 
+.PHONY: distclean
+distclean: clean
+	make -C $(kconfig) -f Makefile.f9micro distclean
+	-rm -f $(CONFIG) $(CONFIG).old
+
+$(kconfig)/$(conf):
+	cd $(kconfig) && \
+	  make -f Makefile.f9micro $(conf) obj=`pwd` \
+	  CC="gcc" HOSTCC="gcc" LKC_GENPARSER=1
+
+config: $(kconfig)/$(conf)
+	$(kconfig)/$(conf) mk/Config.in
+
 .SECONDARY:
 
 -include $(deps)

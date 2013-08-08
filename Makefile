@@ -2,9 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+CONFIG:=.config
+
+ifneq (,$(wildcard $(CONFIG)))
+  include $(CONFIG)
+else
+  all: config
+endif
+
 BOARD ?= discoveryf4
 
 PROJECT ?= f9
+
+ROOTDIR := $(shell pwd)
+
+# kconfig directory
+kconfig:=$(ROOTDIR)/externals/kconfig
+conf:=mconf
 
 # output directory for build objects
 out ?= build/$(BOARD)
