@@ -7,7 +7,11 @@ CONFIG := .config
 ifneq (,$(wildcard $(CONFIG)))
 include $(CONFIG)
 else
-all: config
+all: unconfigured_error
+.PHONY: unconfigured_error
+unconfigured_error:
+	@echo "Please ensure that F9 Microkernel is configured by 'make config'"
+	@$(MAKE) -s UNKNOWN 2>/dev/null
 endif
 
 BOARD ?= discoveryf4
