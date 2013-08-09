@@ -2,25 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-CONFIG:=.config
+CONFIG := .config
 
 ifneq (,$(wildcard $(CONFIG)))
-  include $(CONFIG)
+include $(CONFIG)
 else
-  all: config
+all: config
 endif
 
 BOARD ?= discoveryf4
 
 PROJECT ?= f9
 
-ROOTDIR := $(shell pwd)
-
-# kconfig directory
-KCONFIG := $(ROOTDIR)/external/kconfig
-
 # output directory for build objects
 out ?= build/$(BOARD)
+
+# output directory for host build targets
+out_host ?= build/host
 
 # toolchain specific configurations; common cflags and ldflags
 include mk/toolchain.mk

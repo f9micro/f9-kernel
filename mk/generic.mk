@@ -30,6 +30,15 @@ cmd_c_to_build = $(BUILDCC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) \
 	         -MMD -MF $@.d $< -o $@
 cmd_bin = cat $^ > $@
 
+# commands to build Kconfig
+KCONFIG := external/kconfig
+cmd_kconfig_prepare = mkdir -p $(out_host) $(out_host)/lxdialog
+cmd_kconfig = $(MAKE) --no-print-directory -C $(KCONFIG) -f Makefile.f9 mconf \
+		obj=$(shell pwd)/$(out_host) \
+		CC="$(BUILDCC)" HOSTCC="$(BUILDCC)" \
+		LKC_GENPARSER=1
+cmd_mconf = $< mk/Config.in
+
 .PHONY: all
 all: $(out)/$(PROJECT).bin
 
@@ -64,16 +73,15 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	$(MAKE) -C $(KCONFIG) -f Makefile.f9 distclean
+	-rm -rf $(out_host)
 	-rm -f $(CONFIG) $(CONFIG).old include/autoconf.h
 
-$(KCONFIG)/mconf:
-	cd $(KCONFIG) && \
-	$(MAKE) -f Makefile.f9 mconf obj=`pwd` \
-	CC="$(BUILDCC)" HOSTCC="$(BUILDCC)" LKC_GENPARSER=1
+$(out_host)/mconf:
+	$(call quiet,kconfig_prepare,PREPARE)
+	$(call quiet,kconfig,CONFIG )
 
-config: $(KCONFIG)/mconf
-	$(KCONFIG)/mconf mk/Config.in
+config: $(out_host)/mconf
+	$(call quiet,mconf,EVAL   )
 
 .SECONDARY:
 

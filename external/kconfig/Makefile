@@ -30,7 +30,7 @@ oldconfig: $(obj)/conf
 	$< --$@ $(Kconfig)
 
 silentoldconfig: $(obj)/conf
-	$(Q)mkdir -p include/generated
+	$(call quiet-command,mkdir -p include/generated)
 	$< --$@ $(Kconfig)
 
 # if no path is given, then use src directory to find file
@@ -42,9 +42,9 @@ endif
 endif
 
 localmodconfig: $(obj)/streamline_config.pl $(obj)/conf
-	$(Q)mkdir -p include/generated
-	$(Q)perl $< $(srctree) $(Kconfig) $(LSMOD_F) > .tmp.config
-	$(Q)if [ -f .config ]; then 					\
+	$(call quiet-command,mkdir -p include/generated)
+	$(call quiet-command,perl $< $(srctree) $(Kconfig) $(LSMOD_F) > .tmp.config)
+	$(call quiet-command,if [ -f .config ]; then 			\
 			cmp -s .tmp.config .config ||			\
 			(mv -f .config .config.old.1;			\
 			 mv -f .tmp.config .config;			\
@@ -53,14 +53,14 @@ localmodconfig: $(obj)/streamline_config.pl $(obj)/conf
 	else								\
 			mv -f .tmp.config .config;			\
 			$(obj)/conf --silentoldconfig $(Kconfig);	\
-	fi
-	$(Q)rm -f .tmp.config
+	fi)
+	$(call quiet-command,rm -f .tmp.config)
 
 localyesconfig: $(obj)/streamline_config.pl $(obj)/conf
-	$(Q)mkdir -p include/generated
-	$(Q)perl $< $(srctree) $(Kconfig) $(LSMOD_F) > .tmp.config
-	$(Q)sed -i s/=m/=y/ .tmp.config
-	$(Q)if [ -f .config ]; then					\
+	$(call quiet-command,mkdir -p include/generated)
+	$(call quiet-command,perl $< $(srctree) $(Kconfig) $(LSMOD_F) > .tmp.config)
+	$(call quiet-command,sed -i s/=m/=y/ .tmp.config)
+	$(call quiet-command,if [ -f .config ]; then			\
 			cmp -s .tmp.config .config ||			\
 			(mv -f .config .config.old.1;			\
 			 mv -f .tmp.config .config;			\
@@ -69,32 +69,32 @@ localyesconfig: $(obj)/streamline_config.pl $(obj)/conf
 	else								\
 			mv -f .tmp.config .config;			\
 			$(obj)/conf --silentoldconfig $(Kconfig);	\
-	fi
-	$(Q)rm -f .tmp.config
+	fi)
+	$(call quiet-command,rm -f .tmp.config)
 
 # Create new linux.pot file
 # Adjust charset to UTF-8 in .po file to accept UTF-8 in Kconfig files
 # The symlink is used to repair a deficiency in arch/um
 update-po-config: $(obj)/kxgettext $(obj)/gconf.glade.h
-	$(Q)echo "  GEN config"
-	$(Q)xgettext --default-domain=linux                         \
-	    --add-comments --keyword=_ --keyword=N_                 \
-	    --from-code=UTF-8                                       \
-	    --files-from=$(srctree)/scripts/kconfig/POTFILES.in     \
-	    --directory=$(srctree) --directory=$(objtree)           \
-	    --output $(obj)/config.pot
-	$(Q)sed -i s/CHARSET/UTF-8/ $(obj)/config.pot
-	$(Q)ln -fs Kconfig.x86 arch/um/Kconfig
-	$(Q)(for i in `ls $(srctree)/arch/*/Kconfig`;    \
-	    do                                           \
-		echo "  GEN $$i";                        \
-		$(obj)/kxgettext $$i                     \
-		     >> $(obj)/config.pot;               \
-	    done )
-	$(Q)msguniq --sort-by-file --to-code=UTF-8 $(obj)/config.pot \
-	    --output $(obj)/linux.pot
-	$(Q)rm -f $(srctree)/arch/um/Kconfig
-	$(Q)rm -f $(obj)/config.pot
+	$(call quiet-command,echo "  GEN config")
+	$(call quiet-command,xgettext --default-domain=linux		\
+	    --add-comments --keyword=_ --keyword=N_			\
+	    --from-code=UTF-8						\
+	    --files-from=$(srctree)/scripts/kconfig/POTFILES.in		\
+	    --directory=$(srctree) --directory=$(objtree)		\
+	    --output $(obj)/config.pot)
+	$(call quiet-command,sed -i s/CHARSET/UTF-8/ $(obj)/config.pot)
+	$(call quiet-command,ln -fs Kconfig.x86 arch/um/Kconfig)
+	$(call quiet-command,(for i in `ls $(srctree)/arch/*/Kconfig`;	\
+	    do								\
+		echo "  GEN $$i";					\
+		$(obj)/kxgettext $$i					\
+		     >> $(obj)/config.pot;				\
+	    done ))
+	$(call quiet-command,msguniq --sort-by-file --to-code=UTF-8 $(obj)/config.pot \
+	    --output $(obj)/linux.pot)
+	$(call quiet-command,rm -f $(srctree)/arch/um/Kconfig)
+	$(call quiet-command,rm -f $(obj)/config.pot)
 
 PHONY += allnoconfig allyesconfig allmodconfig alldefconfig randconfig
 
@@ -114,11 +114,11 @@ ifeq ($(KBUILD_DEFCONFIG),)
 	$< --defconfig $(Kconfig)
 else
 	@echo "*** Default configuration is based on '$(KBUILD_DEFCONFIG)'"
-	$(Q)$< --defconfig=arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kconfig)
+	$(call quiet-command,$< --defconfig=arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kconfig))
 endif
 
 %_defconfig: $(obj)/conf
-	$(Q)$< --defconfig=arch/$(SRCARCH)/configs/$@ $(Kconfig)
+	$(call quiet-command,$< --defconfig=arch/$(SRCARCH)/configs/$@ $(Kconfig))
 
 # Help text used by make help
 help:
@@ -212,7 +212,8 @@ clean-files     += config.pot linux.pot
 PHONY += $(obj)/dochecklxdialog
 $(addprefix $(obj)/,$(lxdialog)): $(obj)/dochecklxdialog
 $(obj)/dochecklxdialog:
-	$(Q)$(CONFIG_SHELL) $(check-lxdialog) -check $(HOSTCC) $(HOST_EXTRACFLAGS) $(HOSTLOADLIBES_mconf)
+	$(call quiet-command,$(CONFIG_SHELL) $(check-lxdialog) \
+		-check $(HOSTCC) $(HOST_EXTRACFLAGS) $(HOSTLOADLIBES_mconf) >/dev/null)
 
 always := dochecklxdialog
 
@@ -328,12 +329,12 @@ $(obj)/%.moc: $(src)/%.h
 	$(KC_QT_MOC) -i $< -o $@
 
 $(obj)/lkc_defs.h: $(src)/lkc_proto.h
-	$(Q)sed < $< > $@ 's/P(\([^,]*\),.*/#define \1 (\*\1_p)/'
+	$(call quiet-command,sed < $< > $@ 's/P(\([^,]*\),.*/#define \1 (\*\1_p)/')
 
 # Extract gconf menu items for I18N support
 $(obj)/gconf.glade.h: $(obj)/gconf.glade
-	$(Q)intltool-extract --type=gettext/glade --srcdir=$(srctree) \
-	$(obj)/gconf.glade
+	$(call quiet-command,intltool-extract --type=gettext/glade --srcdir=$(srctree) \
+	$(obj)/gconf.glade)
 
 ###
 # The following requires flex/bison/gperf
