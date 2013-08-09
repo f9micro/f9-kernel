@@ -9,6 +9,7 @@
 #include <platform/stm32f4/systick.h>
 
 static int tickless_verify_enabled;
+static int tickless_verify_started;
 
 static int tickless_verify_n = 0;
 static int tickless_verify_times = 0;
@@ -53,6 +54,8 @@ void tickless_verify_start(uint32_t ktimer_now, uint32_t need)
 	tickless_verify_start_ktimer = ktimer_now;
 	tickless_verify_start_systick = CONFIG_KTIMER_HEARTBEAT - systick_now();
 	tickless_verify_start_hwtimer = *TIM2_CNT;
+
+	tickless_verify_started = tickless_verify_enabled;
 }
 
 void tickless_verify_stop(uint32_t ktimer_now)
@@ -64,6 +67,9 @@ void tickless_verify_stop(uint32_t ktimer_now)
 							+ systick - tickless_verify_start_systick;
 
 	uint32_t hwtimer_diff = (hwtimer - tickless_verify_start_hwtimer) * 2;
+
+	if (!tickless_verify_started)
+		return;
 
 	if (tickless_verify_n >= TICKLESS_VERIFY_MAX_RECORD)
 		tickless_verify_n = 0;
