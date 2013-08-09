@@ -64,7 +64,7 @@ static void conf_message(const char *fmt, ...)
 
 const char *conf_get_configname(void)
 {
-	char *name = getenv("OLIBC_CONFIG");
+	char *name = getenv("F9_CONFIG");
 
 	return name ? name : ".config";
 }
