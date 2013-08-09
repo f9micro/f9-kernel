@@ -64,16 +64,16 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	make -C $(kconfig) -f Makefile.f9 distclean
+	$(MAKE) -C $(KCONFIG) -f Makefile.f9 distclean
 	-rm -f $(CONFIG) $(CONFIG).old
 
-$(kconfig)/$(conf):
-	cd $(kconfig) && \
-	  make -f Makefile.f9 $(conf) obj=`pwd` \
-	  CC="gcc" HOSTCC="gcc" LKC_GENPARSER=1
+$(KCONFIG)/mconf:
+	cd $(KCONFIG) && \
+	$(MAKE) -f Makefile.f9 mconf obj=`pwd` \
+	CC="$(BUILDCC)" HOSTCC="$(BUILDCC)" LKC_GENPARSER=1
 
-config: $(kconfig)/$(conf)
-	$(kconfig)/$(conf) mk/Config.in
+config: $(KCONFIG)/mconf
+	$(KCONFIG)/mconf mk/Config.in
 
 .SECONDARY:
 

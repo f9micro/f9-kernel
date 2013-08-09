@@ -17,8 +17,7 @@ PROJECT ?= f9
 ROOTDIR := $(shell pwd)
 
 # kconfig directory
-kconfig:=$(ROOTDIR)/externals/kconfig
-conf:=mconf
+KCONFIG := $(ROOTDIR)/externals/kconfig
 
 # output directory for build objects
 out ?= build/$(BOARD)
