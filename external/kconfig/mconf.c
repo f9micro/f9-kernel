@@ -857,6 +857,6 @@ int main(int ac, char **av)
 			"\n\n"));
 	}
 
-	return 0;
+	return conf_write_autoconf();
 }
 

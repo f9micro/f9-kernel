@@ -795,7 +795,7 @@ int conf_write_autoconf(void)
 	struct symbol *sym;
 	const char *str;
 	const char *name;
-	FILE *out, *tristate, *out_h;
+	FILE *out_h;
 	int i;
 	char dir[PATH_MAX+1], buf[PATH_MAX+1];
 	char *s;
@@ -809,40 +809,12 @@ int conf_write_autoconf(void)
 
 	sym_clear_all_valid();
 
-	sprintf(buf, "%s.config.cmd", dir);
-	file_write_dep(buf);
-
-	if (conf_split_config())
-		return 1;
-
-	sprintf(buf, "%s.tmpconfig", dir);
-	out = fopen(buf, "w");
-	if (!out)
-		return 1;
-
-	sprintf(buf, "%s.tmpconfig_tristate", dir);
-	tristate = fopen(buf, "w");
-	if (!tristate) {
-		fclose(out);
-		return 1;
-	}
-
 	sprintf(buf, "%s.tmpconfig.h", dir);
 	out_h = fopen(buf, "w");
 	if (!out_h) {
-		fclose(out);
-		fclose(tristate);
 		return 1;
 	}
 
-	fprintf(out, "#\n"
-		     "# Automatically generated make config: don't edit\n"
-		     "# %s\n"
-		     "#\n",
-		     rootmenu.prompt->text);
-	fprintf(tristate, "#\n"
-			  "# Automatically generated - do not edit\n"
-			  "\n");
 	fprintf(out_h, "/*\n"
 		       " * Automatically generated C config: don't edit\n"
 		       " * %s\n"
@@ -854,9 +826,6 @@ int conf_write_autoconf(void)
 		if (!(sym->flags & SYMBOL_WRITE) || !sym->name)
 			continue;
 
-		/* write symbol to config file */
-		conf_write_symbol(sym, out, false);
-
 		/* update autoconf and tristate files */
 		switch (sym->type) {
 		case S_BOOLEAN:
@@ -865,15 +834,10 @@ int conf_write_autoconf(void)
 			case no:
 				break;
 			case mod:
-				fprintf(tristate, "%s%s=M\n",
-				    CONFIG_, sym->name);
 				fprintf(out_h, "#define %s%s_MODULE 1\n",
 				    CONFIG_, sym->name);
 				break;
 			case yes:
-				if (sym->type == S_TRISTATE)
-					fprintf(tristate,"%s%s=Y\n",
-					    CONFIG_, sym->name);
 				fprintf(out_h, "#define %s%s 1\n",
 				    CONFIG_, sym->name);
 				break;
@@ -898,28 +862,12 @@ int conf_write_autoconf(void)
 			break;
 		}
 	}
-	fclose(out);
-	fclose(tristate);
 	fclose(out_h);
 
 	name = getenv("KCONFIG_AUTOHEADER");
 	if (!name)
-		name = "include/generated/autoconf.h";
+		name = "include/autoconf.h";
 	sprintf(buf, "%s.tmpconfig.h", dir);
-	if (rename(buf, name))
-		return 1;
-	name = getenv("KCONFIG_TRISTATE");
-	if (!name)
-		name = "include/config/tristate.conf";
-	sprintf(buf, "%s.tmpconfig_tristate", dir);
-	if (rename(buf, name))
-		return 1;
-	name = conf_get_autoconfig_name();
-	/*
-	 * This must be the last step, kbuild has a dependency on auto.conf
-	 * and this marks the successful completion of the previous steps.
-	 */
-	sprintf(buf, "%s.tmpconfig", dir);
 	if (rename(buf, name))
 		return 1;
 

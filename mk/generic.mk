@@ -65,7 +65,7 @@ clean:
 .PHONY: distclean
 distclean: clean
 	$(MAKE) -C $(KCONFIG) -f Makefile.f9 distclean
-	-rm -f $(CONFIG) $(CONFIG).old
+	-rm -f $(CONFIG) $(CONFIG).old include/autoconf.h
 
 $(KCONFIG)/mconf:
 	cd $(KCONFIG) && \
