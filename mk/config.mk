@@ -3,5 +3,5 @@
 # found in the LICENSE file.
 
 config_list := $(shell $(CC) -E -dM include/config.h | \
-	sed -n 's/^\#define \(CONFIG_[^ \t]\+\) $$/\1/p' | sort)
+	grep -o "\#define CONFIG_[A-Za-z0-9_]*" | cut -c9- | sort)
 $(foreach c,$(config_list) $(config_list),$(eval $(c)=y))
