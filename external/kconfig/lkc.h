@@ -42,7 +42,7 @@ extern "C" {
 #define N_(text) (text)
 
 #ifndef CONFIG_
-#define CONFIG_ "BR2_"
+#define CONFIG_ "CONFIG_"
 #endif
 
 #define TF_COMMAND	0x0001
