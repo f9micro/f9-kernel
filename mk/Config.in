@@ -21,7 +21,3 @@ config PANIC_DUMP_STACK
 	bool "Dump kernel stack while panic"
 	default y
 
-# FIXME: it is just a hack to prevent doubly including.
-config DONE
-	bool
-	default y
