@@ -61,7 +61,9 @@ void panic_impl(char *fmt, ...)
 	kdb_dump_error();
 #endif
 
+#ifdef CONFIG_PANIC_DUMP_STACK
 	panic_dump_stack();
+#endif
 
 	while (1)
 		/* */ ;
