@@ -820,6 +820,8 @@ int conf_write_autoconf(void)
 		       " * %s\n"
 		       " */\n",
 		       rootmenu.prompt->text);
+	fprintf(out_h, "#ifndef AUTOCONF_H_\n"
+		       "#define AUTOCONF_H_\n");
 
 	for_all_symbols(i, sym) {
 		sym_calc_value(sym);
@@ -862,6 +864,8 @@ int conf_write_autoconf(void)
 			break;
 		}
 	}
+
+	fprintf(out_h, "#endif /* AUTOCONF_H_ */\n");
 	fclose(out_h);
 
 	name = getenv("KCONFIG_AUTOHEADER");
