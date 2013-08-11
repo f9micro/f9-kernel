@@ -1,0 +1,80 @@
+F9 Kprobe Documentation
+
+CONTENTS:
+
+1. Kprobe Introduction
+2. How Does a Kprobe Work
+3. Use Case for Kprobe
+
+1. Kprobe Introduction
+
+F9 KProbe is an in-kernel dynamic instrumentation mechanism,
+currently implemented on hardware breakpoint, which is supported by
+Flash Patch and Breakpoint Unit (FPB) in ARMv7-M Debug Architecture.
+
+2. How Does a Kprobe Work?
+
+F9 Kprobe utilizes DebugMon Exception to trap probed address.
+When a kprobe is registered, one of FPB comparators is set to the probed
+address. For every instruction-fetch, FPB comparators examine the program
+counter.  Once a match happens, FPB generates a DebugMon exception and
+sets bit-BKPT in Debug Fault Status Register (DFSR).
+
+If DebugMon exception occurs without enough exception priority to preempt
+current execution, it will result in Hard Fault due to priority escalation.
+This scenaio often happens in where cpsid instruction is used.
+
+After all pre_handlers of kprobes associated with the probed address are
+called, Kprobe sets bit-MON_STEP in Debug Exception and Monitor Control Register
+in order to single-step the probed address;
+
+Then Kprobe returns to the probed address. And soon a DebugMon exception will
+be generated again once an instruction is executed.
+
+We can check bit-HALTED from DFSR to know if there is a single-step debug event.
+If yes, it is time to call all the post_handlers associated with this address.
+Then execution resumes and continues normally.
+
+3. Use Case for Kprobe
+
+we have kprobes registered/unregistered via these two API.
+
+#include <kprobes.h>
+int kprobe_register(struct kprobe *kp);
+int kprobe_unregister(struct kprobe *kp);
+
+These function return 0 on success, or negative value on error.
+
+After registered, a breakpoint is set at kp->addr. When the breakpoint is hit,
+kp->pre_handler is called right before execution of the probed address, and
+kp->post_handler is called righer after execution of the probed address.
+
+kp->pre_handler or kp->post_handler should be initialized to NULL if not used.
+
+Prototypes for pre_handler/post_handler:
+
+typedef int (*kprobe_pre_handler_t) (struct kprobe *kp, uint32_t *kp_stack,
+		                                     uint32_t *kp_regs);
+typedef int (*kprobe_post_handler_t) (struct kprobe *kp, uint32_t *kp_stack,
+		                                      uint32_t *kp_regs);
+
+kp is the registerd kprobe associated with the probed address, and kp_stack
+points to the interrupted stack which could be Main_SP or Process_SP.
+
+  User can access and modify the context of the probed address through
+kp_stack and kp_regs.
+
+kp_stack is for saving register r0-r3, r12, lr, pc, psr, and kp_regs is for
+saving register from r4 to r11.
+
+An example to access r0 and r4 : kp_stack[REG_R0], kp_regs[KP_REG_R4].
+
+Below is a complete example for registering a kprobe at ktimer_handler() function.
+
+int foo_handler(struct kprobe *kp, uint32_t *stack, uint32_t *kp_regs);
+
+struct kprobe kp_foo;
+kp_foo.addr = ktimer_handler;
+kp_foo.pre_handler = foo_handler;
+kp_foo.post_handler = NULL;
+kprobe_register(&kp_foo);
