@@ -71,6 +71,47 @@ int kprobe_unregister(struct kprobe *kp)
 	return 0;
 }
 
+static int __kretprobe_post_handler(struct kprobe *kp, uint32_t *stack,
+			   uint32_t *kp_regs)
+{
+	struct kretprobe * rp = (struct kretprobe *) kp;
+
+	kprobe_unregister(kp);
+
+	kp->addr = rp->backup_addr;
+
+	kretprobe_register(rp);
+	return 0;
+}
+
+static int __kretprobe_pre_handler(struct kprobe *kp, uint32_t *stack,
+			   uint32_t *kp_regs)
+{
+	struct kretprobe * rp = (struct kretprobe *) kp;
+
+	kprobe_unregister(kp);
+
+	rp->backup_addr = kp->addr;
+	kp->addr = (void *) stack[REG_LR];
+	kp->pre_handler = rp->handler;
+	kp->post_handler = __kretprobe_post_handler;
+
+	kprobe_register(kp);
+	return 0;
+}
+
+int kretprobe_register(struct kretprobe *rp)
+{
+	rp->kp.pre_handler = __kretprobe_pre_handler;
+	rp->kp.post_handler = NULL;
+	return kprobe_register((struct kprobe *) rp);
+}
+
+int kretprobe_unregister(struct kretprobe *rp)
+{
+	return kprobe_unregister(&rp->kp);
+}
+
 void kprobe_prebreak(uint32_t *stack, uint32_t *kp_regs)
 {
 	struct kprobe *kp = kp_list;

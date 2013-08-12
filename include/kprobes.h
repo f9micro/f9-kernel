@@ -23,9 +23,13 @@ enum kp_register_t {
 };
 
 struct kprobe;
+struct kretprobe;
+
 typedef int (*kprobe_pre_handler_t) (struct kprobe *kp, uint32_t *stack,
 				     uint32_t *kp_regs);
 typedef int (*kprobe_post_handler_t) (struct kprobe *kp, uint32_t *stack,
+				      uint32_t *kp_regs);
+typedef int (*kretprobe_handler_t) (struct kprobe *kp, uint32_t *stack,
 				      uint32_t *kp_regs);
 
 struct kprobe {
@@ -38,9 +42,19 @@ struct kprobe {
 	int bkptid;
 };
 
-void kprobe_init(void);
 int kprobe_register(struct kprobe *p);
 int kprobe_unregister(struct kprobe *p);
+
+struct kretprobe {
+	struct kprobe kp;
+	kretprobe_handler_t handler;
+	void *backup_addr;
+};
+
+int kretprobe_register(struct kretprobe *p);
+int kretprobe_uinregister(struct kretprobe *p);
+
+void kprobe_init(void);
 void kprobe_prebreak(uint32_t *stack, uint32_t *kp_regs);
 void kprobe_postbreak(uint32_t *stack, uint32_t *kp_regs);
 struct kprobe *kplist_search(void *addr);
