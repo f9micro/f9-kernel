@@ -6,7 +6,7 @@ systems inspired by famous [L4 microkernel](http://en.wikipedia.org/wiki/L4_micr
 The motivation of F9 microkernel is to deploy modern kernel techniques to
 support running real-time and time-sharing applications (for example, wireless
 communications) for ARM Cortex-M series microprocessors with efficiency
-(performanace + power consumption) and security (memory protection + isolated
+(performance + power consumption) and security (memory protection + isolated
 execution) in mind.
 
 
@@ -143,7 +143,7 @@ files are described as following:
 * platform/build.mk:
   - platform-specific configurations; cflags/ldflags for CPU and FPU
 * board/`<BOARD_NAME>`/build.mk:
-  - board-specific configurations; CHIP model, periperals
+  - board-specific configurations; CHIP model, peripherals
 * rules.mk: the magic of build system
 
 Configuration is the initial step in the build of F9 Microkernel for your
