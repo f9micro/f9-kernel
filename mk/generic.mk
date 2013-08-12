@@ -35,8 +35,7 @@ KCONFIG := external/kconfig
 cmd_kconfig_prepare = mkdir -p $(out_host) $(out_host)/lxdialog
 cmd_kconfig = $(MAKE) --no-print-directory -C $(KCONFIG) -f Makefile.f9 mconf \
 		obj=$(shell pwd)/$(out_host) \
-		CC="$(BUILDCC)" HOSTCC="$(BUILDCC)" \
-		LKC_GENPARSER=1
+		CC="$(BUILDCC)" HOSTCC="$(BUILDCC)"
 cmd_mconf = $< mk/Config.in
 
 .PHONY: all

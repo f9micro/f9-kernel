@@ -98,9 +98,6 @@ STM32F4DISCOVERY board with built F9 binary image.
 
 Other build dependency includes: (for Debian/Ubuntu)
 * libncurses5-dev
-* flex
-* bison
-* gperf
 
 When developing on top of F9 Microkernel, you do not have the luxury of using
 a source level debugger such as gdb. There are still a number of techniques at
