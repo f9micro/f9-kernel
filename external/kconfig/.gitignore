@@ -4,4 +4,3 @@ lex.zconf.c
 mconf
 zconf.hash.c
 zconf.tab.c
-*.c_shipped
