@@ -92,12 +92,21 @@ hardfloat support. The known working toolchains are as following
   - Verified versions: arm-2012.03, arm-2013.05
 * [GNU Tools for ARM Embedded Processors](https://launchpad.net/gcc-arm-embedded)
 
+Other build dependency includes: (for Debian/Ubuntu)
+* libncurses5-dev
+
+Configuration is the initial step in the build of F9 Microkernel for your
+target, and you can use 'make config' to specify the options from which to
+choose. Regardless of the configuration method you use or the actual
+configuration options you choose, the build system will generate a `.config`
+file at the end of the configuration and will generate a configuration header
+file, `include/autoconfig.h` for C programs.
+
+Then, just execute `make` to get the generated files in directory `build`.
+
 For flashing and debugging on the STM32F40x, [stlink](https://github.com/texane/stlink) is required.
 With `stlink` in your path, command "make flash" will flash your
 STM32F4DISCOVERY board with built F9 binary image.
-
-Other build dependency includes: (for Debian/Ubuntu)
-* libncurses5-dev
 
 When developing on top of F9 Microkernel, you do not have the luxury of using
 a source level debugger such as gdb. There are still a number of techniques at
@@ -145,13 +154,6 @@ files are described as following:
 * board/`<BOARD_NAME>`/build.mk:
   - board-specific configurations; CHIP model, peripherals
 * rules.mk: the magic of build system
-
-Configuration is the initial step in the build of F9 Microkernel for your
-target, and you can use 'make config' to specify the options from which to
-choose. Regardless of the configuration method you use or the actual
-configuration options you choose, the build system will generate a .config
-file at the end of the configuration and will generate a configuration header
-file for C programs.
 
 You can modify source file board/`<BOARD_NAME>`/board.[ch] to specify the
 preferable resource assignment. To get acquainted with the configuration of
