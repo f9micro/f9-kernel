@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-config_list := $(shell touch include/autoconf.h ; $(CC) -E -dM include/config.h | \
+AUTOCONF_H := include/autoconf.h
+config_list := $(shell [ -f $(AUTOCONF_H) ] || touch $(AUTOCONF_H) ; $(CC) -E -dM include/config.h | \
 	grep -o "\#define CONFIG_[A-Za-z0-9_]*" | cut -c9- | sort)
 $(foreach c,$(config_list) $(config_list),$(eval $(c)=y))
