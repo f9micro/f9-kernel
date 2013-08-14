@@ -32,15 +32,18 @@ CFLAGS_INCLUDE = $(foreach i,$(includes),-I$(i) )
 CFLAGS_DEFINE = \
 	-D __PLATFORM__=$(CHIP) \
 	-D __BOARD__=$(BOARD) \
-	-D'INC_PLAT(x)=<platform/__PLATFORM__/x>' \
-	-DDEBUG
+	-D'INC_PLAT(x)=<platform/__PLATFORM__/x>'
 CFLAGS_MISC_DEFINE = \
 	-DGIT_HEAD=\"$(GIT_HEAD)\" \
 	-DMACH_TYPE=\"$(MACH_TYPE)\" \
 	-DBUILD_TIME=\"$(BUILD_TIME)\"
 CPPFLAGS = \
-	-include include/config.h \
+	-include include/autoconf.h \
 	$(CFLAGS_DEFINE) $(CFLAGS_INCLUDE) $(EXTRA_CFLAGS)
+# FIXME: should be configurable
+CPPFLAGS += \
+	-DDEBUG \
+	-DCONFIG_DEBUG -DCONFIG_KDB
 CFLAGS = \
 	-std=gnu99 -isystem \
 	-nostdlib -ffreestanding \

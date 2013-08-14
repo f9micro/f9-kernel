@@ -4,6 +4,63 @@
 
 mainmenu "F9 Microkernel Configurations"
 
+menu "Limitations"
+config MAX_THREADS
+	int "Maximum amount of threads"
+	default 32
+
+config MAX_KT_EVENTS
+	int "Maximum amount of kernel timer events"
+	default 64
+
+config MAX_ASYNC_EVENTS
+	int "Maximum of asynchronous events"
+	default 32
+
+config MAX_ADRESS_SPACES
+	int "Maximum of address space"
+	default 16
+
+config MAX_FPAGES
+	int "Maximum flexible pages"
+	default 256
+endmenu
+
+menu "Ktimer tweaks"
+config KTIMER_HEARTBEAT
+	int "Heartbeat value of ktimer"
+	default 65536
+	help
+	  Current implementation utilizes SysTick, and the value of
+	  CONFIG_KTIMER_HEARTBEAT is its initial reload value.
+
+config KTIMER_MINTICKS
+	int "Minimal ticks scheduled by ktimer"
+	default 128
+endmenu
+
+menu "Flexible page tweaks"
+config LARGEST_FPAGE_SHIFT
+	int "Largest shift of flexible pages"
+	default 16
+
+config SMALLEST_FPAGE_SHIFT
+	int "Smallest shift of flexible pages"
+	default 8
+endmenu
+
+menu "Thread tweaks"
+config INTR_THREAD_MAX
+	int "Maximum of interrupt threads"
+	default 256
+endmenu
+
+menu "KIP theaks"
+config KIP_EXTRA_SIZE
+	int "Size of extra information on KIP"
+	default 128
+endmenu
+
 config KPROBES
 	bool "KProbes: dynamic instrumentation system"
 	default y

@@ -100,7 +100,7 @@ target, and you can use 'make config' to specify the options from which to
 choose. Regardless of the configuration method you use or the actual
 configuration options you choose, the build system will generate a `.config`
 file at the end of the configuration and will generate a configuration header
-file, `include/autoconfig.h` for C programs.
+file, `include/autoconf.h` for C programs.
 
 Then, just execute `make` to get the generated files in directory `build`.
 
@@ -157,7 +157,7 @@ files are described as following:
 
 You can modify source file board/`<BOARD_NAME>`/board.[ch] to specify the
 preferable resource assignment. To get acquainted with the configuration of
-F9 Microkernel internals, file include/config.h is the entry point:
+F9 Microkernel internals, file `include/autoconf.h` is the entry point:
 
 * `CONFIG_DEBUG`
   - Enable serial input/out for debugging purpose. An additional service for

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 AUTOCONF_H := include/autoconf.h
-config_list := $(shell [ -f $(AUTOCONF_H) ] || touch $(AUTOCONF_H) ; $(CC) -E -dM include/config.h | \
+config_list := $(shell [ -f $(AUTOCONF_H) ] || touch $(AUTOCONF_H) ; \
+	$(CC) $(CPPFLAGS) -E -dM $(AUTOCONF_H) | \
 	grep -o "\#define CONFIG_[A-Za-z0-9_]*" | cut -c9- | sort)
 $(foreach c,$(config_list) $(config_list),$(eval $(c)=y))
