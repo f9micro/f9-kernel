@@ -100,6 +100,8 @@ static memptr_t addr_align(memptr_t addr, size_t size)
 	return (addr & ~(size - 1));
 }
 
+#define CONFIG_SMALLEST_FPAGE_SIZE	(1 << CONFIG_SMALLEST_FPAGE_SHIFT)
+
 memptr_t mempool_align(int mpid, memptr_t addr)
 {
 	switch (memmap[mpid].flags & MP_FPAGE_MASK) {
