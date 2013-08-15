@@ -29,7 +29,7 @@ SYMMAP-$(CONFIG_SYMMAP) = \
 	sampling.o \
 	sampling-kdb.o
 
-TICKLESS-VERIFY-$(CONFIG_KTIMER_TICKLESS) = \
-	tickless_verify.o
+TICKLESS-VERIFY-$(CONFIG_KTIMER_TICKLESS_VERIFY) = \
+	tickless-verify.o
 
 kernel-y += $(KDB-y) $(KPROBES-y) $(SYMMAP-y) $(TICKLESS-VERIFY-y)

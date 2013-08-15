@@ -4,7 +4,7 @@
  */
 
 #include <debug.h>
-#include <tickless_verify.h>
+#include <tickless-verify.h>
 #include <platform/stm32f4/registers.h>
 #include <platform/stm32f4/systick.h>
 

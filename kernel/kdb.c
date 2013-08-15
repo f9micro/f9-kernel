@@ -78,7 +78,7 @@ struct kdb_t kdb_functions[] =
 		.function = kdb_show_sampling
 	},
 #endif
-#ifdef CONFIG_KTIMER_TICKLESS
+#if defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
 	{
 		.option = 'v',
 		.name = "TICKLESS VERIFY",

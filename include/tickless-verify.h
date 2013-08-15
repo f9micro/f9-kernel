@@ -3,7 +3,6 @@
  * found in the LICENSE file.
  */
 
-
 #ifndef TICKLESS_VERIFY_H
 #define TICKLESS_VERIFY_H
 

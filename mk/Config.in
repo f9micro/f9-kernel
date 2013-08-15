@@ -26,7 +26,15 @@ config MAX_FPAGES
 	default 256
 endmenu
 
-menu "Ktimer tweaks"
+menu "Kernel Timer"
+config KTIMER_TICKLESS
+	bool "Tickless scheduling"
+	default y
+
+config KTIMER_TICKLESS_VERIFY
+	bool "Track tickless scheduling status"
+	default n
+
 config KTIMER_HEARTBEAT
 	int "Heartbeat value of ktimer"
 	default 65536
@@ -60,10 +68,6 @@ config KIP_EXTRA_SIZE
 	int "Size of extra information on KIP"
 	default 128
 endmenu
-
-config KTIMER_TICKLESS
-	bool "Tickless scheduling"
-	default y
 
 config KPROBES
 	bool "KProbes: dynamic instrumentation system"

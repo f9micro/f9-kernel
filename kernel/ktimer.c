@@ -12,7 +12,10 @@
 #include <platform/armv7m.h>
 #include <platform/bitops.h>
 #include <platform/irq.h>
+
+#if defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
 #include <tickless_verify.h>
+#endif
 
 DECLARE_KTABLE(ktimer_event_t, ktimer_event_table, CONFIG_MAX_KT_EVENTS);
 
@@ -49,7 +52,8 @@ static void ktimer_enable(uint32_t delta)
 		ktimer_time = 0;
 		ktimer_enabled = 1;
 
-#ifdef CONFIG_KDB
+#if defined(CONFIG_KDB) && \
+	defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
 		tickless_verify_start(ktimer_now, ktimer_delta);
 #endif	/* CONFIG_KDB */
 	}
@@ -67,7 +71,8 @@ void __ktimer_handler(void)
 			ktimer_enabled = 0;
 			ktimer_time = ktimer_delta = 0;
 
-#ifdef CONFIG_KDB
+#if defined(CONFIG_KDB) && \
+	defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
 			tickless_verify_stop(ktimer_now);
 #endif	/* CONFIG_KDB */
 
@@ -89,6 +94,7 @@ void kdb_show_ktimer(void)
 	}
 }
 
+#if defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
 void kdb_show_tickless_verify(void)
 {
 	static int init = 0;
@@ -105,6 +111,7 @@ void kdb_show_tickless_verify(void)
 		dbg_printf(DL_KDB, "Times: %d\nAverage: %d\n", times, avg);
 	}
 }
+#endif
 #endif	/* CONFIG_KDB */
 
 static void ktimer_event_recalc(ktimer_event_t* event, uint32_t new_delta)
