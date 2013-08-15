@@ -26,7 +26,9 @@ CFLAGS_WARN = \
 	-Werror-implicit-function-declaration -Wno-format-security	\
 	-fno-delete-null-pointer-checks -Wdeclaration-after-statement	\
 	-Wno-pointer-sign -fno-strict-overflow -fconserve-stack
-CFLAGS_OPT = -O1 -fno-toplevel-reorder
+CFLAGS_OPT = \
+	-O1 -fno-toplevel-reorder \
+	-fdata-sections -ffunction-sections
 CFLAGS_DEBUG = -g3
 CFLAGS_INCLUDE = $(foreach i,$(includes),-I$(i) )
 CFLAGS_DEFINE = \
@@ -48,5 +50,8 @@ CFLAGS = \
 	-std=gnu99 -isystem \
 	-nostdlib -ffreestanding \
 	$(CPPFLAGS) $(CFLAGS_CPU) $(CFLAGS_OPT) $(CFLAGS_DEBUG) $(CFLAGS_WARN) $(CFLAGS_y) $(CFLAGS_MISC_DEFINE)
+
+LDFLAGS = \
+	--gc-sections
 
 LIBGCC = $(shell $(CC) -print-libgcc-file-name)
