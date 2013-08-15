@@ -61,6 +61,10 @@ config KIP_EXTRA_SIZE
 	default 128
 endmenu
 
+config KTIMER_TICKLESS
+	bool "Tickless scheduling"
+	default y
+
 config KPROBES
 	bool "KProbes: dynamic instrumentation system"
 	default y

@@ -12,7 +12,6 @@
 #include <platform/armv7m.h>
 #include <platform/bitops.h>
 #include <platform/irq.h>
-#include <config.h>
 #include <tickless_verify.h>
 
 DECLARE_KTABLE(ktimer_event_t, ktimer_event_table, CONFIG_MAX_KT_EVENTS);
