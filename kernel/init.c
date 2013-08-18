@@ -14,6 +14,7 @@
 extern void __l4_start(void);
 extern void memmanage_handler(void);
 extern void debugmon_handler(void);
+extern void pendsv_handler(void);
 
 void busfault(void)
 {
@@ -72,7 +73,7 @@ void (* const g_pfnVectors[])(void) = {
 	nointerrupt,
 #endif
 	0,				/* Reserved */
-	nointerrupt,			/* PendSV handler */
+	pendsv_handler,			/* PendSV handler */
 	ktimer_handler, 		/* SysTick handler */
 
 	/* Chip Level: vendor specific */

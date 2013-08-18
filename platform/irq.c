@@ -3,6 +3,7 @@
  * found in the LICENSE file.
  */
 
+#include <platform/irq.h>
 #include "board.h"
 
 void irq_init(void)
@@ -20,7 +21,16 @@ void irq_init(void)
 
 	/* Priority 0x2 - debug_uart */
 
-	NVIC_SetPriority(SysTick_IRQn, 0x2, 0);
-	NVIC_SetPriority(SVCall_IRQn, 0x2, 0);
+	NVIC_SetPriority(SysTick_IRQn, 0x3, 0);
+
+	NVIC_SetPriority(SVCall_IRQn, 0xF, 0);
+	NVIC_SetPriority(PendSV_IRQn, 0xF, 0);
 }
 
+void pendsv_handler(void) __NAKED;
+void pendsv_handler(void)
+{
+	irq_enter();
+	schedule_in_irq();
+	irq_return();
+}
