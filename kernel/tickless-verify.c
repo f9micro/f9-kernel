@@ -3,10 +3,11 @@
  * found in the LICENSE file.
  */
 
+#include INC_PLAT(systick.h)
+#include INC_PLAT(hwtimer.h)
+
 #include <debug.h>
-#include <tickless-verify.h>
-#include <platform/stm32f4/registers.h>
-#include <platform/stm32f4/systick.h>
+#include <tickless_verify.h>
 
 static int tickless_verify_enabled;
 static int tickless_verify_started;
@@ -30,10 +31,7 @@ void tickless_verify_init()
 	int i;
 
 	if (tickless_verify_enabled == 0) {
-		*RCC_APB1ENR |= 0x00000001;
-		*TIM2_PSC = 0;
-		*TIM2_ARR = 0xFFFFFFFF;
-		*TIM2_CR1 = 0x00000001;
+		hwtimer_init();
 
 		for (i = 0; i < TICKLESS_VERIFY_MAX_RECORD; i++) {
 			tickless_verify_records[i].need = 0;
@@ -53,7 +51,7 @@ void tickless_verify_start(uint32_t ktimer_now, uint32_t need)
 	tickless_verify_start_need = need;
 	tickless_verify_start_ktimer = ktimer_now;
 	tickless_verify_start_systick = CONFIG_KTIMER_HEARTBEAT - systick_now();
-	tickless_verify_start_hwtimer = *TIM2_CNT;
+	tickless_verify_start_hwtimer = hwtimer_now();
 
 	tickless_verify_started = tickless_verify_enabled;
 }
@@ -61,7 +59,7 @@ void tickless_verify_start(uint32_t ktimer_now, uint32_t need)
 void tickless_verify_stop(uint32_t ktimer_now)
 {
 	uint32_t systick = CONFIG_KTIMER_HEARTBEAT - systick_now();
-	uint32_t hwtimer = *TIM2_CNT;
+	uint32_t hwtimer = hwtimer_now();
 
 	uint32_t ktimer_diff = (ktimer_now - tickless_verify_start_ktimer) * CONFIG_KTIMER_HEARTBEAT
 							+ systick - tickless_verify_start_systick;
