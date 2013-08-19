@@ -7,7 +7,8 @@ chip-y = \
 	rcc.o \
 	usart.o \
 	nvic.o \
-	systick.o
+	systick.o \
+	hwtimer.o
 
 # FIXME: move to toplevel definitions
 define platform-flash-command

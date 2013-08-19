@@ -6,6 +6,7 @@
 #include <platform/irq.h>
 #include <softirq.h>
 #include <thread.h>
+#include <ktimer.h>
 
 /*
  * @file systhread.c
@@ -84,5 +85,9 @@ static void kernel_thread(void)
 static void idle_thread(void)
 {
 	while (1)
+#ifdef CONFIG_KTIMER_TICKLESS
+		ktimer_enter_tickless();
+#else
 		wait_for_interrupt();
+#endif /* CONFIG_KTIMER_TICKLESS */
 }

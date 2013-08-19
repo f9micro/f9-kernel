@@ -24,6 +24,7 @@ extern void kdb_dump_threads(void);
 extern void kdb_dump_mempool(void);
 extern void kdb_dump_as(void);
 extern void kdb_show_sampling(void);
+extern void kdb_show_tickless_verify(void);
 
 struct kdb_t kdb_functions[] =
 {
@@ -75,6 +76,14 @@ struct kdb_t kdb_functions[] =
 		.name = "TOP",
 		.menuentry = "show sampling",
 		.function = kdb_show_sampling
+	},
+#endif
+#if defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
+	{
+		.option = 'v',
+		.name = "TICKLESS VERIFY",
+		.menuentry = "show tickless scheduling stat",
+		.function = kdb_show_tickless_verify
 	},
 #endif
 	/* Insert KDB functions here */

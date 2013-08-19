@@ -13,6 +13,10 @@
 #include <platform/bitops.h>
 #include <platform/irq.h>
 
+#if defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
+#include <tickless-verify.h>
+#endif
+
 DECLARE_KTABLE(ktimer_event_t, ktimer_event_table, CONFIG_MAX_KT_EVENTS);
 
 /* Next chain of events which will be executed */
@@ -31,7 +35,7 @@ extern uint32_t SystemCoreClock;
 
 static void ktimer_init(void)
 {
-	init_systick(CONFIG_KTIMER_HEARTBEAT);
+	init_systick(CONFIG_KTIMER_HEARTBEAT, 0);
 }
 
 static void ktimer_disable(void)
@@ -47,6 +51,11 @@ static void ktimer_enable(uint32_t delta)
 		ktimer_delta = delta;
 		ktimer_time = 0;
 		ktimer_enabled = 1;
+
+#if defined(CONFIG_KDB) && \
+	defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
+		tickless_verify_start(ktimer_now, ktimer_delta);
+#endif	/* CONFIG_KDB */
 	}
 }
 
@@ -61,6 +70,12 @@ void __ktimer_handler(void)
 		if (ktimer_delta == 0) {
 			ktimer_enabled = 0;
 			ktimer_time = ktimer_delta = 0;
+
+#if defined(CONFIG_KDB) && \
+	defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
+			tickless_verify_stop(ktimer_now);
+#endif	/* CONFIG_KDB */
+
 			softirq_schedule(KTE_SOFTIRQ);
 		}
 	}
@@ -78,6 +93,25 @@ void kdb_show_ktimer(void)
 			"Ktimer T=%d D=%d\n", ktimer_time, ktimer_delta);
 	}
 }
+
+#if defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
+void kdb_show_tickless_verify(void)
+{
+	static int init = 0;
+	int32_t avg;
+	int times;
+
+	if (init == 0) {
+		dbg_printf(DL_KDB, "Init tickless verification...\n");
+		tickless_verify_init();
+		init++;
+	}
+	else {
+		avg = tickless_verify_stat(&times);
+		dbg_printf(DL_KDB, "Times: %d\nAverage: %d\n", times, avg);
+	}
+}
+#endif
 #endif	/* CONFIG_KDB */
 
 static void ktimer_event_recalc(ktimer_event_t* event, uint32_t new_delta)
@@ -275,3 +309,50 @@ void kdb_dump_events(void)
 	}
 }
 #endif
+
+#ifdef CONFIG_KTIMER_TICKLESS
+
+#define KTIMER_MAXTICKS (SYSTICK_MAXRELOAD / CONFIG_KTIMER_HEARTBEAT)
+
+void ktimer_enter_tickless()
+{
+	uint32_t tickless_delta;
+	uint32_t reload;
+
+	irq_disable();
+
+	systick_disable();
+
+	if (ktimer_enabled && ktimer_delta <= KTIMER_MAXTICKS) {
+		tickless_delta = ktimer_delta;
+	}
+	else {
+		tickless_delta = KTIMER_MAXTICKS;
+	}
+
+	/* Minus 1 for current value */
+	tickless_delta -= 1;
+
+	reload = CONFIG_KTIMER_HEARTBEAT * tickless_delta;
+
+	reload += systick_now();
+
+	init_systick(reload, CONFIG_KTIMER_HEARTBEAT);
+
+	wait_for_interrupt();
+
+	if (!systick_flag_count()) {
+		uint32_t tickless_rest = (systick_now() / CONFIG_KTIMER_HEARTBEAT);
+		tickless_delta = tickless_delta - tickless_rest;
+		reload = systick_now() % CONFIG_KTIMER_HEARTBEAT;
+
+		init_systick(reload, CONFIG_KTIMER_HEARTBEAT);
+	}
+
+	ktimer_time += tickless_delta;
+	ktimer_delta -= tickless_delta;
+	ktimer_now += tickless_delta;
+
+	irq_enable();
+}
+#endif /* CONFIG_KTIMER_TICKLESS */
