@@ -14,7 +14,7 @@
 #include <platform/irq.h>
 
 #if defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
-#include <tickless_verify.h>
+#include <tickless-verify.h>
 #endif
 
 DECLARE_KTABLE(ktimer_event_t, ktimer_event_table, CONFIG_MAX_KT_EVENTS);

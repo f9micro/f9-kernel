@@ -7,7 +7,7 @@
 #include INC_PLAT(hwtimer.h)
 
 #include <debug.h>
-#include <tickless_verify.h>
+#include <tickless-verify.h>
 
 static int tickless_verify_enabled;
 static int tickless_verify_started;
