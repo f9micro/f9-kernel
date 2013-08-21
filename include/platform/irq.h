@@ -51,17 +51,20 @@ static inline int irq_number(void)
 	__asm__ __volatile__ ("mov r0, %0"				\
 			: : "r" ((ctx)->regs) : "r0");			\
 	__asm__ __volatile__ ("stm r0, {r4-r11}");			\
-	__asm__ __volatile__ ("cmp lr, #0xFFFFFFF9");			\
+	__asm__ __volatile__ ("and r4, lr, 0xf":::"r4");	\
+	__asm__ __volatile__ ("teq r4, #0x9");			\
 	__asm__ __volatile__ ("ite eq");				\
 	__asm__ __volatile__ ("mrseq r0, msp"::: "r0");			\
 	__asm__ __volatile__ ("mrsne r0, psp"::: "r0");			\
-	__asm__ __volatile__ ("mov %0, r0" : "=r" ((ctx)->sp) : );
+	__asm__ __volatile__ ("mov %0, r0" : "=r" ((ctx)->sp) : );	\
+	__asm__ __volatile__ ("mov %0, lr" : "=r" ((ctx)->ret) : );
 
 #define irq_restore(ctx) \
 	__asm__ __volatile__ ("mov lr, %0" : : "r" ((ctx)->ret));	\
 	__asm__ __volatile__ ("mov r0, %0" : : "r" ((ctx)->sp));	\
 	__asm__ __volatile__ ("mov r2, %0" : : "r" ((ctx)->ctl));	\
-	__asm__ __volatile__ ("cmp lr, #0xFFFFFFF9");			\
+	__asm__ __volatile__ ("and r4, lr, 0xf":::"r4");	\
+	__asm__ __volatile__ ("teq r4, #0x9");			\
 	__asm__ __volatile__ ("ite eq");				\
 	__asm__ __volatile__ ("msreq msp, r0");				\
 	__asm__ __volatile__ ("msrne psp, r0");				\
