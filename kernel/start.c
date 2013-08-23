@@ -50,6 +50,10 @@ int main(void)
 	irq_init();
 	irq_disable();
 
+#ifdef CONFIG_FPU
+	*SCB_CPACR |= (SCB_CPACR_CP10_FULL | SCB_CPACR_CP11_FULL);
+#endif
+
 	dbg_uart_init();
 	dbg_printf(DL_EMERG, "%s", banner);
 #ifdef DEBUG

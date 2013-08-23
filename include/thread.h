@@ -59,6 +59,10 @@ typedef struct {
 	uint32_t ret;
 	uint32_t ctl;
 	uint32_t regs[8];
+#ifdef CONFIG_FPU
+	uint64_t fp_regs[8];
+	uint32_t fp_flag;
+#endif
 } context_t;
 
 /**

@@ -86,3 +86,8 @@ config PANIC_DUMP_STACK
 	bool "Dump kernel stack while panic"
 	default y
 
+config FPU
+	bool "Floating point support"
+	default n
+
+
