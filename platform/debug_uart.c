@@ -5,7 +5,7 @@
 
 #include <platform/debug_uart.h>
 #include <platform/irq.h>
-#include <lib/fifo.h>
+#include <lib/queue.h>
 #include <softirq.h>
 
 /* board speficic UART definitions */
@@ -39,8 +39,8 @@ void dbg_uart_init(void)
 	usart_init(&console_uart);	
 
 	dbg_uart.ready = 1;
-	fifo_init(&(dbg_uart.tx), dbg_uart_tx_buffer, SEND_BUFSIZE);
-	fifo_init(&(dbg_uart.rx), dbg_uart_rx_buffer, RECV_BUFSIZE);
+	queue_init(&(dbg_uart.tx), dbg_uart_tx_buffer, SEND_BUFSIZE);
+	queue_init(&(dbg_uart.rx), dbg_uart_rx_buffer, RECV_BUFSIZE);
 
 	dbg_state = DBG_ASYNC;
 	usart_config_interrupt(&console_uart, USART_IT_RXNE, 1);
@@ -56,7 +56,7 @@ static void dbg_uart_recv(void)
 	uint8_t chr = usart_getc(&console_uart);
 
 	/* Put sequence on queue */
-	fifo_push(&(dbg_uart.rx), chr);
+	queue_push(&(dbg_uart.rx), chr);
 
 #ifdef CONFIG_KDB
 	softirq_schedule(KDB_SOFTIRQ);
@@ -68,8 +68,8 @@ static void dbg_uart_send(int avail)
 	uint8_t chr;
 
 	if (avail) {
-		if (fifo_state(&(dbg_uart.tx)) != FIFO_EMPTY) {
-			fifo_pop(&(dbg_uart.tx), &chr);
+		if (!queue_is_empty(&(dbg_uart.tx))) {
+			queue_pop(&(dbg_uart.tx), &chr);
 			usart_putc(&console_uart, chr);
 			dbg_uart.ready = 0;
 			usart_config_interrupt(&console_uart, USART_IT_TXE, 1);
@@ -85,7 +85,7 @@ uint8_t dbg_getchar(void)
 {
 	uint8_t chr = 0;
 
-	if (fifo_pop(&(dbg_uart.rx), &chr) == FIFO_EMPTY)
+	if (queue_pop(&(dbg_uart.rx), &chr) == QUEUE_EMPTY)
 		return 0;
 	return chr;
 
@@ -115,7 +115,7 @@ static void dbg_async_putchar(char chr)
 	 * else write directly into UART
 	 */
 	if (!dbg_uart.ready) {
-		while (fifo_push(&(dbg_uart.tx), chr) != FIFO_OK)
+		while (queue_push(&(dbg_uart.tx), chr) != QUEUE_OK)
 			/* wait */ ;
 	}
 	else {
@@ -143,7 +143,7 @@ void dbg_start_panic(void)
 	 * not, so will write sequence synchronously */
 
 	/* Flush remaining sequence  in async buffer */
-	while (fifo_pop(&(dbg_uart.tx), &chr) != FIFO_EMPTY) {
+	while (queue_pop(&(dbg_uart.tx), &chr) != QUEUE_EMPTY) {
 		dbg_sync_putchar(chr);
 	}
 

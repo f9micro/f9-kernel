@@ -7,7 +7,7 @@
 #define PLATFORM_DEBUG_UART_H_
 
 #include <types.h>
-#include <lib/fifo.h>
+#include <lib/queue.h>
 
 #define IER_RBR		0x01
 #define IER_THRE	0x02
@@ -36,8 +36,8 @@ struct dbg_uart_t {
 	uint32_t ready;
 
 	/* Queues for RX and TX */
-	struct fifo_t tx;
-	struct fifo_t rx;
+	struct queue_t tx;
+	struct queue_t rx;
 };
 
 void dbg_uart_init(void);

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 kernel-lib-y += \
-	fifo.o \
+	queue.o \
 	ktable.o \
 	stdio.o \
 	bsearch.o \
