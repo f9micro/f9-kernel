@@ -41,57 +41,50 @@ static inline int irq_number(void)
 	return irqno;
 }
 
-
 /*
  * irq_save()
  *
  * Saves {r4-r11}, msp, psp
  */
-
 #define __irq_save(ctx)		\
 	__asm__ __volatile__ ("mov r0, %0"				\
 			: : "r" ((ctx)->regs) : "r0");			\
-	__asm__ __volatile__ ("stm r0, {r4-r11}");		\
-	__asm__ __volatile__ ("and r4, lr, 0xf":::"r4");	\
-	__asm__ __volatile__ ("teq r4, #0x9");			\
+	__asm__ __volatile__ ("stm r0, {r4-r11}");			\
+	__asm__ __volatile__ ("and r4, lr, 0xf":::"r4");		\
+	__asm__ __volatile__ ("teq r4, #0x9");				\
 	__asm__ __volatile__ ("ite eq");				\
 	__asm__ __volatile__ ("mrseq r0, msp"::: "r0");			\
 	__asm__ __volatile__ ("mrsne r0, psp"::: "r0");			\
-	__asm__ __volatile__ ("mov %0, r0" : "=r" ((ctx)->sp) : );	\
-	__asm__ __volatile__ ("mov %0, lr" : "=r" ((ctx)->ret) : );
-
+	__asm__ __volatile__ ("mov %0, r0" : "=r" ((ctx)->sp));	\
+	__asm__ __volatile__ ("mov %0, lr" : "=r" ((ctx)->ret));
 
 #ifdef CONFIG_FPU
-#define irq_save(ctx) \
-	__asm__ __volatile__ ("cpsid i");			\
-	(ctx)->fp_flag = 0;								\
-	__irq_save(ctx);								\
-	__asm__ __volatile__ ("tst lr, 0x10");			\
+#define irq_save(ctx)							\
+	__asm__ __volatile__ ("cpsid i");				\
+	(ctx)->fp_flag = 0;						\
+	__irq_save(ctx);						\
+	__asm__ __volatile__ ("tst lr, 0x10");				\
 	__asm__ __volatile__ ("bne no_fp");				\
 	__asm__ __volatile__ ("mov r3, %0"				\
 			: : "r" ((ctx)->fp_regs) : "r3");		\
-	__asm__ __volatile__ ("vstm r3!, {d8-d15}"		\
-			::: "r3");								\
-	__asm__ __volatile__ ("mov r4, 0x1": : :"r4");	\
-	__asm__ __volatile__ ("stm r3, {r4}");			\
+	__asm__ __volatile__ ("vstm r3!, {d8-d15}"			\
+			::: "r3");					\
+	__asm__ __volatile__ ("mov r4, 0x1": : :"r4");			\
+	__asm__ __volatile__ ("stm r3, {r4}");				\
 	__asm__ __volatile__ ("no_fp:");
-#else
-
-#define irq_save(ctx) \
-	__asm__ __volatile__ ("cpsid i");			\
+#else	/* ! CONFIG_FPU */
+#define irq_save(ctx)							\
+	__asm__ __volatile__ ("cpsid i");				\
 	__irq_save(ctx);
 #endif
 
-
-
-
-#define __irq_restore(ctx)				\
+#define __irq_restore(ctx)						\
 	__asm__ __volatile__ ("mov lr, %0" : : "r" ((ctx)->ret));	\
 	__asm__ __volatile__ ("mov r0, %0" : : "r" ((ctx)->sp));	\
 	__asm__ __volatile__ ("mov r2, %0" : : "r" ((ctx)->ctl));	\
-	__asm__ __volatile__ ("and r4, lr, 0xf":::"r4");	\
-	__asm__ __volatile__ ("teq r4, #0x9");			\
-	__asm__ __volatile__ ("ite eq");					\
+	__asm__ __volatile__ ("and r4, lr, 0xf":::"r4");		\
+	__asm__ __volatile__ ("teq r4, #0x9");				\
+	__asm__ __volatile__ ("ite eq");				\
 	__asm__ __volatile__ ("msreq msp, r0");				\
 	__asm__ __volatile__ ("msrne psp, r0");				\
 	__asm__ __volatile__ ("mov r0, %0" : : "r" ((ctx)->regs));	\
@@ -99,17 +92,17 @@ static inline int irq_number(void)
 	__asm__ __volatile__ ("msr control, r2");
 
 #ifdef CONFIG_FPU
-#define irq_restore(ctx) \
-	__irq_restore(ctx);									\
-	if((ctx)->fp_flag){									\
-		__asm__ __volatile__ ("mov r0, %0" 				\
-				: : "r" ((ctx)->fp_regs): "r0");		\
-		__asm__ __volatile__ ("vldm r0, {d8-d15}");			\
-	}														\
+#define irq_restore(ctx)						\
+	__irq_restore(ctx);						\
+	if ((ctx)->fp_flag) {						\
+		__asm__ __volatile__ ("mov r0, %0" 			\
+				: : "r" ((ctx)->fp_regs): "r0");	\
+		__asm__ __volatile__ ("vldm r0, {d8-d15}");		\
+	}								\
 	__asm__ __volatile__ ("cpsie i");
-#else
+#else	/* ! CONFIG_FPU */
 #define irq_restore(ctx) \
-	__irq_restore(ctx);					\
+	__irq_restore(ctx);						\
 	__asm__ __volatile__ ("cpsie i");
 #endif
 
@@ -149,8 +142,8 @@ static inline int irq_number(void)
 			context_switch(current, sel);			\
 	}
 
-#define request_schedule()                      \
-    do {*SCB_ICSR |= SCB_ICSR_PENDSVSET;} while (0)
+#define request_schedule()						\
+	do { *SCB_ICSR |= SCB_ICSR_PENDSVSET; } while (0)
 
 
 #define NO_PREEMPTED_IRQ						\
