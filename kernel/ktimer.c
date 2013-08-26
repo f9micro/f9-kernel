@@ -321,6 +321,8 @@ void ktimer_enter_tickless()
 
 	irq_disable();
 
+	tickless_verify_count();
+
 	systick_disable();
 
 	if (ktimer_enabled && ktimer_delta <= KTIMER_MAXTICKS) {
@@ -347,6 +349,8 @@ void ktimer_enter_tickless()
 		reload = systick_now() % CONFIG_KTIMER_HEARTBEAT;
 
 		init_systick(reload, CONFIG_KTIMER_HEARTBEAT);
+
+		tickless_verify_count_int();
 	}
 
 	ktimer_time += tickless_delta;

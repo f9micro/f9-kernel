@@ -13,6 +13,8 @@
 void tickless_verify_init(void);
 void tickless_verify_start(uint32_t ktimer_now, uint32_t need);
 void tickless_verify_stop(uint32_t ktimer_now);
+void tickless_verify_count(void);
+void tickless_verify_count_int(void);
 int32_t tickless_verify_stat(int *times);
 
 #endif
