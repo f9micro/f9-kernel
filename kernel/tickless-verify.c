@@ -34,6 +34,12 @@ static uint32_t tickless_verify_start_count;
 /* Count times of tickless interrupted by not systick interrupt */
 static uint32_t tickless_verify_start_count_int;
 
+static void tickless_verify_save(uint32_t *systick, uint32_t *hwtimer)
+{
+	*systick = CONFIG_KTIMER_HEARTBEAT - systick_now();
+	*hwtimer = hwtimer_now();
+}
+
 void tickless_verify_init()
 {
 	int i;
@@ -58,10 +64,11 @@ void tickless_verify_init()
 
 void tickless_verify_start(uint32_t ktimer_now, uint32_t need)
 {
+	tickless_verify_save(&tickless_verify_start_systick,
+		&tickless_verify_start_hwtimer);
+
 	tickless_verify_start_need = need;
 	tickless_verify_start_ktimer = ktimer_now;
-	tickless_verify_start_systick = CONFIG_KTIMER_HEARTBEAT - systick_now();
-	tickless_verify_start_hwtimer = hwtimer_now();
 	tickless_verify_start_count = 0;
 	tickless_verify_start_count_int = 0;
 
@@ -70,13 +77,16 @@ void tickless_verify_start(uint32_t ktimer_now, uint32_t need)
 
 void tickless_verify_stop(uint32_t ktimer_now)
 {
-	uint32_t systick = CONFIG_KTIMER_HEARTBEAT - systick_now();
-	uint32_t hwtimer = hwtimer_now();
+	uint32_t systick;
+	uint32_t hwtimer;
+	uint32_t ktimer_diff;
+	uint32_t hwtimer_diff;
 
-	uint32_t ktimer_diff = (ktimer_now - tickless_verify_start_ktimer) * CONFIG_KTIMER_HEARTBEAT
+	tickless_verify_save(&systick, &hwtimer);
+
+	ktimer_diff = (ktimer_now - tickless_verify_start_ktimer) * CONFIG_KTIMER_HEARTBEAT
 							+ systick - tickless_verify_start_systick;
-
-	uint32_t hwtimer_diff = (hwtimer - tickless_verify_start_hwtimer) * 2;
+	hwtimer_diff = (hwtimer - tickless_verify_start_hwtimer) * 2;
 
 	if (!tickless_verify_started)
 		return;
