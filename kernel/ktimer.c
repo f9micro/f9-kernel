@@ -318,7 +318,12 @@ void kdb_dump_events(void)
 #define KTIMER_TICKLESS_COMPENSATION (0)
 #endif
 
+#ifndef KTIMER_TICKLESS_INT_COMPENSATION
+#define KTIMER_TICKLESS_INT_COMPENSATION (0)
+#endif
+
 static uint32_t volatile ktimer_tickless_compensation = KTIMER_TICKLESS_COMPENSATION;
+static uint32_t volatile ktimer_tickless_int_compensation = KTIMER_TICKLESS_INT_COMPENSATION;
 
 void ktimer_enter_tickless()
 {
@@ -351,12 +356,24 @@ void ktimer_enter_tickless()
 
 	if (!systick_flag_count()) {
 		uint32_t tickless_rest = (systick_now() / CONFIG_KTIMER_HEARTBEAT);
-		tickless_delta = tickless_delta - tickless_rest;
-		reload = systick_now() % CONFIG_KTIMER_HEARTBEAT;
 
-		init_systick(reload, CONFIG_KTIMER_HEARTBEAT);
+		if (tickless_rest > 0) {
+			int reload_overflow;
 
-		tickless_verify_count_int();
+			tickless_delta = tickless_delta - tickless_rest;
+
+			reload = systick_now() % CONFIG_KTIMER_HEARTBEAT - ktimer_tickless_int_compensation;
+			reload_overflow = reload < 0;
+			reload += reload_overflow * CONFIG_KTIMER_HEARTBEAT;
+
+			init_systick(reload, CONFIG_KTIMER_HEARTBEAT);
+
+			if (reload_overflow) {
+				tickless_delta++;
+			}
+
+			tickless_verify_count_int();
+		}
 	}
 
 	ktimer_time += tickless_delta;
