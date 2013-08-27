@@ -119,6 +119,8 @@ int32_t tickless_verify_stat(int *times)
 {
 	int32_t sum = 0;
 	int i, n = tickless_verify_times;
+	uint32_t compensation = UINT32_MAX;
+	uint32_t int_compensation = UINT32_MAX;
 
 	if (n >= TICKLESS_VERIFY_MAX_RECORD) {
 		n = TICKLESS_VERIFY_MAX_RECORD;
@@ -148,6 +150,47 @@ int32_t tickless_verify_stat(int *times)
 	}
 
 	*times = tickless_verify_times;
+
+	/* Tickless entering compensation */
+	for (i = 0; i < n; i++) {
+		if (tickless_verify_records[i].count_int == 0) {
+			int32_t diff = tickless_verify_records[i].hwtimer_diff - tickless_verify_records[i].ktimer_diff;
+
+			if (diff > 0) {
+				int new_compensation = diff / tickless_verify_records[i].count;
+
+				if (tickless_verify_records[i].count * new_compensation < diff) {
+					new_compensation++;
+				}
+
+				if (new_compensation < compensation) {
+					compensation = new_compensation;
+				}
+			}
+		}
+	}
+
+	/* Tickless interrupted compensation */
+	for (i = 0; i < n; i++) {
+		if (tickless_verify_records[i].count_int != 0) {
+			int32_t diff = tickless_verify_records[i].hwtimer_diff - tickless_verify_records[i].ktimer_diff
+				- tickless_verify_records[i].count * compensation;
+
+			if (diff > 0) {
+				int new_int_compensation = diff / tickless_verify_records[i].count_int;
+
+				if (tickless_verify_records[i].count_int * new_int_compensation < diff) {
+					new_int_compensation++;
+				}
+
+				if (new_int_compensation < int_compensation) {
+					int_compensation = new_int_compensation;
+				}
+			}
+		}
+	}
+
+	dbg_printf(DL_KDB, "Suggest Compensation: %d(%d)\n", compensation, int_compensation);
 
 	return sum / n;
 }
