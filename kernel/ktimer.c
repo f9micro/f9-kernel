@@ -314,16 +314,18 @@ void kdb_dump_events(void)
 
 #define KTIMER_MAXTICKS (SYSTICK_MAXRELOAD / CONFIG_KTIMER_HEARTBEAT)
 
+#ifndef KTIMER_TICKLESS_COMPENSATION
+#define KTIMER_TICKLESS_COMPENSATION (0)
+#endif
+
+static uint32_t volatile ktimer_tickless_compensation = KTIMER_TICKLESS_COMPENSATION;
+
 void ktimer_enter_tickless()
 {
 	uint32_t tickless_delta;
 	uint32_t reload;
 
 	irq_disable();
-
-	tickless_verify_count();
-
-	systick_disable();
 
 	if (ktimer_enabled && ktimer_delta <= KTIMER_MAXTICKS) {
 		tickless_delta = ktimer_delta;
@@ -337,9 +339,13 @@ void ktimer_enter_tickless()
 
 	reload = CONFIG_KTIMER_HEARTBEAT * tickless_delta;
 
-	reload += systick_now();
+	reload += systick_now() - ktimer_tickless_compensation;
 
-	init_systick(reload, CONFIG_KTIMER_HEARTBEAT);
+	if (reload > 2) {
+		init_systick(reload, CONFIG_KTIMER_HEARTBEAT);
+
+		tickless_verify_count();
+	}
 
 	wait_for_interrupt();
 
