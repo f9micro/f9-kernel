@@ -36,6 +36,14 @@ config KTIMER_TICKLESS_VERIFY
 	depends on KTIMER_TICKLESS
 	default n
 
+config KTIMER_TICKLESS_COMPENSATION
+	int "Tickless compensation"
+	default 0
+
+config KTIMER_TICKLESS_INT_COMPENSATION
+	int "Tickless interrupt compensation"
+	default 0
+
 config KTIMER_HEARTBEAT
 	int "Heartbeat value of ktimer"
 	default 65536

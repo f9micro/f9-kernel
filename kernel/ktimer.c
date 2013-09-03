@@ -314,16 +314,8 @@ void kdb_dump_events(void)
 
 #define KTIMER_MAXTICKS (SYSTICK_MAXRELOAD / CONFIG_KTIMER_HEARTBEAT)
 
-#ifndef KTIMER_TICKLESS_COMPENSATION
-#define KTIMER_TICKLESS_COMPENSATION (0)
-#endif
-
-#ifndef KTIMER_TICKLESS_INT_COMPENSATION
-#define KTIMER_TICKLESS_INT_COMPENSATION (0)
-#endif
-
-static uint32_t volatile ktimer_tickless_compensation = KTIMER_TICKLESS_COMPENSATION;
-static uint32_t volatile ktimer_tickless_int_compensation = KTIMER_TICKLESS_INT_COMPENSATION;
+static uint32_t volatile ktimer_tickless_compensation = CONFIG_KTIMER_TICKLESS_COMPENSATION;
+static uint32_t volatile ktimer_tickless_int_compensation = CONFIG_KTIMER_TICKLESS_INT_COMPENSATION;
 
 void ktimer_enter_tickless()
 {
