@@ -23,6 +23,7 @@
 #include <systhread.h>
 #include <kprobes.h>
 #include <ksym.h>
+#include <init.h>
 
 static char banner[] = 
 	"\n"
@@ -59,6 +60,7 @@ int main(void)
 #ifdef DEBUG
 	dbg_layer = DL_KDB;
 #endif
+	f9_init_level(F9_INIT_LEVEL_PLATFORM);
 
 #ifdef CONFIG_SYMMAP
 	ksym_init();
@@ -77,6 +79,8 @@ int main(void)
 	softirq_register(KDB_SOFTIRQ, debug_kdb_handler);
 	dbg_puts("Press '?' to print KDB menu\n");
 #endif
+	f9_init_level(F9_INIT_LEVEL_KERNEL);
+
 	/* Not creating kernel thread here because it corrupts current stack
 	 */
 	create_idle_thread();
@@ -85,6 +89,8 @@ int main(void)
 	ktimer_event_create(64, ipc_deliver, NULL);
 
 	mpu_enable(MPU_ENABLED);
+
+	f9_init_level(F9_INIT_LEVEL_LAST);
 
 	switch_to_kernel();
 
@@ -107,6 +113,7 @@ static void init_copy_seg(uint32_t *src, uint32_t *dst, uint32_t *dst_end)
 
 void __l4_start(void)
 {
+	f9_init_level(F9_INIT_LEVEL_EARLIEST);
 	/* Copy data segments */
 
 	init_copy_seg(&kernel_text_end,
@@ -126,3 +133,22 @@ void __l4_start(void)
 	/* entry point */
 	main();
 }
+
+//#define HOOK_TEST
+#ifdef HOOK_TEST
+void hook_test1(unsigned int level)
+{
+	dbg_printf(DL_EMERG, "hook 1 level: %x\n", level);
+}
+F9_INIT_HOOK(test1,hook_test1,F9_INIT_LEVEL_PLATFORM-1)
+void hook_test2(unsigned int level)
+{
+	dbg_printf(DL_EMERG, "hook 2 level: %x\n", level);
+}
+F9_INIT_HOOK(test2,hook_test2,F9_INIT_LEVEL_KERNEL-1)
+void hook_test3(unsigned int level)
+{
+	dbg_printf(DL_EMERG, "hook 3 level: %x\n", level);
+}
+F9_INIT_HOOK(test3,hook_test3,F9_INIT_LEVEL_LAST-1)
+#endif
