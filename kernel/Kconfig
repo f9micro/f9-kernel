@@ -54,3 +54,14 @@ config KIP_EXTRA_SIZE
 	default 128
 endmenu
 
+
+menu "Hacking"
+config KPROBES
+	bool "KProbes: dynamic instrumentation system"
+	default y
+
+config PANIC_DUMP_STACK
+	bool "Dump kernel stack while panic"
+	default y
+
+endmenu

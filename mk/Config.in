@@ -28,10 +28,6 @@ endmenu
 
 source kernel/Kconfig
 
-config KPROBES
-	bool "KProbes: dynamic instrumentation system"
-	default y
-
 config SYMMAP
 	bool "Generate symbol map"
 	default y
@@ -39,10 +35,6 @@ config SYMMAP
 
 config BITMAP_BITBAND
 	bool "Generate bitmap address in bit-band region"
-	default y
-
-config PANIC_DUMP_STACK
-	bool "Dump kernel stack while panic"
 	default y
 
 config FPU
