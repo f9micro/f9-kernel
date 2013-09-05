@@ -90,11 +90,16 @@ static unsigned int last_level = 0;
 int f9_init_level(unsigned int level)
 {
 	unsigned int max_called_level = last_level;
-	for (const f9_init_struct *ptr = f9_init_start ; ptr != f9_init_end ; ++ptr)
-		if ( ptr->level > last_level && ptr->level <= level ) {
+
+	for (const f9_init_struct *ptr = f9_init_start ; ptr != f9_init_end ; ++ptr) {
+		if ((ptr->level > last_level) &&
+				(ptr->level <= level)) {
 			max_called_level = MAX(max_called_level,ptr->level);
 			ptr->hook(ptr->level);
 		}
+	}
+
 	last_level = max_called_level;
+
 	return last_level;
 }
