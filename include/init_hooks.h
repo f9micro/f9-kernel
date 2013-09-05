@@ -15,7 +15,7 @@ enum f9_init_levels {
 
 typedef void (*f9_init_hook)(unsigned int level);
 
-typedef struct f9_init_struct {
+typedef struct {
 	unsigned int level;
 	f9_init_hook hook;
 	const char *hook_name;
