@@ -23,7 +23,7 @@
 #include <systhread.h>
 #include <kprobes.h>
 #include <ksym.h>
-#include <init.h>
+#include <init_hooks.h>
 
 static char banner[] = 
 	"\n"
@@ -134,8 +134,7 @@ void __l4_start(void)
 	main();
 }
 
-//#define HOOK_TEST
-#ifdef HOOK_TEST
+#ifdef TEST_INIT_HOOK
 void hook_test1(unsigned int level)
 {
 	dbg_printf(DL_EMERG, "hook 1 level: %x\n", level);
