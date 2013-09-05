@@ -10,7 +10,7 @@
 
 #include <syscall.h>
 #include <ktimer.h>
-#include <init_hooks.h>
+#include <init_hook.h>
 
 extern void __l4_start(void);
 extern void memmanage_handler(void);
@@ -82,22 +82,23 @@ void (* const g_pfnVectors[])(void) = {
 	#include INC_PLAT(nvic_table.h)
 };
 
-#define MAX(a,b) ((a)>(b)?(a):(b))
-extern const f9_init_struct f9_init_start[];
-extern const f9_init_struct f9_init_end[];
+#define MAX(a,b) \
+	((a) > (b) ? (a) : (b))
+
+extern const init_struct init_hook_start[];
+extern const init_struct init_hook_end[];
 static unsigned int last_level = 0;
 
-int f9_init_level(unsigned int level)
+int init_level(unsigned int level)
 {
 	unsigned int max_called_level = last_level;
 
-	for (const f9_init_struct *ptr = f9_init_start ; ptr != f9_init_end ; ++ptr) {
+	for (const init_struct *ptr = init_hook_start ; ptr != init_hook_end ; ++ptr)
 		if ((ptr->level > last_level) &&
 				(ptr->level <= level)) {
-			max_called_level = MAX(max_called_level,ptr->level);
+			max_called_level = MAX(max_called_level, ptr->level);
 			ptr->hook(ptr->level);
 		}
-	}
 
 	last_level = max_called_level;
 

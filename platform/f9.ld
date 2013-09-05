@@ -53,9 +53,9 @@ SECTIONS {
 		kernel_text_start = .;
 		*(.text*)
 		*(.rodata*)
-		f9_init_start = .;
-		KEEP(*(.f9_init))
-		f9_init_end = .;
+		init_hook_start = .;
+		KEEP(*(.init_hook))
+		init_hook_end = .;
 		kernel_text_end = .;
 	} > MFlash
 

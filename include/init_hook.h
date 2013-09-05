@@ -6,11 +6,11 @@
 #ifndef INIT_H_
 #define INIT_H_
 
-enum f9_init_levels {
-	F9_INIT_LEVEL_EARLIEST		 = 1,
-	F9_INIT_LEVEL_PLATFORM		 = 0x1000,
-	F9_INIT_LEVEL_KERNEL		 = 0x2000,
-	F9_INIT_LEVEL_LAST		 = 0xFFFFFFFF,
+enum init_levels {
+	INIT_LEVEL_EARLIEST	= 1,
+	INIT_LEVEL_PLATFORM	= 0x1000,
+	INIT_LEVEL_KERNEL	= 0x2000,
+	INIT_LEVEL_LAST		= 0xFFFFFFFF,
 };
 
 typedef void (*init_hook_t)(unsigned int level);
@@ -19,15 +19,16 @@ typedef struct {
 	unsigned int level;
 	init_hook_t hook;
 	const char *hook_name;
-} f9_init_struct;
+} init_struct;
 
-#define F9_INIT_HOOK(_name,_hook,_level) \
-	const f9_init_struct _init_struct_##_name __attribute__((section(".f9_init"))) = { \
+#define INIT_HOOK(_name,_hook,_level) \
+	const init_struct _init_struct_##_name \
+			__attribute__((section(".init_hook"))) = { \
 		.level = _level, \
 		.hook = _hook, \
 		.hook_name = #_name, \
 	};
 
-int f9_init_level(unsigned int level);
+int init_level(unsigned int level);
 
 #endif /* INIT_H_ */
