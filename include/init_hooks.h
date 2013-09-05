@@ -13,11 +13,11 @@ enum f9_init_levels {
 	F9_INIT_LEVEL_LAST		 = 0xFFFFFFFF,
 };
 
-typedef void (*f9_init_hook)(unsigned int level);
+typedef void (*init_hook_t)(unsigned int level);
 
 typedef struct {
 	unsigned int level;
-	f9_init_hook hook;
+	init_hook_t hook;
 	const char *hook_name;
 } f9_init_struct;
 
