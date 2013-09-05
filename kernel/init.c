@@ -82,7 +82,7 @@ void (* const g_pfnVectors[])(void) = {
 	#include INC_PLAT(nvic_table.h)
 };
 
-#define MAX(a,b) (a>b?a:b)
+#define MAX(a,b) ((a)>(b)?(a):(b))
 extern const f9_init_struct f9_init_start[];
 extern const f9_init_struct f9_init_end[];
 static unsigned int last_level = 0;
