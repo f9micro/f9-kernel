@@ -55,7 +55,15 @@ config KIP_EXTRA_SIZE
 endmenu
 
 
-menu "Hacking"
+menu "Kernel hacking"
+config DEBUG
+	bool "Debug message"
+	default y
+
+config KDB
+	bool "Kdb: kernel debugger"
+	default y
+
 config KPROBES
 	bool "KProbes: dynamic instrumentation system"
 	default y
