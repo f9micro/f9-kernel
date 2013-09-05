@@ -26,57 +26,7 @@ config MAX_FPAGES
 	default 256
 endmenu
 
-menu "Kernel Timer"
-config KTIMER_TICKLESS
-	bool "Tickless scheduling"
-	default y
-
-config KTIMER_TICKLESS_VERIFY
-	bool "Track tickless scheduling status"
-	depends on KTIMER_TICKLESS
-	default n
-
-config KTIMER_TICKLESS_COMPENSATION
-	int "Tickless compensation"
-	default 0
-
-config KTIMER_TICKLESS_INT_COMPENSATION
-	int "Tickless interrupt compensation"
-	default 0
-
-config KTIMER_HEARTBEAT
-	int "Heartbeat value of ktimer"
-	default 65536
-	help
-	  Current implementation utilizes SysTick, and the value of
-	  CONFIG_KTIMER_HEARTBEAT is its initial reload value.
-
-config KTIMER_MINTICKS
-	int "Minimal ticks scheduled by ktimer"
-	default 128
-endmenu
-
-menu "Flexible page tweaks"
-config LARGEST_FPAGE_SHIFT
-	int "Largest shift of flexible pages"
-	default 16
-
-config SMALLEST_FPAGE_SHIFT
-	int "Smallest shift of flexible pages"
-	default 8
-endmenu
-
-menu "Thread tweaks"
-config INTR_THREAD_MAX
-	int "Maximum of interrupt threads"
-	default 256
-endmenu
-
-menu "KIP theaks"
-config KIP_EXTRA_SIZE
-	int "Size of extra information on KIP"
-	default 128
-endmenu
+source kernel/Kconfig
 
 config KPROBES
 	bool "KProbes: dynamic instrumentation system"
