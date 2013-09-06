@@ -42,7 +42,6 @@ CFLAGS_MISC_DEFINE = \
 CPPFLAGS = \
 	-include include/autoconf.h \
 	$(CFLAGS_DEFINE) $(CFLAGS_INCLUDE) $(EXTRA_CFLAGS)
-# FIXME: should be configurable
 CFLAGS = \
 	-std=gnu99 -isystem \
 	-nostdlib -ffreestanding \
