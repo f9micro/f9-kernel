@@ -7,7 +7,7 @@
 #include <lib/stdio.h>
 #include <debug.h>
 
-#ifdef DEBUG
+#ifdef CONFIG_DEBUG
 
 dbg_layer_t dbg_layer;
 
@@ -27,4 +27,4 @@ void dbg_vprintf(dbg_layer_t layer, char *fmt, va_list va)
 	__l4_vprintf(fmt, va);
 }
 
-#endif	/* DEBUG */
+#endif	/* CONFIG_DEBUG */

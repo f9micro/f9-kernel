@@ -43,9 +43,6 @@ CPPFLAGS = \
 	-include include/autoconf.h \
 	$(CFLAGS_DEFINE) $(CFLAGS_INCLUDE) $(EXTRA_CFLAGS)
 # FIXME: should be configurable
-CPPFLAGS += \
-	-DDEBUG \
-	-DCONFIG_DEBUG -DCONFIG_KDB
 CFLAGS = \
 	-std=gnu99 -isystem \
 	-nostdlib -ffreestanding \

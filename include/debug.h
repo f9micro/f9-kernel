@@ -10,7 +10,7 @@
 #include <lib/stdarg.h>
 #include <lib/stdio.h>
 
-#ifndef DEBUG
+#ifndef CONFIG_DEBUG
 
 #define dbg_getchar(x)	(1)
 #define dbg_putchar(x)
