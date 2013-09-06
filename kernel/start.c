@@ -133,23 +133,3 @@ void __l4_start(void)
 	/* entry point */
 	main();
 }
-
-#ifdef TEST_INIT_HOOK
-void hook_test1(unsigned int level)
-{
-	dbg_printf(DL_EMERG, "hook 1 level: %x\n", level);
-}
-INIT_HOOK(test1, hook_test1, INIT_LEVEL_PLATFORM - 1)
-
-void hook_test2(unsigned int level)
-{
-	dbg_printf(DL_EMERG, "hook 2 level: %x\n", level);
-}
-INIT_HOOK(test2,hook_test2, INIT_LEVEL_KERNEL - 1)
-
-void hook_test3(unsigned int level)
-{
-	dbg_printf(DL_EMERG, "hook 3 level: %x\n", level);
-}
-INIT_HOOK(test3, hook_test3, INIT_LEVEL_LAST - 1)
-#endif	/* TEST_INIT_HOOK */
