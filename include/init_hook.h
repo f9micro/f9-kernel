@@ -3,8 +3,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef INIT_H_
-#define INIT_H_
+#ifndef INIT_HOOK_H_
+#define INIT_HOOK_H_
 
 enum init_levels {
 	INIT_LEVEL_EARLIEST	= 1,
@@ -29,6 +29,6 @@ typedef struct {
 		.hook_name = #_name, \
 	};
 
-int init_level(unsigned int level);
+int init_hook(unsigned int level);
 
-#endif /* INIT_H_ */
+#endif /* INIT_HOOK_H_ */

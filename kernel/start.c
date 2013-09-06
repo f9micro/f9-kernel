@@ -60,7 +60,7 @@ int main(void)
 #ifdef DEBUG
 	dbg_layer = DL_KDB;
 #endif
-	init_level(INIT_LEVEL_PLATFORM);
+	init_hook(INIT_LEVEL_PLATFORM);
 
 #ifdef CONFIG_SYMMAP
 	ksym_init();
@@ -79,7 +79,7 @@ int main(void)
 	softirq_register(KDB_SOFTIRQ, debug_kdb_handler);
 	dbg_puts("Press '?' to print KDB menu\n");
 #endif
-	init_level(INIT_LEVEL_KERNEL);
+	init_hook(INIT_LEVEL_KERNEL);
 
 	/* Not creating kernel thread here because it corrupts current stack
 	 */
@@ -90,7 +90,7 @@ int main(void)
 
 	mpu_enable(MPU_ENABLED);
 
-	init_level(INIT_LEVEL_LAST);
+	init_hook(INIT_LEVEL_LAST);
 
 	switch_to_kernel();
 
@@ -113,9 +113,9 @@ static void init_copy_seg(uint32_t *src, uint32_t *dst, uint32_t *dst_end)
 
 void __l4_start(void)
 {
-	init_level(INIT_LEVEL_EARLIEST);
-	/* Copy data segments */
+	init_hook(INIT_LEVEL_EARLIEST);
 
+	/* Copy data segments */
 	init_copy_seg(&kernel_text_end,
 			&kernel_data_start, &kernel_data_end);
 			/* DATA (ROM) -> DATA (RAM) */
