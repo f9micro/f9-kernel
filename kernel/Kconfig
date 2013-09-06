@@ -63,6 +63,7 @@ config DEBUG
 config KDB
 	bool "Kdb: kernel debugger"
 	default y
+	select DEBUG
 
 config KPROBES
 	bool "KProbes: dynamic instrumentation system"
