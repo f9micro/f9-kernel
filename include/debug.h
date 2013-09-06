@@ -12,11 +12,11 @@
 
 #ifndef CONFIG_DEBUG
 
-#define dbg_getchar(x)	(1)
-#define dbg_putchar(x)
-#define dbg_puts(x)
-#define dbg_printf(...)
-#define dbg_vprintf(...)
+#define dbg_getchar(x)		(1)
+#define dbg_putchar(x)		do {} while(0)
+#define dbg_puts(x)		do {} while(0)
+#define dbg_printf(...)		do {} while(0)
+#define dbg_vprintf(...)	do {} while(0)
 
 #else
 
