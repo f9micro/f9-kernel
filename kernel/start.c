@@ -24,6 +24,7 @@
 #include <kprobes.h>
 #include <ksym.h>
 #include <init_hook.h>
+#include <stdio.h>
 
 static char banner[] = 
 	"\n"
@@ -56,7 +57,8 @@ int main(void)
 #endif
 
 	dbg_uart_init();
-	dbg_printf(DL_EMERG, "%s", banner);
+	__l4_printf("%s", banner);
+
 #ifdef CONFIG_DEBUG
 	dbg_layer = DL_KDB;
 #endif
