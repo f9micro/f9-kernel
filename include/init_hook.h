@@ -21,14 +21,14 @@ typedef struct {
 	const char *hook_name;
 } init_struct;
 
-#define INIT_HOOK(_name,_hook,_level) \
-	const init_struct _init_struct_##_name \
-			__attribute__((section(".init_hook"))) = { \
-		.level = _level, \
-		.hook = _hook, \
-		.hook_name = #_name, \
+#define INIT_HOOK(_name, _hook, _level)					\
+	const init_struct _init_struct_##_name				\
+			__attribute__((section(".init_hook"))) = {	\
+		.level = _level,					\
+		.hook = _hook,						\
+		.hook_name = #_name,					\
 	};
 
-int init_hook(unsigned int level);
+int run_init_hook(unsigned int level);
 
 #endif /* INIT_HOOK_H_ */
