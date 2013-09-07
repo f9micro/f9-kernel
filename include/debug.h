@@ -9,6 +9,7 @@
 #include <types.h>
 #include <lib/stdarg.h>
 #include <lib/stdio.h>
+#include <autoconf.h>
 
 #ifndef CONFIG_DEBUG
 
