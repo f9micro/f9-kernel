@@ -98,14 +98,13 @@ int main(void)
 	return 0;
 }
 
-static void init_zero_seg(uint32_t *dst, uint32_t *dst_end)
+static inline void init_zero_seg(uint32_t *dst, uint32_t *dst_end)
 {
-	while (dst < dst_end) {
+	while (dst < dst_end)
 		*dst++ = 0;
-	}
 }
 
-static void init_copy_seg(uint32_t *src, uint32_t *dst, uint32_t *dst_end)
+static inline void init_copy_seg(uint32_t *src, uint32_t *dst, uint32_t *dst_end)
 {
 	while (dst < dst_end)
 		*dst++ = *src++;
