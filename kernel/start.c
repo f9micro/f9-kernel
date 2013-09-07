@@ -42,7 +42,7 @@ void debug_kdb_handler(void)
 }
 #endif
 
-#ifdef DEBUG
+#ifdef CONFIG_DEBUG
 extern dbg_layer_t dbg_layer;
 #endif
 
@@ -57,7 +57,7 @@ int main(void)
 
 	dbg_uart_init();
 	dbg_printf(DL_EMERG, "%s", banner);
-#ifdef DEBUG
+#ifdef CONFIG_DEBUG
 	dbg_layer = DL_KDB;
 #endif
 	init_hook(INIT_LEVEL_PLATFORM);
