@@ -341,7 +341,10 @@ void ktimer_enter_tickless()
 	if (reload > 2) {
 		init_systick(reload, CONFIG_KTIMER_HEARTBEAT);
 
+#if defined(CONFIG_KDB) && \
+	defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
 		tickless_verify_count();
+#endif
 	}
 
 	wait_for_interrupt();
@@ -364,7 +367,10 @@ void ktimer_enter_tickless()
 				tickless_delta++;
 			}
 
+#if defined(CONFIG_KDB) && \
+	defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
 			tickless_verify_count_int();
+#endif
 		}
 	}
 
