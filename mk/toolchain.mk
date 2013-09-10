@@ -31,6 +31,7 @@ CFLAGS_OPT = \
 	-fdata-sections -ffunction-sections
 CFLAGS_DEBUG = -g3
 CFLAGS_INCLUDE = $(foreach i,$(includes),-I$(i) )
+CFLAGS_INCLUDE_USER = $(foreach i,$(includes-user),-I$(i) )
 CFLAGS_DEFINE = \
 	-D __CHIP__=$(CHIP) \
 	-D __BOARD__=$(BOARD) \

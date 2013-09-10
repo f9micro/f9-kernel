@@ -24,6 +24,7 @@ out ?= build/$(BOARD)
 # output directory for host build targets
 out_host ?= build/host
 
+includes-user = user/include
 # toolchain specific configurations; common cflags and ldflags
 include mk/toolchain.mk
 

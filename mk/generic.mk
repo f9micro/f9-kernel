@@ -26,6 +26,7 @@ cmd_elf = $(LD) $(LDFLAGS) $(objs) -o $@ \
 	-L platform -T f9.ld $(LIBGCC) \
 	-Map $(out)/$*.map
 cmd_c_to_o = $(CC) $(CFLAGS) -MMD -MF $@.d -c $< -o $@
+cmd_c_to_o_user = $(CC) $(CFLAGS_INCLUDE_USER) $(CFLAGS) $(CFLAGS) -MMD -MF $@.d -c $< -o $@
 cmd_c_to_build = $(BUILDCC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) \
 	         -MMD -MF $@.d $< -o $@
 cmd_bin = cat $^ > $@
@@ -58,6 +59,9 @@ $(out)/%.elf: $(objs)
 
 $(out)/%.o:%.c
 	$(call quiet,c_to_o,CC     )
+
+$(out)/user/%.o:user/%.c
+	$(call quiet,c_to_o_user,CC     )
 
 $(out)/%.o:%.S
 	$(call quiet,c_to_o,AS     )
