@@ -32,6 +32,7 @@
 #ifndef __L4__THREAD_H__
 #define __L4__THREAD_H__
 
+#include <platform/link.h>
 #include <l4/types.h>
 #include __L4_INC_ARCH(syscalls.h)
 #include __L4_INC_ARCH(vregs.h)
@@ -45,6 +46,16 @@
 #define L4_ERROR_UTCB_AREA		(6)
 #define L4_ERROR_KIP_AREA		(7)
 #define L4_ERROR_NO_MEM			(8)
+
+#define DECLARE_THREAD(name, sub) \
+	void name(void) __attribute__ ((naked));	\
+	void __USER_TEXT name(void)			\
+	{						\
+		register void *kip_ptr asm ("r0");	\
+		register void *utcb_ptr asm ("r1");	\
+		sub(kip_ptr, utcb_ptr);			\
+		while (1);				\
+	}
 
 /*
  * Thread states

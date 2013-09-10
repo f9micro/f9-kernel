@@ -9,24 +9,46 @@
 #include <l4/ipc.h>
 #include <types.h>
 
+#define L4_THREAD_NUM(n, b) \
+	((L4_ThreadId_t)((b + n) << 14))
+
 enum { PING_THREAD, PONG_THREAD };
 
-static l4_thread_t threads[2] __USER_BSS;
+static L4_ThreadId_t threads[2] __USER_BSS;
+
+int __USER_TEXT L4_Map(L4_ThreadId_t where, memptr_t base, size_t size)
+{
+	L4_Msg_t msg = { .raw = { 0 } };
+	L4_Fpage_t fpage = L4_Fpage(base, size);
+	L4_GrantItem_t map = L4_GrantItem(fpage, base);
+
+	L4_MsgAppendGrantItem(&msg, map);
+
+	L4_MsgLoad(&msg);
+
+	L4_Send(where);
+	return 0;
+}
 
 void __USER_TEXT __ping_thread(void *kip_ptr, void *utcb_ptr)
 {
-	uint32_t msg[8] = { 0 };
+	L4_Msg_t msg = { .raw = { 0 } };
+
+	L4_MsgLoad(&msg);
 
 	while (1)
-		L4_Ipc(threads[PONG_THREAD], L4_NILTHREAD, 0, msg);
+		L4_Send(threads[PONG_THREAD]);
 }
 
 void __USER_TEXT __pong_thread(void *kip_ptr, void *utcb_ptr)
 {
-	uint32_t msg[8] = { 0 };
+	L4_MsgTag_t msgtag;
+	L4_Msg_t msg;
 
-	while (1)
-		L4_Ipc(L4_NILTHREAD, threads[PING_THREAD], 0, msg);
+	while (1) {
+		msgtag = L4_Receive(threads[PING_THREAD]);
+		L4_MsgStore(msgtag, &msg);
+	}
 }
 
 DECLARE_THREAD(ping_thread, __ping_thread);
@@ -51,10 +73,8 @@ memptr_t __USER_TEXT get_free_base(kip_t *kip_ptr)
 
 void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 {
-	l4_thread_t myself = utcb_ptr->t_globalid;
+	L4_ThreadId_t myself = {.raw = utcb_ptr->t_globalid};
 	char *free_mem = (char *) get_free_base(kip_ptr);
-
-	uint32_t msg[8] = { 0 };
 
 	/* Allocate utcbs and stacks in Free memory region */
 	char *utcbs[2] = {
@@ -71,20 +91,20 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 			kip_ptr->thread_info.s.user_base);	/* Pong */
 
 	L4_ThreadControl(threads[PING_THREAD], myself,
-			0, myself, utcbs[PING_THREAD]);
+			(L4_ThreadId_t){.raw = 0}, myself, utcbs[PING_THREAD]);
 	L4_ThreadControl(threads[PONG_THREAD], myself,
-			0, myself, utcbs[PONG_THREAD]);
+			(L4_ThreadId_t){.raw = 0}, myself, utcbs[PONG_THREAD]);
 
 	L4_Map(myself, (memptr_t) stacks[PING_THREAD], STACK_SIZE);
 	L4_Map(myself, (memptr_t) stacks[PONG_THREAD], STACK_SIZE);
 
-	L4_Start(threads[PING_THREAD], ping_thread,
-			stacks[PING_THREAD] + STACK_SIZE);
-	L4_Start(threads[PONG_THREAD], pong_thread,
-			stacks[PONG_THREAD] + STACK_SIZE);
+	L4_Start_SpIp(threads[PING_THREAD], (L4_Word32_t)ping_thread,
+			(L4_Word32_t)stacks[PING_THREAD] + STACK_SIZE);
+	L4_Start_SpIp(threads[PONG_THREAD], (L4_Word32_t)pong_thread,
+			(L4_Word32_t)stacks[PONG_THREAD] + STACK_SIZE);
 
 	while (1)
-		L4_Ipc(L4_NILTHREAD, L4_NILTHREAD, 0, msg);
+		L4_Sleep(L4_Never);
 }
 
 DECLARE_THREAD(root_thread, __root_thread);
