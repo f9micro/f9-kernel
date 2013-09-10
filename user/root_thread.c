@@ -20,10 +20,11 @@ static L4_ThreadId_t threads[2] __USER_BSS;
 
 int __USER_TEXT L4_Map(L4_ThreadId_t where, memptr_t base, size_t size)
 {
-	L4_Msg_t msg = { .raw = { 0 } };
+	L4_Msg_t msg;
 	L4_Fpage_t fpage = L4_Fpage(base, size);
 	L4_GrantItem_t map = L4_GrantItem(fpage, base);
 
+	L4_MsgClear(&msg);
 	L4_MsgAppendGrantItem(&msg, map);
 
 	L4_MsgLoad(&msg);
@@ -34,8 +35,9 @@ int __USER_TEXT L4_Map(L4_ThreadId_t where, memptr_t base, size_t size)
 
 void __USER_TEXT __ping_thread(void *kip_ptr, void *utcb_ptr)
 {
-	L4_Msg_t msg = { .raw = { 0 } };
+	L4_Msg_t msg;
 
+	L4_MsgClear(&msg);
 	L4_MsgLoad(&msg);
 
 	while (1)
@@ -73,8 +75,9 @@ memptr_t __USER_TEXT get_free_base(kip_t *kip_ptr)
 
 void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t sp, L4_Word_t ip)
 {
-	L4_Msg_t msg = { .raw = { 0 } };
+	L4_Msg_t msg;
 
+	L4_MsgClear(&msg);
 	L4_MsgAppendWord(&msg, ip);
 	L4_MsgAppendWord(&msg, sp);
 	L4_MsgLoad(&msg);
