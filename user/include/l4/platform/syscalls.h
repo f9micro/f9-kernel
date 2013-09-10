@@ -175,36 +175,14 @@ L4_INLINE L4_Word_t L4_ThreadControl (L4_ThreadId_t dest,
 				      void * UtcbLocation)
 {
     L4_Word_t result;
-    L4_Word_t dummy;
 
-    __L4_Indirect_t in;
-    in.edi      = (L4_Word_t)UtcbLocation;
-    in.sys_call = __L4_ThreadControl;
+	 __asm__ __volatile__ ("ldr r4, %1\n"
+	                       "svc #2\n"
+	                       "str r0, %[output]\n"
+	                       : [output] "=m" (result)
+	                       : "m" (UtcbLocation));
 
-    __asm__ __volatile__ (
-	"/* L4_ThreadControl() */			\n"
-	__L4_SAVE_REGS
-	__L4_INDIRECT_CALL
-	__L4_RESTORE_REGS
-
-	: /* outputs */
-	"=a" (result),
-	"=c" (dummy),
-	"=d" (dummy),
-	"=S" (dummy),
-	"=D" (dummy)
-
-	: /* inputs */
-	"0" (dest),
-	"1" (Pager),
-	"2" (Scheduler),
-	"3" (SpaceSpecifier),
-	"4" (&in)
-
-	: /* clobbers */
-	__L4_CLOBBER_REGS, "memory");
-
-    return result;
+	 return result;
 }
 
 
