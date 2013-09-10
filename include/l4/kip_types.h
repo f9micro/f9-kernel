@@ -6,6 +6,8 @@
 #ifndef L4_KIP_TYPES_H_
 #define L4_KIP_TYPES_H_
 
+#include <stdint.h>
+
 /*
  * KIP page. based on L4 X.2 Reference manual Rev. 7
  */
