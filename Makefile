@@ -52,11 +52,15 @@ include platform/build.mk
 include kernel/lib/build.mk
 include kernel/build.mk
 include user/build.mk
+include user/apps/build.mk
 
 includes += $(includes-y)
 
 objs_from_dir = $(foreach obj, $($(2)-y), \
 		$(out)/$(1)/$(firstword $($(2)-mock-$(PROJECT)-$(obj)) $(obj)))
+
+objs_from_user_dir = $(foreach dir, $(user-dirs), \
+		$(call objs_from_dir,$(dir),user-apps))
 
 # Get all sources to build
 all-y += $(call objs_from_dir,platform/$(CHIP),chip)
@@ -65,12 +69,14 @@ all-y += $(call objs_from_dir,platform,platform)
 all-y += $(call objs_from_dir,kernel/lib,kernel-lib)
 all-y += $(call objs_from_dir,kernel,kernel)
 all-y += $(call objs_from_dir,user,user)
+all-y += $(call objs_from_user_dir)
 dirs = \
 	kernel/lib \
 	kernel \
 	platform/$(CHIP) \
 	board/$(BOARD) \
-	user
+	user \
+	$(user-dirs)
 
 # Get special rules
 dir-rules := mk/rules
