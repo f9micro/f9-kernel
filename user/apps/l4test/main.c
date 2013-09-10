@@ -162,7 +162,7 @@ get_new_page(void)
 }
 
 void
-start_thread( L4_ThreadId_t tid, L4_Word_t ip, L4_Word_t sp )
+start_thread_ip_sp( L4_ThreadId_t tid, L4_Word_t ip, L4_Word_t sp )
 {
 	L4_Msg_t msg;
 
@@ -182,14 +182,14 @@ msec_sleep( L4_Word_t msec )
 
 void all_tests(void)
 {
-    extern void all_kip_tests();
-    extern void all_arch_tests();
-    extern void all_mem_tests();
-    extern void all_ipc_tests();
-    extern void all_s0_tests();
-    extern void all_exreg_tests();
-    extern void all_tc_tests();
-    extern void all_schedule_tests();
+    extern void all_kip_tests(void);
+    extern void all_arch_tests(void);
+    extern void all_mem_tests(void);
+    extern void all_ipc_tests(void);
+    extern void all_s0_tests(void);
+    extern void all_exreg_tests(void);
+    extern void all_tc_tests(void);
+    extern void all_schedule_tests(void);
 
     all_kip_tests();
     all_arch_tests();
@@ -225,7 +225,7 @@ static struct menu main_menu =
 };
 
 
-extern "C" int main (void)
+int main (void)
 {
 	printf( "L4/Pistachio test suite ready to go.\n\n" );
         

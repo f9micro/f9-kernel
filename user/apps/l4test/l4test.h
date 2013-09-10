@@ -103,13 +103,12 @@ void *get_new_page(void);
 
 /* do useful stuff */
 L4_Word_t safe_mem_touch( void *addr );
-void start_thread( L4_ThreadId_t tid, L4_Word_t ip, L4_Word_t sp );
+void start_thread_ip_sp( L4_ThreadId_t tid, L4_Word_t ip, L4_Word_t sp );
 
 /* Thread/address space management */
 L4_ThreadId_t get_new_tid (void);
-L4_ThreadId_t create_thread (bool new_space = false, int cpu = -1, L4_Word_t spacectrl = 0);
-L4_ThreadId_t create_thread (void (*func)(void), bool new_space = false,
-			     int cpu = -1, L4_Word_t spacectrl = 0);
+L4_ThreadId_t create_thread (void (*func)(void), bool new_space,
+			     int cpu, L4_Word_t spacectrl);
 L4_Word_t kill_thread (L4_ThreadId_t tid);
 void start_thread (L4_ThreadId_t tid, void (*func)(void));
 
