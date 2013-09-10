@@ -80,7 +80,7 @@ extern _C_ void __L4_MemoryControl(void);
 typedef struct __L4_Indirect
 {
     L4_Word_t   edi;
-    void      (*sys_call)();
+    void      (*sys_call)(void);
 } __L4_Indirect_t;
 
 

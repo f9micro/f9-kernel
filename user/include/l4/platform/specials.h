@@ -82,7 +82,7 @@ L4_INLINE int __L4_Lsb (L4_Word_t w)
     return bitnum;
 }
 
-L4_INLINE L4_Word64_t __L4_Rdtsc ()
+L4_INLINE L4_Word64_t __L4_Rdtsc (void)
 {
     L4_Word_t eax, edx;
 
