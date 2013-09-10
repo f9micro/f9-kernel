@@ -6,6 +6,8 @@
 #ifndef L4_UTCB_H_
 #define L4_UTCB_H_
 
+#include <types.h>
+
 struct utcb {
 /* +0w */
 	l4_thread_t t_globalid;
