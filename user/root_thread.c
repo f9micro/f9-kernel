@@ -69,6 +69,17 @@ memptr_t __USER_TEXT get_free_base(kip_t *kip_ptr)
 	return 0;
 }
 
+void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t sp, L4_Word_t ip)
+{
+	L4_Msg_t msg = { .raw = { 0 } };
+
+	L4_MsgAppendWord(&msg, ip);
+	L4_MsgAppendWord(&msg, sp);
+	L4_MsgLoad(&msg);
+
+	L4_Send(t);
+}
+
 #define STACK_SIZE 256
 
 void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
@@ -98,9 +109,9 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 	L4_Map(myself, (memptr_t) stacks[PING_THREAD], STACK_SIZE);
 	L4_Map(myself, (memptr_t) stacks[PONG_THREAD], STACK_SIZE);
 
-	L4_Start_SpIp(threads[PING_THREAD], (L4_Word32_t)ping_thread,
+	start_thread(threads[PING_THREAD], (L4_Word32_t)ping_thread,
 			(L4_Word32_t)stacks[PING_THREAD] + STACK_SIZE);
-	L4_Start_SpIp(threads[PONG_THREAD], (L4_Word32_t)pong_thread,
+	start_thread(threads[PONG_THREAD], (L4_Word32_t)pong_thread,
 			(L4_Word32_t)stacks[PONG_THREAD] + STACK_SIZE);
 
 	while (1)
