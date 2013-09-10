@@ -41,26 +41,7 @@
  * Determine which architecture dependent files to include
  */
 
-#if !defined(__L4_ARCH__)
-# if defined(__i386__)
-#  define L4_ARCH_IA32
-#  define __L4_ARCH__ ia32
-# elif defined(__PPC64__)
-#  define L4_ARCH_POWERPC64
-#  define __L4_ARCH__ powerpc64
-# elif defined(__PPC__)
-#  undef powerpc
-#  define L4_ARCH_POWERPC
-#  define __L4_ARCH__ powerpc
-# elif defined(__x86_64__)
-#  define L4_ARCH_AMD64
-#  define __L4_ARCH__ amd64
-# else
-#  error Unknown hardware architecture.
-# endif
-#endif
-
-#define __L4_INC_ARCH(file) <l4/__L4_ARCH__/file>
+#define __L4_INC_ARCH(file) <l4/platform/file>
 
 #include __L4_INC_ARCH(types.h)
 
