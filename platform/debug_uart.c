@@ -90,8 +90,6 @@ uint8_t dbg_getchar(void)
 	return chr;
 
 }
-uint8_t __l4_getchar(void)
-	__attribute__ ((weak, alias ("dbg_getchar")));
 
 static void dbg_async_putchar(char chr);
 static void dbg_sync_putchar(char chr);
@@ -106,8 +104,6 @@ void dbg_putchar(char chr)
 	else
 		dbg_sync_putchar(chr);
 }
-void __l4_putchar(char chr)
-	__attribute__ ((weak, alias ("dbg_putchar")));
 
 static void dbg_async_putchar(char chr)
 {

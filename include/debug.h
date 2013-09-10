@@ -10,16 +10,6 @@
 #include <lib/stdarg.h>
 #include <lib/stdio.h>
 
-#ifndef CONFIG_DEBUG
-
-#define dbg_getchar(x)		(1)
-#define dbg_putchar(x)		do {} while(0)
-#define dbg_puts(x)		do {} while(0)
-#define dbg_printf(...)		do {} while(0)
-#define dbg_vprintf(...)	do {} while(0)
-
-#else
-
 typedef enum {
 	DL_EMERG	= 0x0000,
 	DL_BASIC	= 0x8000,
@@ -34,12 +24,19 @@ typedef enum {
 	DL_IPC		= 0x0080
 } dbg_layer_t;
 
-#define dbg_puts(x)	__l4_puts(x)
 uint8_t dbg_getchar(void);
-void dbg_putchar(char chr);
+void dbg_putchar(uint8_t chr);
+
+#ifndef CONFIG_DEBUG
+
+#define dbg_puts(x)		do {} while(0)
+#define dbg_printf(...)		do {} while(0)
+#define dbg_vprintf(...)	do {} while(0)
+
+#else
+#define dbg_puts(x)	__l4_puts(x)
 void dbg_printf(dbg_layer_t layer, char *fmt, ...);
 void dbg_vprintf(dbg_layer_t layer, char *fmt, va_list va);
-
 #endif
 
 #endif /* DEBUG_H_ */
