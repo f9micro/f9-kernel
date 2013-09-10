@@ -35,6 +35,7 @@
 
 /* define this for ANSI menus */
 //#define USE_ANSI 1
+#include <stdbool.h>
 #include "string.h"
 #include <l4/kip.h>
 
