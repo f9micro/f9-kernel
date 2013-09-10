@@ -282,98 +282,11 @@ L4_INLINE L4_MsgTag_t L4_Lipc (L4_ThreadId_t to,
 			       L4_Word_t Timeouts,
 			       L4_ThreadId_t * from)
 {
-    L4_MsgTag_t mr0;
-    L4_Word_t mr1, mr2;
-    L4_ThreadId_t result;
-    L4_Word_t * utcb = __L4_X86_Utcb ();
-
-#if defined(__pic__)
-
-    __L4_Indirect_t in;
-    in.edi      = (L4_Word_t)utcb;
-    in.sys_call = __L4_Lipc;
-
-    __asm__ __volatile__ (
-	"/* L4_Lipc() */				\n"
-	__L4_SAVE_REGS
-	__L4_INDIRECT_CALL
-	"	movl	%%ebp, %%ecx			\n"
-	"	movl	%%ebx, %%edx			\n"
-	__L4_RESTORE_REGS
-
-	: /* outputs */
-	"=S" (mr0),
-	"=a" (result),
-	"=d" (mr1),
-	"=c" (mr2)
-
-	: /* inputs */
-	"S" (utcb[0]),
-	"a" (to.raw),
-	"D" (&in),
-	"c" (Timeouts),
-	"d" (FromSpecifier)
-
-	: "memory");
-#else
-    L4_Word_t dummy;
-
-    __asm__ __volatile__ (
-	"/* L4_Lipc() */				\n"
-	__L4_SAVE_REGS
-	"	call	__L4_Lipc			\n"
-	"	movl	%%ebp, %%ecx			\n"
-	__L4_RESTORE_REGS
-
-	: /* outputs */
-	"=S" (mr0),
-	"=a" (result),
-	"=b" (mr1),
-	"=c" (mr2),
-	"=d" (dummy)
-
-	: /* inputs */
-	"S" (utcb[0]),
-	"a" (to.raw),
-	"D" (utcb),
-	"c" (Timeouts),
-	"d" (FromSpecifier)
-	);
-#endif
-
-    if (! L4_IsNilThread (FromSpecifier)) {
-	*from = result; 
-	utcb[1] = mr1;
-	utcb[2] = mr2;
-    }
-
-    return mr0;
+	return L4_Ipc(to, FromSpecifier, Timeouts, from);
 }
 
 L4_INLINE void L4_Unmap (L4_Word_t control)
 {
-    L4_Word_t dummy;
-    L4_Word_t * utcb = __L4_X86_Utcb ();
-
-    __asm__ __volatile__ (
-	"/* L4_Unmap() */				\n"
-	__L4_SAVE_REGS
-	"	call	*%%ecx				\n"
-	__L4_RESTORE_REGS
-
-	: /* outputs */
-	"=S" (utcb[0]),
-	"=D" (dummy),
-	"=a" (dummy)
-
-	: /* inputs */
-	"0" (utcb[0]),
-	"1" (utcb),
-	"2" (control),
-	"c" (__L4_Unmap)
-
-	: /* clobbered */
-	"edx", __L4_CLOBBER_REGS);
 }
 
 
@@ -454,39 +367,7 @@ L4_INLINE L4_Word_t L4_ProcessorControl (L4_Word_t ProcessorNo,
 L4_INLINE L4_Word_t L4_MemoryControl (L4_Word_t control,
 				 const L4_Word_t * attributes)
 {
-    L4_Word_t result, dummy;
-    L4_Word_t * utcb = __L4_X86_Utcb ();
-
-    __L4_Indirect_t in;
-    in.edi      = (L4_Word_t)utcb;
-    in.sys_call = __L4_MemoryControl;
-
-    __asm__ __volatile__ (
-	"/* L4_MemoryControl() */			\n"
-	__L4_SAVE_REGS
-	"	movl	12(%6), %%ebp			\n"
-	"	movl	8(%6), %%ebx			\n"
-	"	movl	4(%6), %%edx			\n"
-	"	movl	(%6), %%ecx			\n"
-	__L4_INDIRECT_CALL
-	__L4_RESTORE_REGS
-
-	: /* outputs */
-	"=a" (result),
-	"=c" (dummy),
-	"=d" (dummy),
-	"=S" (dummy),
-	"=D" (dummy)
-
-	: /* inputs */
-	"0" (control),
-	"1" (attributes),
-	"3" (utcb[0]),
-	"4" (&in)
-
-	: /* clobbers */
-	__L4_CLOBBER_REGS, "memory");
-
+	L4_Word_t result;
     return result;
 }
 

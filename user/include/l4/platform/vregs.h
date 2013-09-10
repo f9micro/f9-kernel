@@ -32,6 +32,8 @@
 #ifndef __L4__X86__VREGS_H__
 #define __L4__X86__VREGS_H__
 
+#include <l4/utcb.h>
+
 register L4_Word32_t __L4_MR0 asm ("r4");
 register L4_Word32_t __L4_MR1 asm ("r5");
 register L4_Word32_t __L4_MR2 asm ("r6");
@@ -46,15 +48,10 @@ register L4_Word32_t __L4_MR7 asm ("r11");
  * Control Block (UTCB).
  */
 
-
-#if (__GNUC__ >= 3) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 96))
-L4_INLINE L4_Word_t * __L4_X86_Utcb (void) __attribute__ ((pure));
-#endif
-
-L4_INLINE L4_Word_t * __L4_X86_Utcb (void)
+L4_INLINE utcb_t * __L4_Utcb (void)
 {
     extern L4_Word_t *__L4_UtcbPtr;
-    return __L4_UtcbPtr;
+    return (utcb_t*)__L4_UtcbPtr;
 }
 
 
@@ -85,161 +82,77 @@ L4_INLINE L4_Word_t * __L4_X86_Utcb (void)
 
 L4_INLINE L4_Word_t __L4_TCR_MyGlobalId (void)
 {
-    return (__L4_X86_Utcb ())[__L4_TCR_MY_GLOBAL_ID];
+    return __L4_Utcb ()->t_globalid;
 }
 
 L4_INLINE L4_Word_t __L4_TCR_MyLocalId (void)
 {
-    L4_Word_t *dummy = __L4_X86_Utcb ();
-    return (L4_Word_t) dummy;
+    return (L4_Word_t) __L4_Utcb ();
 }
 
 L4_INLINE L4_Word_t __L4_TCR_ProcessorNo (void)
 {
-    return (__L4_X86_Utcb ())[__L4_TCR_PROCESSOR_NO];
+    return (__L4_Utcb ())->processor_no;
 }
 
 L4_INLINE L4_Word_t __L4_TCR_UserDefinedHandle (void)
 {
-    return (__L4_X86_Utcb ())[__L4_TCR_USER_DEFINED_HANDLE];
+    return __L4_Utcb()->user_defined_handle;
 }
 
 L4_INLINE void __L4_TCR_Set_UserDefinedHandle (L4_Word_t w)
 {
-    (__L4_X86_Utcb ())[__L4_TCR_USER_DEFINED_HANDLE] = w;
+    __L4_Utcb()->user_defined_handle = w;
 }
 
 L4_INLINE L4_Word_t __L4_TCR_Pager (void)
 {
-    return (__L4_X86_Utcb ())[__L4_TCR_PAGER];
+    return __L4_Utcb()->t_pager;
 }
 
 L4_INLINE void __L4_TCR_Set_Pager (L4_Word_t w)
 {
-    (__L4_X86_Utcb ())[__L4_TCR_PAGER] = w;
+    __L4_Utcb()->t_pager = w;
 }
 
 L4_INLINE L4_Word_t __L4_TCR_ExceptionHandler (void)
 {
-    return (__L4_X86_Utcb ())[__L4_TCR_EXCEPTION_HANDLER];
+    return __L4_Utcb()->exception_handler;
 }
 
 L4_INLINE void __L4_TCR_Set_ExceptionHandler (L4_Word_t w)
 {
-    (__L4_X86_Utcb ())[__L4_TCR_EXCEPTION_HANDLER] = w;
+    __L4_Utcb()->exception_handler = w;
 }
 
 L4_INLINE L4_Word_t __L4_TCR_ErrorCode (void)
 {
-    return (__L4_X86_Utcb ())[__L4_TCR_ERROR_CODE];
+    return __L4_Utcb()->error_code;
 }
 
 L4_INLINE L4_Word_t __L4_TCR_XferTimeout (void)
 {
-    return (__L4_X86_Utcb ())[__L4_TCR_XFER_TIMEOUT];
+    return __L4_Utcb()->xfer_timeouts;
 }
 
 L4_INLINE void __L4_TCR_Set_XferTimeout (L4_Word_t w)
 {
-    (__L4_X86_Utcb ())[__L4_TCR_XFER_TIMEOUT] = w;
+    __L4_Utcb()->xfer_timeouts = w;
 }
 
 L4_INLINE L4_Word_t __L4_TCR_IntendedReceiver(void)
 {
-    return (__L4_X86_Utcb ())[__L4_TCR_INTENDED_RECEIVER];
+    return __L4_Utcb()->intended_receiver;
 }
 
 L4_INLINE L4_Word_t __L4_TCR_ActualSender (void)
 {
-    return (__L4_X86_Utcb ())[__L4_TCR_VIRTUAL_ACTUAL_SENDER];
+    return __L4_Utcb()->sender;
 }
 
 L4_INLINE void __L4_TCR_Set_VirtualSender (L4_Word_t w)
 {
-    (__L4_X86_Utcb ())[__L4_TCR_VIRTUAL_ACTUAL_SENDER] = w;
-}
-
-L4_INLINE L4_Word_t __L4_TCR_ThreadWord (L4_Word_t n)
-{
-    return (__L4_X86_Utcb ())[__L4_TCR_THREAD_WORD_0 - (int) n];
-}
-
-L4_INLINE void __L4_TCR_Set_ThreadWord (L4_Word_t n, L4_Word_t w)
-{
-    (__L4_X86_Utcb ())[__L4_TCR_THREAD_WORD_0 - (int) n] = w;
-}
-
-L4_INLINE void L4_Set_CopFlag (L4_Word_t n)
-{
-    __asm__ __volatile__ ("orl %0, %1"
-	     :
-	     :
-	     "ir" (1 << (8 + n)),
-	     "m" ((__L4_X86_Utcb ())[__L4_TCR_COP_FLAGS]));
-}
-
-L4_INLINE void L4_Clr_CopFlag (L4_Word_t n)
-{
-    __asm__ __volatile__ ("andl %0, %1"
-	     :
-	     :
-	     "ir" (~(1 << (8 + n))),
-	     "m" ((__L4_X86_Utcb ())[__L4_TCR_COP_FLAGS]));
-}
-
-L4_INLINE L4_Bool_t L4_EnablePreemptionFaultException (void)
-{
-    L4_Word8_t retval = 0;
-
-    __asm__ __volatile__ ("btr %1, %2; setc %0"
-	     : "=r" (retval)
-	     : "i" (5), "m" ((__L4_X86_Utcb ())[__L4_TCR_PREEMPT_FLAGS]));
-
-    return (L4_Bool_t)retval;
-}
-
-L4_INLINE L4_Bool_t L4_DisablePreemptionFaultException (void)
-{
-    L4_Word8_t retval = 0;
-
-    __asm__ __volatile__ ("bts %1, %2; setc %0"
-	     : "=r" (retval)
-	     : "i" (5), "m" ((__L4_X86_Utcb ())[__L4_TCR_PREEMPT_FLAGS]));
-
-    return (L4_Bool_t)retval;
-}
-
-L4_INLINE L4_Bool_t L4_EnablePreemption (void)
-{
-    L4_Word8_t retval = 0;
-
-    __asm__ __volatile__("btr %1, %2; setc %0"
-	     : "=r" (retval)
-	     : "i" (6), "m" ((__L4_X86_Utcb ())[__L4_TCR_PREEMPT_FLAGS]));
-
-    return (L4_Bool_t)retval;
-}
-
-L4_INLINE L4_Bool_t L4_DisablePreemption (void)
-{
-    L4_Word8_t retval = 0;
-
-    __asm__ __volatile__ ("bts %1, %2; setc %0"
-	     : "=r" (retval)
-	     : "i" (6), "m" ((__L4_X86_Utcb ())[__L4_TCR_PREEMPT_FLAGS]));
-
-    return (L4_Bool_t)retval;
-}
-
-L4_INLINE L4_Bool_t L4_PreemptionPending (void)
-{
-    L4_Word8_t retval = 0;
-
-    __asm__ __volatile__ ("btr %1, %2; setc %0"
-	     : "=r" (retval)
-	     : "i" (7), "m" ((__L4_X86_Utcb ())[__L4_TCR_PREEMPT_FLAGS]));
-
-    return (L4_Bool_t)retval;
+    __L4_Utcb()->sender = w;
 }
 
 
@@ -250,17 +163,39 @@ L4_INLINE L4_Bool_t L4_PreemptionPending (void)
 
 L4_INLINE void L4_StoreMR (int i, L4_Word_t * w)
 {
-    *w = (__L4_X86_Utcb ())[i];
+	switch (i) {
+		case 0: *w = __L4_MR0; break;
+		case 1: *w = __L4_MR1; break;
+		case 2: *w = __L4_MR2; break;
+		case 3: *w = __L4_MR3; break;
+		case 4: *w = __L4_MR4; break;
+		case 5: *w = __L4_MR5; break;
+		case 6: *w = __L4_MR6; break;
+		case 7: *w = __L4_MR7; break;
+		default:
+			*w = __L4_Utcb()->mr[i - 8];
+	}
 }
 
 L4_INLINE void L4_LoadMR (int i, L4_Word_t w)
 {
-    (__L4_X86_Utcb ())[i] = w;
+	switch (i) {
+		case 0: __L4_MR0 = w; break;
+		case 1: __L4_MR1 = w; break;
+		case 2: __L4_MR2 = w; break;
+		case 3: __L4_MR3 = w; break;
+		case 4: __L4_MR4 = w; break;
+		case 5: __L4_MR5 = w; break;
+		case 6: __L4_MR6 = w; break;
+		case 7: __L4_MR7 = w; break;
+		default:
+			__L4_Utcb()->mr[i - 8] = w;
+	}
 }
 
 L4_INLINE void L4_StoreMRs (int i, int k, L4_Word_t * w)
 {
-    L4_Word_t * mr = __L4_X86_Utcb () + i;
+    L4_Word_t * mr = __L4_Utcb ()->mr + i;
 
     while (k-- > 0)
 	*w++ = *mr++;
@@ -268,7 +203,7 @@ L4_INLINE void L4_StoreMRs (int i, int k, L4_Word_t * w)
 
 L4_INLINE void L4_LoadMRs (int i, int k, L4_Word_t * w)
 {
-    L4_Word_t * mr = __L4_X86_Utcb () + i;
+    L4_Word_t * mr = __L4_Utcb ()->mr + i;
 
     while (k-- > 0)
 	*mr++ = *w++;
@@ -282,28 +217,28 @@ L4_INLINE void L4_LoadMRs (int i, int k, L4_Word_t * w)
 
 L4_INLINE void L4_StoreBR (int i, L4_Word_t * w)
 {
-    *w = (__L4_X86_Utcb ())[-16 - i];
+    *w = __L4_Utcb()->br[i];
 }
 
 L4_INLINE void L4_LoadBR (int i, L4_Word_t w)
 {
-    (__L4_X86_Utcb ())[-16 - i] = w;
+    __L4_Utcb()->br[i] = w;
 }
 
 L4_INLINE void L4_StoreBRs (int i, int k, L4_Word_t * w)
 {
-    L4_Word_t * br = (__L4_X86_Utcb ()) - 16 - i;
+    L4_Word_t * br = __L4_Utcb()->br + i;
 
     while (k-- > 0)
-	*w++ = *br--;
+	*w++ = *br++;
 }
 
 L4_INLINE void L4_LoadBRs (int i, int k, const L4_Word_t * w)
 {
-    L4_Word_t * br = (__L4_X86_Utcb ()) - 16 - i;
+    L4_Word_t * br = __L4_Utcb()->br + i;
 
     while (k-- > 0)
-	*br-- = *w++;
+	*br++ = *w++;
 }
 
 
