@@ -33,7 +33,7 @@
 #ifndef __L4__IA32__ARCH_H__
 #define __L4__IA32__ARCH_H__
 
-#include <l4/ia32/specials.h>
+#include <l4/platform/specials.h>
 #include <l4/kip.h>
 #include <l4/ipc.h>
 
