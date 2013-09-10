@@ -289,72 +289,13 @@ L4_INLINE L4_MsgTag_t L4_Ipc (L4_ThreadId_t to,
 			      L4_Word_t Timeouts,
 			      L4_ThreadId_t * from)
 {
-    L4_MsgTag_t mr0;
-    L4_Word_t mr1, mr2;
-    L4_ThreadId_t result;
-    L4_Word_t * utcb = __L4_X86_Utcb ();
+    L4_MsgTag_t result;
 
-#if defined(__pic__)
-    __L4_Indirect_t in;
-    in.edi      = (L4_Word_t)utcb;
-    in.sys_call = __L4_Ipc;
+	 __asm__ __volatile__ ("svc #6\n");
 
-    __asm__ __volatile__ (
-	"/* L4_Ipc() */					\n"
-	__L4_SAVE_REGS
-	__L4_INDIRECT_CALL
-	"	movl	%%ebp, %%ecx			\n"
-	"	movl	%%ebx, %%edx			\n"
-	__L4_RESTORE_REGS
+	result.raw = __L4_MR0;
 
-	: /* outputs */
-	"=S" (mr0),
-	"=a" (result),
-	"=d" (mr1),
-	"=c" (mr2)
-        
-	: /* inputs */
-	"S" (utcb[0]),
-	"a" (to.raw),
-	"D" (&in),
-	"c" (Timeouts),
-	"d" (FromSpecifier)
-
-	: "memory");
-
-#else
-    L4_Word_t dummy;
-
-    __asm__ __volatile__ (
-	"/* L4_Ipc() */					\n"
-	__L4_SAVE_REGS
-	"	call	__L4_Ipc			\n"
-        "	movl	%%ebp, %%ecx			\n"
-	__L4_RESTORE_REGS
-
-	: /* outputs */
-	"=S" (mr0),
-	"=a" (result),
-	"=b" (mr1),
-	"=c" (mr2),
-	"=d" (dummy)
-        
-	: /* inputs */
-	"S" (utcb[0]),
-	"a" (to.raw),
-        "D" (utcb),
-	"c" (Timeouts),
-	"d" (FromSpecifier)
-	);
-#endif
-
-    if (! L4_IsNilThread (FromSpecifier)) {
-	*from = result; 
-	utcb[1] = mr1;
-	utcb[2] = mr2;
-    }
-
-    return mr0;
+	 return result;
 }
 
 
