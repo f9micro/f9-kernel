@@ -14,6 +14,8 @@
 
 enum { PING_THREAD, PONG_THREAD };
 
+L4_Word_t *__L4_UtcbPtr __USER_BSS;
+
 static L4_ThreadId_t threads[2] __USER_BSS;
 
 int __USER_TEXT L4_Map(L4_ThreadId_t where, memptr_t base, size_t size)

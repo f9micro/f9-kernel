@@ -46,26 +46,15 @@ register L4_Word32_t __L4_MR7 asm ("r11");
  * Control Block (UTCB).
  */
 
+
 #if (__GNUC__ >= 3) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 96))
 L4_INLINE L4_Word_t * __L4_X86_Utcb (void) __attribute__ ((pure));
 #endif
 
 L4_INLINE L4_Word_t * __L4_X86_Utcb (void)
 {
-    L4_Word_t *utcb;
-
-    __asm__ __volatile__ (
-	"/* __L4_X86_Utcb() */			\n"
-	"	mov %%gs:0, %0			\n"
-
-	: /* outputs */
-	"=r"(utcb)
-
-	/* no inputs */
-	/* no clobbers */
-	);
-
-    return utcb;
+    extern L4_Word_t *__L4_UtcbPtr;
+    return __L4_UtcbPtr;
 }
 
 
