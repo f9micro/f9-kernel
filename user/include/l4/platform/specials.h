@@ -49,19 +49,19 @@ L4_INLINE int __L4_Msb (L4_Word_t w) __attribute__ ((const));
 
 L4_INLINE int __L4_Msb (L4_Word_t w)
 {
-    int bitnum;
+    int zeros;
 
     __asm__ (
 	"/* l4_msb()		*/			\n"
-	"	bsr	%1, %0				\n"
+	"	clz	%0, %1				\n"
 
 	: /* outputs */
-	"=r" (bitnum)
+	"=r" (zeros)
 	: /* inputs */
-	"rm" (w)
+	"r" (w)
 	);
 
-    return bitnum;
+    return 31 - zeros;
 }
 
 L4_INLINE int __L4_Lsb (L4_Word_t w) __attribute__ ((const));
