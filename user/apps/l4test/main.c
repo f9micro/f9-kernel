@@ -38,7 +38,7 @@
 #include <config.h>
 
 /* for the current arch */
-#include <arch.h>
+#include <platform/arch.h>
 
 /* generic stuff */
 #include "l4test.h"
