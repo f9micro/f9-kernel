@@ -33,6 +33,7 @@
 #define __L4__KERNEL_IFACE_PAGE_H__
 
 #include <l4/types.h>
+#include <l4/kip_types.h>
 #include __L4_INC_ARCH(syscalls.h)
 
 
