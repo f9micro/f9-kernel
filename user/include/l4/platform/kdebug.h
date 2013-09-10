@@ -35,16 +35,6 @@
 
 #define L4_KDB_Enter(str...)			\
 do {						\
-    __asm__ __volatile__ (			\
-	"/* L4_KDB_Enter() */		\n"	\
-	"	int	$3		\n"	\
-	"	jmp	2f		\n"	\
-	"	mov	$1f, %eax	\n"	\
-	".section .rodata		\n"	\
-	"1:	.ascii \"" str "\"	\n"	\
-	"	.byte 0			\n"	\
-	".previous			\n"	\
-	"2:				\n");	\
 } while (0)
 
 #define __L4_KDB_Op(op, name)			\
