@@ -1,0 +1,70 @@
+######################################################################
+##                
+## Copyright (C) 2003, 2006-2007, 2010,  Karlsruhe University
+##                
+## File path:     l4test/Makefile.in
+##                
+## Redistribution and use in source and binary forms, with or without
+## modification, are permitted provided that the following conditions
+## are met:
+## 1. Redistributions of source code must retain the above copyright
+##    notice, this list of conditions and the following disclaimer.
+## 2. Redistributions in binary form must reproduce the above copyright
+##    notice, this list of conditions and the following disclaimer in the
+##    documentation and/or other materials provided with the distribution.
+## 
+## THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+## ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+## IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+## ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+## FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+## DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+## OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+## HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+## LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+## OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+## SUCH DAMAGE.
+##                
+## $Id: Makefile.in,v 1.17 2006/02/23 21:07:52 ud3 Exp $
+##                
+######################################################################
+
+srcdir=		@srcdir@
+top_srcdir=	@top_srcdir@
+top_builddir=	@top_builddir@
+
+include $(top_srcdir)/Mk/l4.base.mk
+
+
+PROGRAM=	l4test
+PROGRAM_DEPS=	$(top_builddir)/lib/l4/libl4.a \
+		$(top_builddir)/lib/io/libio.a
+
+
+ia32_SRCS=	ia32/crt0.S ia32/help.cc ia32/tests.cc
+powerpc_SRCS=	powerpc/crt0.S powerpc/help.cc powerpc/tests.cc
+powerpc64_SRCS=	powerpc64/crt0.S powerpc64/help.cc powerpc64/tests.cc \
+		powerpc64/1275tree.cc 
+amd64_SRCS=	amd64/crt0.S amd64/help.cc amd64/tests.cc
+
+SRCS=		main.cc assert.cc menu.cc threads.cc string.cc \
+		ipc.cc ipc-string.cc ipc-pf.cc ipc-smp.cc \
+		kip.cc mem.cc sig0.cc exreg.cc tcontrol.cc \
+		schedule.cc \
+		$($(ARCH)_SRCS)
+
+LIBS+=		-ll4 -lio
+LDFLAGS+=	-Ttext=$(ROOTTASK_LINKBASE)
+CPPFLAGS+=	-I$(srcdir)/$(ARCH)
+
+CFLAGS_powerpc+=	-fno-builtin -msoft-float
+CXXFLAGS_powerpc+=	-fno-rtti
+
+pre-all:
+	@if test ! -d ./$(ARCH); then mkdir ./$(ARCH); fi
+
+post-clean:
+	@if test -d ./$(ARCH); then $(RMDIR) ./$(ARCH); fi
+
+
+include $(top_srcdir)/Mk/l4.prog.mk
