@@ -32,6 +32,14 @@
 #ifndef __L4__X86__VREGS_H__
 #define __L4__X86__VREGS_H__
 
+register L4_Word32_t __L4_MR0 asm ("r4");
+register L4_Word32_t __L4_MR1 asm ("r5");
+register L4_Word32_t __L4_MR2 asm ("r6");
+register L4_Word32_t __L4_MR3 asm ("r7");
+register L4_Word32_t __L4_MR4 asm ("r8");
+register L4_Word32_t __L4_MR5 asm ("r9");
+register L4_Word32_t __L4_MR6 asm ("r10");
+register L4_Word32_t __L4_MR7 asm ("r11");
 
 /*
  * All virtual registers on x86 is located in a user Level Thread
