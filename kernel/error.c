@@ -10,7 +10,7 @@
 #include <platform/irq.h>
 #include <platform/armv7m.h>
 #include <platform/link.h>
-#include <platform/debug_uart.h>
+#include <platform/debug_device.h>
 #include <lib/stdarg.h>
 
 extern volatile tcb_t *caller;

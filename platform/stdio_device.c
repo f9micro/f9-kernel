@@ -6,8 +6,7 @@
 #include <types.h>
 #include <lib/stdio.h>
 #ifdef CONFIG_STDIO_USE_DBGPORT
-#include <debug.h>
-#include <platform/debug_uart.h>
+#include <platform/debug_device.h>
 #endif
 
 /* FIXME: we can move it to be inline function in header file. */

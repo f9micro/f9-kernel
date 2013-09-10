@@ -10,7 +10,7 @@
 #include INC_PLAT(gpio.h)
 #include INC_PLAT(rcc.h)
 
-#include <platform/debug_uart.h>
+#include <platform/debug_device.h>
 #include <platform/irq.h>
 #include <error.h>
 #include <types.h>
@@ -56,12 +56,11 @@ int main(void)
 	*SCB_CPACR |= (SCB_CPACR_CP10_FULL | SCB_CPACR_CP11_FULL);
 #endif
 
-	dbg_uart_init();
-	__l4_printf("%s", banner);
-
 #ifdef CONFIG_DEBUG
+	dbg_device_init();
 	dbg_layer = DL_KDB;
 #endif
+	__l4_printf("%s", banner);
 	run_init_hook(INIT_LEVEL_PLATFORM);
 
 #ifdef CONFIG_SYMMAP

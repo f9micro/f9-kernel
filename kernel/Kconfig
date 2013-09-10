@@ -60,6 +60,10 @@ config DEBUG
 	bool "Debug message"
 	default y
 
+if DEBUG
+source platform/Kconfig.debug
+endif
+
 config KDB
 	bool "Kdb: kernel debugger"
 	default y
