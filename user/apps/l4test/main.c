@@ -225,7 +225,7 @@ static struct menu main_menu =
 };
 
 
-int main (void)
+int l4test_main (void)
 {
 	printf( "L4/Pistachio test suite ready to go.\n\n" );
         
