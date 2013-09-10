@@ -8,7 +8,6 @@
 #include <l4/utcb.h>
 #include <l4/ipc.h>
 #include <types.h>
-#include "apis.h"
 
 enum { PING_THREAD, PONG_THREAD };
 
