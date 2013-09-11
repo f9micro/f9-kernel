@@ -101,3 +101,10 @@ void dbg_start_panic(void)
 }
 #endif /* CONFIG_DEBUG */
 
+#ifdef CONFIG_STDIO_USE_DBGPORT
+uint8_t __l4_getchar(void)
+        __attribute__ ((weak, alias ("dbg_getchar")));
+
+void __l4_putchar(uint8_t chr)
+        __attribute__ ((weak, alias ("dbg_putchar")));
+#endif
