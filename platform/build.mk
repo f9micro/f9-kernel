@@ -14,10 +14,12 @@ CFLAGS_CPU += $(CFLAGS_FPU-y)
 
 platform-y = \
 	bitops.o \
-	debug_uart.o \
+	debug_device.o \
 	mpu.o \
 	spinlock.o \
 	irq.o
+
+platform-$(CONFIG_DEBUG_DEV_UART) += debug_uart.o
 
 platform-KPROBES-$(CONFIG_KPROBES) = \
 	kprobes-arch.o \

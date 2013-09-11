@@ -43,7 +43,4 @@ struct dbg_uart_t {
 void dbg_uart_init(void);
 void dbg_uart_interrupt(void);
 
-typedef int (*dbg_handler_t)(char);
-void dbg_start_panic(void);
-
 #endif /* PLATFORM_DEBUG_UART_H_ */

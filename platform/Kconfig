@@ -1,0 +1,21 @@
+# Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+menu "Platform"
+choice
+	prompt "Device of STDIO"
+	default STDIO_USE_DBGPORT
+	help
+	  Select input/output device for stdio
+
+config STDIO_NODEV
+	bool "Null device"
+
+config STDIO_USE_DBGPORT
+	bool "Use debug IO port"
+	select DEBUG
+
+endchoice
+
+endmenu

@@ -26,6 +26,8 @@ config MAX_FPAGES
 	default 256
 endmenu
 
+source platform/Kconfig
+
 source kernel/Kconfig
 
 config SYMMAP

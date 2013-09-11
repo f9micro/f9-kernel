@@ -3,6 +3,7 @@
  * found in the LICENSE file.
  */
 
+#include <platform/debug_device.h>
 #include <platform/debug_uart.h>
 #include <platform/irq.h>
 #include <lib/queue.h>
@@ -34,23 +35,6 @@ void __uart_irq_handler(void)
 
 IRQ_HANDLER(BOARD_UART_HANDLER, __uart_irq_handler);
 
-void dbg_uart_init(void)
-{
-	usart_init(&console_uart);	
-
-	dbg_uart.ready = 1;
-	queue_init(&(dbg_uart.tx), dbg_uart_tx_buffer, SEND_BUFSIZE);
-	queue_init(&(dbg_uart.rx), dbg_uart_rx_buffer, RECV_BUFSIZE);
-
-	dbg_state = DBG_ASYNC;
-	usart_config_interrupt(&console_uart, USART_IT_RXNE, 1);
-
-	NVIC_SetPriority(BOARD_UART_DEVICE, 2, 0);
-	NVIC_ClearPendingIRQ(BOARD_UART_DEVICE);
-	NVIC_EnableIRQ(BOARD_UART_DEVICE);
-}
-
-
 static void dbg_uart_recv(void)
 {
 	uint8_t chr = usart_getc(&console_uart);
@@ -81,34 +65,6 @@ static void dbg_uart_send(int avail)
 	}
 }
 
-uint8_t dbg_getchar(void)
-{
-	uint8_t chr = 0;
-
-	if (queue_pop(&(dbg_uart.rx), &chr) == QUEUE_EMPTY)
-		return 0;
-	return chr;
-
-}
-uint8_t __l4_getchar(void)
-	__attribute__ ((weak, alias ("dbg_getchar")));
-
-static void dbg_async_putchar(char chr);
-static void dbg_sync_putchar(char chr);
-
-void dbg_putchar(char chr)
-{
-	/* During panic, we cannot use async dbg uart, so switch to
-	 * synchronious mode
-	 */
-	if (dbg_state != DBG_PANIC)
-		dbg_async_putchar(chr);
-	else
-		dbg_sync_putchar(chr);
-}
-void __l4_putchar(char chr)
-	__attribute__ ((weak, alias ("dbg_putchar")));
-
 static void dbg_async_putchar(char chr)
 {
 	/* If UART is busy, try to put chr into queue until slot is freed,
@@ -135,7 +91,27 @@ static void dbg_sync_putchar(char chr)
 		/* wait */ ;
 }
 
-void dbg_start_panic(void)
+uint8_t dbg_uart_getchar(void)
+{
+	uint8_t chr = 0;
+
+	if (queue_pop(&(dbg_uart.rx), &chr) == QUEUE_EMPTY)
+		return 0;
+	return chr;
+
+}
+
+void dbg_uart_putchar(char chr)
+{
+	/* During panic, we cannot use async dbg uart, so switch to
+	 * synchronious mode
+	 */
+	if (dbg_state != DBG_PANIC)
+		dbg_async_putchar(chr);
+	else
+		dbg_sync_putchar(chr);
+}
+static void dbg_uart_start_panic(void)
 {
 	unsigned char chr;
 
@@ -148,4 +124,29 @@ void dbg_start_panic(void)
 	}
 
 	dbg_state = DBG_PANIC;
+}
+
+void dbg_uart_init(void)
+{
+	dbg_dev_t dbg_dev_uart = {
+		.dev_id = DBG_DEV_UART,
+		.getchar = &dbg_uart_getchar,
+		.putchar = &dbg_uart_putchar,
+		.start_panic = &dbg_uart_start_panic
+	};
+
+	usart_init(&console_uart);
+
+	dbg_uart.ready = 1;
+	queue_init(&(dbg_uart.tx), dbg_uart_tx_buffer, SEND_BUFSIZE);
+	queue_init(&(dbg_uart.rx), dbg_uart_rx_buffer, RECV_BUFSIZE);
+
+	dbg_state = DBG_ASYNC;
+	usart_config_interrupt(&console_uart, USART_IT_RXNE, 1);
+
+	NVIC_SetPriority(BOARD_UART_DEVICE, 2, 0);
+	NVIC_ClearPendingIRQ(BOARD_UART_DEVICE);
+	NVIC_EnableIRQ(BOARD_UART_DEVICE);
+
+	dbg_register_device(&dbg_dev_uart);
 }
