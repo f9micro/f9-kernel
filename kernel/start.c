@@ -24,7 +24,7 @@
 #include <kprobes.h>
 #include <ksym.h>
 #include <init_hook.h>
-#include <stdio.h>
+#include <lib/stdio.h>
 
 static char banner[] = 
 	"\n"

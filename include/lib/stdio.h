@@ -9,9 +9,11 @@
 #include <types.h>
 #include <lib/stdarg.h>
 
+#define EOF     (-1)
+
 #ifdef CONFIG_STDIO_NODEV
 #define __l4_putchar(chr)	do {} while(0)
-#define __l4_getchar()		(0)
+#define __l4_getchar()		(EOF)
 #else
 void __l4_putchar(uint8_t chr);
 uint8_t __l4_getchar(void);
