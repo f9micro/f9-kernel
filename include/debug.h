@@ -9,6 +9,7 @@
 #include <types.h>
 #include <lib/stdarg.h>
 #include <lib/stdio.h>
+#include <platform/debug_device.h>
 
 typedef enum {
 	DL_EMERG	= 0x0000,
@@ -23,9 +24,6 @@ typedef enum {
 	DL_MEMORY	= 0x0040,
 	DL_IPC		= 0x0080
 } dbg_layer_t;
-
-uint8_t dbg_getchar(void);
-void dbg_putchar(uint8_t chr);
 
 #ifndef CONFIG_DEBUG
 #define dbg_puts(x)		do {} while(0)
