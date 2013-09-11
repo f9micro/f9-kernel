@@ -29,6 +29,6 @@ uint8_t __l4_getchar(void)
 
 void __l4_putchar(uint8_t chr)
 {
-	(void) chr;
+	chr = 0;
 }
 #endif

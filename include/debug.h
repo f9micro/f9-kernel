@@ -28,7 +28,6 @@ uint8_t dbg_getchar(void);
 void dbg_putchar(uint8_t chr);
 
 #ifndef CONFIG_DEBUG
-
 #define dbg_puts(x)		do {} while(0)
 #define dbg_printf(...)		do {} while(0)
 #define dbg_vprintf(...)	do {} while(0)
@@ -37,6 +36,7 @@ void dbg_putchar(uint8_t chr);
 #define dbg_puts(x)	__l4_puts(x)
 void dbg_printf(dbg_layer_t layer, char *fmt, ...);
 void dbg_vprintf(dbg_layer_t layer, char *fmt, va_list va);
+
 #endif
 
 #endif /* DEBUG_H_ */

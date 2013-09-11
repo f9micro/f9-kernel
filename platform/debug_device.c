@@ -6,7 +6,6 @@
 #include <types.h>
 #include <errno.h>
 #include <lib/stdio.h>
-//#include <lib/queue.h>
 #include <platform/debug_device.h>
 #ifdef CONFIG_DEBUG_DEV_UART
 #include <platform/debug_uart.h>
@@ -16,18 +15,26 @@
 static dbg_dev_t dbg_dev[DBG_DEV_MAX];
 static dbg_dev_t *cur_dev = &dbg_dev[0];
 
+/*
+ * Receive a character from debug port
+ */
 uint8_t dbg_getchar(void)
 {
-	/* FIXME: getchar NULL error checking */
 	return ((*cur_dev->getchar)());
 }
 
+/*
+ * Send a character to debug port
+ */
 void dbg_putchar(uint8_t chr)
 {
-	/* FIXME: putchar NULL error checking */
 	(*cur_dev->putchar)(chr);
 }
 
+/*
+ * Do the preparing before entering panic. Previous characters in
+ * debug queue must be flushed out first.
+ */
 void dbg_start_panic(void)
 {
 	if (!cur_dev || !cur_dev->start_panic)
@@ -35,13 +42,29 @@ void dbg_start_panic(void)
 	cur_dev->start_panic();
 }
 
+/*
+ * Initialization procedure for debug IO port
+ */
 void dbg_device_init(void)
 {
+	int i;
+
+	for (i = 0; i < DBG_DEV_MAX; i++) {
+		dbg_dev_t *pdev = &dbg_dev[i];
+		pdev->dev_id = DBG_DEV_MAX;
+		pdev->getchar = NULL;
+		pdev->putchar = NULL;
+		pdev->start_panic = NULL;
+	}
+
 #ifdef CONFIG_DEBUG_DEV_UART
 	dbg_uart_init();
 #endif
 }
 
+/*
+ * Register device IO port objects
+ */
 int32_t dbg_register_device(dbg_dev_t *device)
 {
 	dbg_dev_t *pdev;
@@ -63,16 +86,17 @@ int32_t dbg_register_device(dbg_dev_t *device)
 
 /* FIXME: function to change device is required */
 #else /* CONFIG_DEBUG */
-void dbg_start_panic(void)
-{
-}
-
 uint8_t dbg_getchar(void)
 {
-	return 0;
+	return (EOF);
 }
 
 void dbg_putchar(uint8_t chr)
+{
+	chr = 0;
+}
+
+void dbg_start_panic(void)
 {
 }
 #endif /* CONFIG_DEBUG */
