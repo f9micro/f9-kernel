@@ -4,14 +4,14 @@
 
 if DEBUG
 config DEBUG_DEV_UART
-	bool "UART debug port"
+	bool "UART based implementation"
 	default y
 	help
-	  It's the only device for KDB use now.
+	  At present, it is the only device for KDB use.
 
 if !KDB
 config DEBUG_DEV_RAM
-	bool "RAM debug port"
+	bool "RAM based virtual device"
 	default n
 	help
 	  Not implemented yet.

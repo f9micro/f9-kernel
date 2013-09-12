@@ -57,7 +57,7 @@ endmenu
 
 menu "Kernel hacking"
 config DEBUG
-	bool "Debug message"
+	bool "Debug IO facilities"
 	default y
 
 if DEBUG

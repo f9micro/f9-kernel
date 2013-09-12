@@ -42,5 +42,3 @@ config BITMAP_BITBAND
 config FPU
 	bool "Floating point support"
 	default n
-
-
