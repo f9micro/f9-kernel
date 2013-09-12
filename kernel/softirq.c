@@ -24,7 +24,7 @@ void softirq_schedule(softirq_type_t type)
 	set_kernel_state(T_RUNNABLE);
 }
 
-static char *softirq_names[NR_SOFTIRQ] = {
+static char *softirq_names[NR_SOFTIRQ] __attribute__ ((used)) = {
 	"Kernel timer events",
 	"Asynchronous events",
 	"System calls",

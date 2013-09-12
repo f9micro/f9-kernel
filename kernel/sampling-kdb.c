@@ -16,6 +16,7 @@
 #include <kprobes.h>
 #include <platform/cortex_m.h>
 
+#ifdef CONFIG_KDB
 static int sampling_handler(struct kprobe *kp, uint32_t *stack,
 		uint32_t *kp_regs)
 {
@@ -66,3 +67,4 @@ void kdb_show_sampling(void)
 
 	sampling_enable();
 }
+#endif /* CONFIG_KDB */

@@ -1,0 +1,20 @@
+# Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if DEBUG
+config DEBUG_DEV_UART
+	bool "UART debug port"
+	default y
+	help
+	  It's the only device for KDB use now.
+
+if !KDB
+config DEBUG_DEV_RAM
+	bool "RAM debug port"
+	default n
+	help
+	  Not implemented yet.
+endif
+
+endif

@@ -13,6 +13,7 @@ typedef uintptr_t memptr_t;
 
 typedef uint32_t l4_thread_t;
 
+#define _SIZE_T_
 typedef uint32_t size_t;
 
 #define NULL \

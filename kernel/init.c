@@ -3,8 +3,6 @@
  * found in the LICENSE file.
  */
 
-#include <platform/debug_uart.h>
-
 #include <debug.h>
 #include <error.h>
 

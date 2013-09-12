@@ -60,9 +60,15 @@ config DEBUG
 	bool "Debug message"
 	default y
 
+if DEBUG
+source platform/Kconfig.debug
+endif
+
 config KDB
 	bool "Kdb: kernel debugger"
 	default y
+	select DEBUG
+	select DEBUG_DEV_UART
 
 config KPROBES
 	bool "KProbes: dynamic instrumentation system"

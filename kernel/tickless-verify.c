@@ -126,12 +126,15 @@ int32_t tickless_verify_stat(int *times)
 		n = TICKLESS_VERIFY_MAX_RECORD;
 	}
 
+#ifdef CONFIG_KDB
 	dbg_printf(DL_KDB, "  Record  N: %10s | %10s | %10s | %10s | %10s | %s\n",
 		"      NEED", "      REAL", "      KTIM", " REAL-NEED", " REAL-KTIM", "COUNT(INT)");
+#endif
 
 	for (i = 0; i < n; i++) {
 		int32_t hwtimer_need_diff =
 			tickless_verify_records[i].hwtimer_diff - tickless_verify_records[i].need;
+#ifdef CONFIG_KDB
 		int32_t hwtimer_ktimer_diff =
 			tickless_verify_records[i].hwtimer_diff - tickless_verify_records[i].ktimer_diff;
 
@@ -146,6 +149,7 @@ int32_t tickless_verify_stat(int *times)
 			hwtimer_ktimer_diff >= 0 ? hwtimer_ktimer_diff : -hwtimer_ktimer_diff,
 			tickless_verify_records[i].count,
 			tickless_verify_records[i].count_int);
+#endif /* CONFIG_KDB */
 		sum += hwtimer_need_diff;
 	}
 
