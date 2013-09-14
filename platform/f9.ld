@@ -62,7 +62,7 @@ SECTIONS {
 	.user_text 0x0800C000 :
 	{
 		user_text_start = .;
-		*root_thread.o(.user_text*)
+		*(.user_text*)
 		. = 0x00001000;
 		user_text_end = .;
 	} > MFlash
