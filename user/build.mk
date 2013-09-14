@@ -17,3 +17,4 @@ user-dirs = \
 	apps
 
 $(eval $(call include_build_recusive,user,user))
+$(eval user-dirs := $(addprefix user/,$(user-dirs)))
