@@ -2,6 +2,5 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-app-dir = user/apps
-
-include $(app-dir)/l4test/build.mk
+user-apps-dirs = \
+	l4test

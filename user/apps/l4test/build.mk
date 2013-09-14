@@ -2,7 +2,5 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-user-dirs += user/apps/l4test
-
-user-apps-y = \
+user-apps-l4test-y = \
 	main.o
