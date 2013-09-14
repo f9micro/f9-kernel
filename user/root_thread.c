@@ -73,7 +73,7 @@ memptr_t __USER_TEXT get_free_base(kip_t *kip_ptr)
 	return 0;
 }
 
-void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t sp, L4_Word_t ip)
+void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip, L4_Word_t sp)
 {
 	L4_Msg_t msg;
 
