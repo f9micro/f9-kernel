@@ -13,13 +13,13 @@
 
 typedef union {
 	struct {
-		uint16_t label;
-		uint32_t reserved	: 3;	/* Type of operation */
-		uint32_t prop		: 1;
-
 		/* Number of words */
-		uint32_t n_typed : 6;
 		uint32_t n_untyped : 6;
+		uint32_t n_typed : 6;
+
+		uint32_t prop		: 1;
+		uint32_t reserved	: 3;	/* Type of operation */
+		uint16_t label;
 	} s;
 	uint32_t raw;
 } ipc_msg_tag_t;
