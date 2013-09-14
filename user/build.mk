@@ -16,5 +16,8 @@ user-dirs = \
 	lib \
 	apps
 
+user-y = \
+	root_thread.o
+
 $(eval $(call include_build_recusive,user,user))
 $(eval user-dirs := $(addprefix user/,$(user-dirs)))
