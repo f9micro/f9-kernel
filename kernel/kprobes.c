@@ -5,6 +5,7 @@
 
 #include <kprobes.h>
 #include <platform/armv7m.h>
+#include <init_hook.h>
 
 static struct kprobe *kp_list;
 
@@ -13,6 +14,8 @@ void kprobe_init()
 	kp_list = NULL;
 	kprobe_arch_init();
 }
+
+INIT_HOOK(kprobe_init, kprobe_init, INIT_LEVEL_KERNEL);
 
 struct kprobe *kplist_search(void *addr)
 {

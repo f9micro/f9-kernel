@@ -10,6 +10,7 @@
 #ifdef CONFIG_DEBUG_DEV_UART
 #include <platform/debug_uart.h>
 #endif
+#include <init_hook.h>
 
 #ifdef CONFIG_DEBUG
 static dbg_dev_t dbg_dev[DBG_DEV_MAX];
@@ -61,6 +62,17 @@ void dbg_device_init(void)
 	dbg_uart_init();
 #endif
 }
+
+#ifdef CONFIG_DEBUG
+extern dbg_layer_t dbg_layer;
+
+void dbg_device_init_hook(void)
+{
+	dbg_device_init();
+	dbg_layer = DL_KDB;
+}
+INIT_HOOK(dbg_device_init_hook, dbg_device_init_hook, INIT_LEVEL_PLATFORM);
+#endif
 
 /*
  * Register device IO port objects

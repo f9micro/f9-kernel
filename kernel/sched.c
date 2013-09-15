@@ -6,6 +6,7 @@
 #include <sched.h>
 #include <thread.h>
 #include <error.h>
+#include <init_hook.h>
 
 /**
  * @file sched.c
@@ -16,7 +17,7 @@
 
 static sched_slot_t slots[NUM_SCHED_SLOTS];
 
-int sched_init()
+void sched_init()
 {
 	int slot_id;
 
@@ -24,9 +25,9 @@ int sched_init()
 		slots[slot_id].ss_scheduled = NULL;
 		slots[slot_id].ss_handler =   NULL;
 	}
-
-	return 0;
 }
+
+INIT_HOOK(sched_init, sched_init, INIT_LEVEL_KERNEL_EARLY);
 
 tcb_t *schedule_select()
 {

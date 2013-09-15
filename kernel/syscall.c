@@ -12,6 +12,7 @@
 #include <memory.h>
 #include <platform/armv7m.h>
 #include <platform/irq.h>
+#include <init_hook.h>
 
 tcb_t *caller;
 
@@ -35,6 +36,8 @@ void syscall_init()
 {
 	softirq_register(SYSCALL_SOFTIRQ, syscall_handler);
 }
+
+INIT_HOOK(syscall_init, syscall_init, INIT_LEVEL_KERNEL);
 
 static void sys_thread_control(uint32_t *param1, uint32_t *param2)
 {

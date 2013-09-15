@@ -36,19 +36,9 @@ static char banner[] =
 	"Build: "  BUILD_TIME "\n"
 	"\n";
 
-#ifdef CONFIG_KDB
-void debug_kdb_handler(void)
-{
-	kdb_handler(dbg_getchar());
-}
-#endif
-
-#ifdef CONFIG_DEBUG
-extern dbg_layer_t dbg_layer;
-#endif
-
 int main(void)
 {
+	run_init_hook(INIT_LEVEL_PLATFORM_EARLY);
 	irq_init();
 	irq_disable();
 
@@ -56,30 +46,12 @@ int main(void)
 	*SCB_CPACR |= (SCB_CPACR_CP10_FULL | SCB_CPACR_CP11_FULL);
 #endif
 
-#ifdef CONFIG_DEBUG
-	dbg_device_init();
-	dbg_layer = DL_KDB;
-#endif
-	__l4_printf("%s", banner);
 	run_init_hook(INIT_LEVEL_PLATFORM);
 
-#ifdef CONFIG_SYMMAP
-	ksym_init();
-#endif
-	sched_init();
-	memory_init();
-	syscall_init();
-	thread_init_subsys();
-	ktimer_event_init();
+	__l4_printf("%s", banner);
 
-#ifdef CONFIG_KPROBES
-	kprobe_init();
-#endif /* CONFIG_KPROBES */
+	run_init_hook(INIT_LEVEL_KERNEL_EARLY);
 
-#ifdef CONFIG_KDB
-	softirq_register(KDB_SOFTIRQ, debug_kdb_handler);
-	dbg_puts("Press '?' to print KDB menu\n");
-#endif
 	run_init_hook(INIT_LEVEL_KERNEL);
 
 	/* Not creating kernel thread here because it corrupts current stack

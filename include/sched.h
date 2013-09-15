@@ -28,7 +28,7 @@ typedef struct sched_slot {
 	sched_handler_t ss_handler;
 } sched_slot_t;
 
-int sched_init(void);
+void sched_init(void);
 
 tcb_t* schedule_select(void);
 int schedule(void);

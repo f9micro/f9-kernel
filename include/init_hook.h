@@ -7,13 +7,15 @@
 #define INIT_HOOK_H_
 
 enum init_levels {
-	INIT_LEVEL_EARLIEST	= 1,
-	INIT_LEVEL_PLATFORM	= 0x1000,
-	INIT_LEVEL_KERNEL	= 0x2000,
-	INIT_LEVEL_LAST		= 0xFFFFFFFF,
+	INIT_LEVEL_EARLIEST		= 1,
+	INIT_LEVEL_PLATFORM_EARLY 	= 0x1000,
+	INIT_LEVEL_PLATFORM		= 0x2000,
+	INIT_LEVEL_KERNEL_EARLY		= 0x3000,
+	INIT_LEVEL_KERNEL		= 0x4000,
+	INIT_LEVEL_LAST			= 0xFFFFFFFF,
 };
 
-typedef void (*init_hook_t)(unsigned int level);
+typedef void (*init_hook_t)(void);
 
 typedef struct {
 	unsigned int level;
