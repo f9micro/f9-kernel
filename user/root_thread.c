@@ -21,12 +21,12 @@ static L4_ThreadId_t threads[2] __USER_BSS;
 int __USER_TEXT L4_Map(L4_ThreadId_t where, memptr_t base, size_t size)
 {
 	L4_Msg_t msg;
-	L4_Fpage_t fpage = L4_Fpage(base, size);
-	L4_GrantItem_t map = L4_GrantItem(fpage, base);
+	L4_Word_t page[2] = {
+		(base & 0xFFFFFFC0) | 0xA,
+		size & 0xFFFFFFC0
+	};
 
-	L4_MsgClear(&msg);
-	L4_MsgAppendGrantItem(&msg, map);
-
+	L4_MsgPut(&msg, 0, 0, NULL, 2, page);
 	L4_MsgLoad(&msg);
 
 	L4_Send(where);
