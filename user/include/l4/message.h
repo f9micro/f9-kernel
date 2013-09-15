@@ -85,20 +85,6 @@ L4_INLINE L4_Bool_t L4_IsMsgTagNotEqual (const L4_MsgTag_t l,
     return l.raw != r.raw;
 }
 
-#if defined(__cplusplus)
-static inline L4_Bool_t operator == (const L4_MsgTag_t & l,
-				     const L4_MsgTag_t & r)
-{
-    return l.raw == r.raw;
-}
-
-static inline L4_Bool_t operator != (const L4_MsgTag_t & l,
-				     const L4_MsgTag_t & r)
-{
-    return l.raw != r.raw;
-}
-#endif /* __cplusplus */
-
 L4_INLINE L4_MsgTag_t L4_MsgTagAddLabel (const L4_MsgTag_t t, int label)
 {
     L4_MsgTag_t tag = t;
@@ -111,18 +97,6 @@ L4_INLINE L4_MsgTag_t L4_MsgTagAddLabelTo (L4_MsgTag_t * t, int label)
     t->X.label = label;
     return *t;
 }
-
-#if defined(__cplusplus)
-static inline L4_MsgTag_t operator + (const L4_MsgTag_t & t, int label)
-{
-    return L4_MsgTagAddLabel (t, label);
-}
-
-static inline L4_MsgTag_t operator += (L4_MsgTag_t & t, int label)
-{
-    return L4_MsgTagAddLabelTo (&t, label);
-}
-#endif /* __cplusplus */
 
 L4_INLINE L4_Word_t L4_Label (L4_MsgTag_t t)
 {
@@ -208,23 +182,6 @@ L4_INLINE L4_Word_t L4_MapItemSndBase (L4_MapItem_t m)
     return m.X.snd_base << 10;
 }
 
-#if defined(__cplusplus)
-L4_INLINE L4_Bool_t L4_MapItem (L4_MapItem_t m)
-{
-    return L4_IsMapItem (m);
-}
-
-L4_INLINE L4_Fpage_t L4_SndFpage (L4_MapItem_t m)
-{
-    return L4_MapItemSndFpage (m);
-}
-
-L4_INLINE L4_Word_t L4_SndBase (L4_MapItem_t m)
-{
-    return L4_MapItemSndBase (m);
-}
-#endif /* __cplusplus */
-
 
 
 
@@ -276,23 +233,6 @@ L4_INLINE L4_Word_t L4_GrantItemSndBase (L4_GrantItem_t m)
     return m.X.snd_base << 10;
 }
 
-#if defined(__cplusplus)
-L4_INLINE L4_Bool_t L4_GrantItem (L4_GrantItem_t g)
-{
-    return L4_IsGrantItem (g);
-}
-
-L4_INLINE L4_Fpage_t L4_SndFpage (L4_GrantItem_t m)
-{
-    return L4_GrantItemSndFpage (m);
-}
-
-L4_INLINE L4_Word_t L4_SndBase (L4_GrantItem_t m)
-{
-    return L4_GrantItemSndBase (m);
-}
-#endif /* __cplusplus */
-
 
 
 
@@ -341,13 +281,6 @@ L4_INLINE L4_Bool_t L4_IsStringItem (L4_StringItem_t * s)
 {
     return (s->X.__type & 0x04) == 0;
 }
-
-#if defined(__cplusplus)
-L4_INLINE L4_Bool_t L4_StringItem (L4_StringItem_t * s)
-{
-    return L4_IsStringItem (s);
-}
-#endif
 
 L4_INLINE L4_Bool_t L4_CompoundString (L4_StringItem_t * s)
 {
@@ -421,29 +354,6 @@ L4_INLINE L4_StringItem_t * L4_AddSubstringAddressTo (L4_StringItem_t * dest,
     return dest;
 }
 
-#if defined(__cplusplus)
-static inline L4_StringItem_t * operator += (L4_StringItem_t & dest,
-					     L4_StringItem_t substring)
-{
-    substring.X.c = 0;
-    L4_AddSubstringTo (&dest, &substring);
-    return &dest;
-}
-
-static inline L4_StringItem_t * operator += (L4_StringItem_t & dest,
-					     L4_StringItem_t & substring)
-{
-    L4_AddSubstringTo (&dest, &substring);
-    return &dest;
-}
-
-static inline L4_StringItem_t * operator += (L4_StringItem_t & dest,
-					     void * substring_addr)
-{
-    L4_AddSubstringAddressTo (&dest, (L4_StringItem_t *) substring_addr);
-    return &dest;
-}
-#endif /* __cplusplus */
 
 
 /*
@@ -474,14 +384,6 @@ L4_INLINE L4_Bool_t L4_IsCtrlXferItem (L4_CtrlXferItem_t * s)
     return (s->X.__type == 6);
 }
 
-#if defined(__cplusplus)
-L4_INLINE L4_Bool_t L4_CtrlXferItem (L4_CtrlXferItem_t * s)
-{
-    return L4_IsCtrlXferItem (s);
-}
-#endif
-
-
 L4_INLINE void L4_CtrlXferItemInit (L4_CtrlXferItem_t *c, L4_Word_t id)
 {
     c->raw[0] = 0;
@@ -500,18 +402,6 @@ L4_INLINE void L4_FaultConfCtrlXferItemInit (L4_CtrlXferItem_t *c, L4_Word_t fau
 }
 
 
-#if defined(__cplusplus)
-L4_INLINE void L4_Init (L4_CtrlXferItem_t *c, L4_Word_t id)
-{
-    L4_CtrlXferItemInit (c, id);
-}
-
-
-L4_INLINE void L4_Init (L4_CtrlXferItem_t *c, L4_Word_t fault_id, L4_Word_t fault_mask)
-{
-    L4_FaultConfCtrlXferItemInit (c, fault_id, fault_mask);
-}
-#endif 
 
 /*
  * Cache allocation hints
@@ -557,40 +447,6 @@ L4_INLINE L4_StringItem_t L4_AddCacheAllocationHintTo (
     dest->raw[0] |= (h.raw & 0x6);
     return *dest;
 }
-
-#if defined(__cplusplus)
-L4_INLINE L4_CacheAllocationHint_t L4_CacheAlloctionHint (
-    const L4_StringItem_t & s)
-{
-    L4_CacheAllocationHint_t hint;
-    hint.raw = s.raw[0] & 0x6;
-    return hint;
-}
-
-static inline L4_Bool_t operator == (const L4_CacheAllocationHint_t & l,
-				     const L4_CacheAllocationHint_t & r)
-{
-    return (l.raw & 0x6) == (r.raw & 0x6);
-}
-
-static inline L4_Bool_t operator != (const L4_CacheAllocationHint_t & l,
-				     const L4_CacheAllocationHint_t & r)
-{
-    return (l.raw & 0x6) != (r.raw & 0x6);
-}
-
-static inline L4_StringItem_t operator + (const L4_StringItem_t & dest,
-					  const L4_CacheAllocationHint_t & h)
-{
-    return L4_AddCacheAllocationHint (dest, h);
-}
-
-static inline L4_StringItem_t operator += (L4_StringItem_t & dest,
-					   const L4_CacheAllocationHint_t & h)
-{
-    return L4_AddCacheAllocationHintTo (&dest, h);
-}
-#endif /* __cplusplus */
 
 
 
@@ -865,154 +721,6 @@ L4_INLINE L4_Word_t L4_MsgGetCtrlXferItem (L4_Msg_t * msg, L4_Word_t mr, L4_Ctrl
     return num + 1;
 }
 
-#if defined(__cplusplus)
-L4_INLINE void L4_Put (L4_Msg_t * msg, L4_Word_t label,
-		       int u, L4_Word_t * Untyped,
-		       int t, void * Items)
-{
-    L4_MsgPut (msg, label, u, Untyped, t, Items);
-}
-
-L4_INLINE void L4_Get (const L4_Msg_t * msg, L4_Word_t * Untyped, void * Items)
-{
-    L4_MsgGet (msg, Untyped, Items);
-}
-
-L4_INLINE L4_MsgTag_t L4_MsgTag (const L4_Msg_t * msg)
-{
-    return L4_MsgMsgTag (msg);
-}
-
-L4_INLINE void L4_Set_MsgTag (L4_Msg_t * msg, L4_MsgTag_t t)
-{
-    L4_Set_MsgMsgTag (msg, t);
-}
-
-L4_INLINE L4_Word_t L4_Label (const L4_Msg_t * msg)
-{
-    return L4_MsgLabel (msg);
-}
-
-L4_INLINE void L4_Set_Label (L4_Msg_t * msg, L4_Word_t label)
-{
-    L4_Set_MsgLabel (msg, label);
-}
-
-L4_INLINE void L4_Load (L4_Msg_t * msg)
-{
-    L4_MsgLoad (msg);
-}
-
-L4_INLINE void L4_Store (L4_MsgTag_t t, L4_Msg_t * msg)
-{
-    L4_MsgStore (t, msg);
-}
-
-L4_INLINE void L4_Clear (L4_Msg_t * msg)
-{
-    L4_MsgClear (msg);
-}
-
-L4_INLINE void L4_Append (L4_Msg_t * msg, L4_Word_t w)
-{
-    L4_MsgAppendWord (msg, w);
-}
-
-L4_INLINE void L4_Append (L4_Msg_t * msg, int w)
-{
-    L4_MsgAppendWord (msg, (L4_Word_t) w);
-}
-
-L4_INLINE void L4_Append (L4_Msg_t * msg, L4_MapItem_t m)
-{
-    L4_MsgAppendMapItem (msg, m);
-}
-
-L4_INLINE void L4_Append (L4_Msg_t * msg, L4_GrantItem_t g)
-{
-    L4_MsgAppendGrantItem (msg, g);
-}
-
-L4_INLINE void L4_Append (L4_Msg_t * msg, L4_StringItem_t s)
-{
-    L4_MsgAppendSimpleStringItem (msg, s);
-}
-
-L4_INLINE void L4_Append (L4_Msg_t * msg, L4_StringItem_t * s)
-{
-    L4_MsgAppendStringItem (msg, s);
-}
-
-L4_INLINE void L4_Append (L4_Msg_t * msg, L4_CtrlXferItem_t *c)
-{
-    L4_MsgAppendCtrlXferItem (msg, c);
-}
-
-L4_INLINE void L4_Append (L4_Msg_t *msg, L4_Word64_t fault_id_mask, L4_Word_t fault_mask, L4_Word_t C)
-{
-    L4_AppendFaultConfCtrlXferItems (msg, fault_id_mask, fault_mask, C);
-}
-
-L4_INLINE void L4_Put (L4_Msg_t * msg, L4_Word_t u, L4_Word_t w)
-{
-    L4_MsgPutWord (msg, u, w);
-}
-
-L4_INLINE void L4_Put (L4_Msg_t * msg, L4_Word_t t, L4_MapItem_t m)
-{
-    L4_MsgPutMapItem (msg, t, m);
-}
-
-L4_INLINE void L4_Put (L4_Msg_t * msg, L4_Word_t t, L4_GrantItem_t g)
-{
-    L4_MsgPutGrantItem (msg, t, g);
-}
-
-L4_INLINE void L4_Put (L4_Msg_t * msg, L4_Word_t t, L4_StringItem_t s)
-{
-    L4_MsgPutSimpleStringItem (msg, t, s);
-}
-
-L4_INLINE void L4_Put (L4_Msg_t * msg, L4_Word_t t, L4_StringItem_t * s)
-{
-    L4_MsgPutStringItem (msg, t, s);
-}
-
-L4_INLINE void L4_Put (L4_Msg_t * msg, L4_Word_t t, L4_CtrlXferItem_t *c)
-{
-    L4_Put (msg, t, c);
-}
-
-L4_INLINE L4_Word_t L4_Get (L4_Msg_t * msg, L4_Word_t u)
-{
-    return L4_MsgWord (msg, u);
-}
-
-L4_INLINE void L4_Get (L4_Msg_t * msg, L4_Word_t u, L4_Word_t * w)
-{
-    L4_MsgGetWord (msg, u, w);
-}
-
-L4_INLINE L4_Word_t L4_Get (L4_Msg_t * msg, L4_Word_t t, L4_MapItem_t * m)
-{
-    return L4_MsgGetMapItem (msg, t, m);
-}
-
-L4_INLINE L4_Word_t L4_Get (L4_Msg_t * msg, L4_Word_t t, L4_GrantItem_t * g)
-{
-    return L4_MsgGetGrantItem (msg, t, g);
-}
-
-L4_INLINE L4_Word_t L4_Get (L4_Msg_t * msg, L4_Word_t t, L4_StringItem_t * s)
-{
-    return L4_MsgGetStringItem (msg, t, s);
-}
-
-L4_INLINE L4_Word_t L4_Get (L4_Msg_t * msg, L4_Word_t mr, L4_CtrlXferItem_t *c)
-{
-    return L4_MsgGetCtrlXferItem (msg, mr, c);
-}
-#endif /* __cplusplus */
 
 
 
@@ -1096,32 +804,6 @@ L4_INLINE L4_Acceptor_t L4_RemoveAcceptorFrom (L4_Acceptor_t l,
     return l;
 }
 
-#if defined(__cplusplus)
-static inline L4_Acceptor_t operator + (const L4_Acceptor_t & l,
-					const L4_Acceptor_t & r)
-{
-    return L4_AddAcceptor (l, r);
-}
-
-static inline L4_Acceptor_t operator += (L4_Acceptor_t & l,
-					 const L4_Acceptor_t & r)
-{
-    return L4_AddAcceptorTo (l, r);
-}
-
-static inline L4_Acceptor_t operator - (const L4_Acceptor_t & l,
-					const L4_Acceptor_t & r)
-{
-    return L4_RemoveAcceptor (l, r);
-}
-
-static inline L4_Acceptor_t operator -= (L4_Acceptor_t & l,
-					 const L4_Acceptor_t & r)
-{
-    return L4_RemoveAcceptorFrom (l, r);
-}
-#endif /* __cplusplus */
-
 L4_INLINE L4_Bool_t L4_HasStringItems (const L4_Acceptor_t a)
 {
     return (a.raw & 0x01UL) == 1;
@@ -1131,18 +813,6 @@ L4_INLINE L4_Bool_t L4_HasMapGrantItems (const L4_Acceptor_t a)
 {
     return (a.raw & ~0x0fUL) != 0;
 }
-
-#if defined(__cplusplus)
-L4_INLINE L4_Bool_t L4_StringItems (const L4_Acceptor_t a)
-{
-    return L4_HasStringItems (a);
-}
-
-L4_INLINE L4_Bool_t L4_MapGrantItems (const L4_Acceptor_t a)
-{
-    return L4_HasMapGrantItems (a);
-}
-#endif /* __cplusplus */
 
 L4_INLINE L4_Fpage_t L4_RcvWindow (const L4_Acceptor_t a)
 {
@@ -1174,12 +844,6 @@ L4_INLINE void L4_AcceptStrings (const L4_Acceptor_t a,
 	} while (t->X.c);
     } while (prev->X.C);
 }
-#if defined(__cplusplus)
-L4_INLINE void L4_Accept (const L4_Acceptor_t a, L4_MsgBuffer_t * b)
-{
-    L4_AcceptStrings (a, b);
-}
-#endif
 
 L4_INLINE L4_Acceptor_t L4_Accepted (void)
 {
@@ -1192,13 +856,6 @@ L4_INLINE void L4_MsgBufferClear (L4_MsgBuffer_t * b)
 {
     b->raw[0] = b->raw[2] = 0;
 }
-
-#if defined(__cplusplus)
-L4_INLINE void L4_Clear (L4_MsgBuffer_t * b)
-{
-    L4_MsgBufferClear (b);
-}
-#endif /* __cplusplus */
 
 L4_INLINE void L4_MsgBufferAppendSimpleRcvString (L4_MsgBuffer_t * b,
 						  L4_StringItem_t s)
@@ -1233,18 +890,6 @@ L4_INLINE void L4_MsgBufferAppendRcvString (L4_MsgBuffer_t * b,
     __L4_Copy_String (tmp, s);
     tmp->X.C = 0;
 }
-
-#if defined(__cplusplus)
-L4_INLINE void L4_Append (L4_MsgBuffer_t * b, L4_StringItem_t s)
-{
-    L4_MsgBufferAppendSimpleRcvString (b, s);
-}
-
-L4_INLINE void L4_Append (L4_MsgBuffer_t * b, L4_StringItem_t * s)
-{
-    L4_MsgBufferAppendRcvString (b, s);
-}
-#endif /* __cplusplus */
 
 #undef __PLUS32
 
