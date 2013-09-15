@@ -50,8 +50,8 @@ register L4_Word32_t __L4_MR7 asm ("r11");
 
 L4_INLINE utcb_t * __L4_Utcb (void)
 {
-    extern L4_Word_t *__L4_UtcbPtr;
-    return (utcb_t*)__L4_UtcbPtr;
+    extern void *current_utcb;
+    return current_utcb;
 }
 
 

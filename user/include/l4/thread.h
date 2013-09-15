@@ -53,8 +53,6 @@
 	{						\
 		register void *kip_ptr asm ("r0");	\
 		register void *utcb_ptr asm ("r1");	\
-		extern L4_Word_t *__L4_UtcbPtr;		\
-		__L4_UtcbPtr = utcb_ptr;		\
 		sub(kip_ptr, utcb_ptr);			\
 		while (1);				\
 	}
