@@ -6,6 +6,7 @@
 #include <ksym.h>
 #include <types.h>
 #include <lib/stdlib.h>
+#include <init_hook.h>
 
 static int __ksym_count;
 static const ksym_t *__ksym_tbl;
@@ -31,6 +32,8 @@ void ksym_init()
 		__ksym_strings = _sym_strings;
 	}
 }
+
+INIT_HOOK(ksym_init, ksym_init, INIT_LEVEL_KERNEL_EARLY);
 
 int ksym_total()
 {

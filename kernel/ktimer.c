@@ -12,7 +12,7 @@
 #include <platform/armv7m.h>
 #include <platform/bitops.h>
 #include <platform/irq.h>
-
+#include <init_hook.h>
 #if defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
 #include <tickless-verify.h>
 #endif
@@ -293,6 +293,8 @@ void ktimer_event_init()
 	ktimer_init();
 	softirq_register(KTE_SOFTIRQ, ktimer_event_handler);
 }
+
+INIT_HOOK(ktimer_event_init, ktimer_event_init, INIT_LEVEL_KERNEL);
 
 #ifdef CONFIG_KDB
 void kdb_dump_events(void)

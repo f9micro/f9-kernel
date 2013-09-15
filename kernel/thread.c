@@ -11,6 +11,7 @@
 #include <platform/irq.h>
 #include <platform/armv7m.h>
 #include <fpage_impl.h>
+#include <init_hook.h>
 
 /**
  * @file    thread.c
@@ -80,6 +81,8 @@ void thread_init_subsys()
 
 	sched_slot_set_handler(SSI_NORMAL_THREAD, thread_sched);
 }
+
+INIT_HOOK(thread_init_subsys, thread_init_subsys, INIT_LEVEL_KERNEL);
 
 extern tcb_t *caller;
 

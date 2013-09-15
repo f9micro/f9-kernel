@@ -9,7 +9,7 @@
 #include <thread.h>
 #include <lib/ktable.h>
 #include <fpage_impl.h>
-
+#include <init_hook.h>
 #include <kip.h>
 
 /**
@@ -171,6 +171,8 @@ void memory_init()
 
 	*shcsr |= 1 << 16;	/* Enable memfault */
 }
+
+INIT_HOOK(memory_init, memory_init, INIT_LEVEL_KERNEL_EARLY);
 
 /*
  * AS functions

@@ -96,7 +96,7 @@ int run_init_hook(unsigned int level)
 		if ((ptr->level > last_level) &&
 				(ptr->level <= level)) {
 			max_called_level = MAX(max_called_level, ptr->level);
-			ptr->hook(ptr->level);
+			ptr->hook();
 		}
 
 	last_level = max_called_level;

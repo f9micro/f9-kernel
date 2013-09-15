@@ -6,6 +6,8 @@
 #include <types.h>
 #include <kdb.h>
 #include <debug.h>
+#include <init_hook.h>
+#include <softirq.h>
 
 typedef void (*kdb_function_t)(void);
 
@@ -137,3 +139,16 @@ int kdb_dump_error()
 
 	return 0;
 }
+
+void debug_kdb_handler(void)
+{
+	kdb_handler(dbg_getchar());
+}
+
+void kdb_init(void)
+{
+	softirq_register(KDB_SOFTIRQ, debug_kdb_handler);
+	dbg_puts("Press '?' to print KDB menu\n");
+}
+
+INIT_HOOK(kdb_init, kdb_init, INIT_LEVEL_KERNEL);
