@@ -57,11 +57,11 @@ $(out)/%.list: $(out)/%.elf
 $(out)/%.elf: $(objs)
 	$(call quiet,elf,LD     )
 
-$(out)/%.o:%.c
-	$(call quiet,c_to_o,CC     )
-
 $(out)/user/%.o:user/%.c
 	$(call quiet,c_to_o_user,CC     )
+
+$(out)/%.o:%.c
+	$(call quiet,c_to_o,CC     )
 
 $(out)/%.o:%.S
 	$(call quiet,c_to_o,AS     )
