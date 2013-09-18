@@ -3,6 +3,15 @@
 # found in the LICENSE file.
 
 menu "Platform"
+
+config BITMAP_BITBAND
+	bool "Generate bitmap address in bit-band region"
+	default y
+
+config FPU
+	bool "Floating point support"
+	default n
+
 choice
 	prompt "Device of STDIO"
 	default STDIO_USE_DBGPORT

@@ -4,41 +4,5 @@
 
 mainmenu "F9 Microkernel Configurations"
 
-menu "Limitations"
-config MAX_THREADS
-	int "Maximum amount of threads"
-	default 32
-
-config MAX_KT_EVENTS
-	int "Maximum amount of kernel timer events"
-	default 64
-
-config MAX_ASYNC_EVENTS
-	int "Maximum of asynchronous events"
-	default 32
-
-config MAX_ADRESS_SPACES
-	int "Maximum of address space"
-	default 16
-
-config MAX_FPAGES
-	int "Maximum flexible pages"
-	default 256
-endmenu
-
 source platform/Kconfig
-
 source kernel/Kconfig
-
-config SYMMAP
-	bool "Generate symbol map"
-	default y
-	depends on KPROBES
-
-config BITMAP_BITBAND
-	bool "Generate bitmap address in bit-band region"
-	default y
-
-config FPU
-	bool "Floating point support"
-	default n

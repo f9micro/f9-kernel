@@ -2,6 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+menu "Limitations"
+config MAX_THREADS
+	int "Maximum amount of threads"
+	default 32
+
+config MAX_KT_EVENTS
+	int "Maximum amount of kernel timer events"
+	default 64
+
+config MAX_ASYNC_EVENTS
+	int "Maximum of asynchronous events"
+	default 32
+
+config MAX_ADRESS_SPACES
+	int "Maximum of address space"
+	default 16
+
+config MAX_FPAGES
+	int "Maximum flexible pages"
+	default 256
+endmenu
+
+
 menu "Kernel Timer"
 config KTIMER_TICKLESS
 	bool "Tickless scheduling"
@@ -75,6 +98,11 @@ config KDB
 config KPROBES
 	bool "KProbes: dynamic instrumentation system"
 	default y
+
+config SYMMAP
+	bool "Generate symbol map"
+	default y
+	depends on KPROBES
 
 config PANIC_DUMP_STACK
 	bool "Dump kernel stack while panic"
