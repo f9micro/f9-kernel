@@ -14,10 +14,12 @@ config KTIMER_TICKLESS_VERIFY
 
 config KTIMER_TICKLESS_COMPENSATION
 	int "Tickless compensation"
+	depends on KTIMER_TICKLESS
 	default 0
 
 config KTIMER_TICKLESS_INT_COMPENSATION
 	int "Tickless interrupt compensation"
+	depends on KTIMER_TICKLESS
 	default 0
 
 config KTIMER_HEARTBEAT
