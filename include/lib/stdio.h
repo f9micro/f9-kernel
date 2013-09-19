@@ -12,7 +12,7 @@
 #define EOF     (-1)
 
 #ifdef CONFIG_STDIO_NODEV
-#define __l4_putchar(chr)	do {} while(0)
+#define __l4_putchar(chr)	do { } while (0)
 #define __l4_getchar()		(EOF)
 #else
 void __l4_putchar(uint8_t chr);

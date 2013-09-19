@@ -98,6 +98,7 @@ int32_t dbg_register_device(dbg_dev_t *device)
 
 /* FIXME: function to change device is required */
 #else /* CONFIG_DEBUG */
+
 uint8_t dbg_getchar(void)
 {
 	return (EOF);

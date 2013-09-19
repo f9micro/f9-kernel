@@ -13,7 +13,7 @@ config FPU
 	default n
 
 choice
-	prompt "Device of STDIO"
+	prompt "Standard I/O device"
 	default STDIO_USE_DBGPORT
 	help
 	  Select input/output device for stdio
@@ -22,7 +22,7 @@ config STDIO_NODEV
 	bool "Null device"
 
 config STDIO_USE_DBGPORT
-	bool "Use debug IO port"
+	bool "Debug serial IO"
 	select DEBUG
 
 endchoice
