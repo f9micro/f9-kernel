@@ -38,6 +38,11 @@ includes = \
 	$(dirs) $(out)
 $(eval BOARD_$(BOARD)=y)
 
+# Kconfig files to use
+KCONFIG_FILES = \
+	platform/Kconfig \
+	kernel/Kconfig
+
 # Read configurations about system features and characteristics
 include mk/config.mk
 

@@ -32,11 +32,14 @@ cmd_bin = cat $^ > $@
 
 # commands to build Kconfig
 KCONFIG := external/kconfig
-cmd_kconfig_prepare = mkdir -p $(out_host) $(out_host)/lxdialog
+MCONF_INPUT = $(out_host)/Config.in
+cmd_kconfig_prepare = \
+	mkdir -p $(out_host) $(out_host)/lxdialog && \
+	$(call init_mconf, $(MCONF_INPUT))
 cmd_kconfig = $(MAKE) --no-print-directory -C $(KCONFIG) -f Makefile.f9 mconf \
 		obj=$(shell pwd)/$(out_host) \
 		CC="$(BUILDCC)" HOSTCC="$(BUILDCC)"
-cmd_mconf = $< mk/Config.in
+cmd_mconf = $(out_host)/mconf $(MCONF_INPUT)
 
 .PHONY: all
 all: $(out)/$(PROJECT).bin
@@ -76,10 +79,12 @@ distclean: clean
 	-rm -f $(CONFIG) $(CONFIG).old include/autoconf.h
 
 $(out_host)/mconf:
-	$(call quiet,kconfig_prepare,PREPARE)
 	$(call quiet,kconfig,CONFIG )
+$(MCONF_INPUT): $(KCONFIG_FILES)
+	$(call quiet,kconfig_prepare,PREPARE)
 
-config: $(out_host)/mconf
+.PHONY: config
+config: $(MCONF_INPUT) $(out_host)/mconf
 	$(call quiet,mconf,EVAL   )
 
 .SECONDARY:
