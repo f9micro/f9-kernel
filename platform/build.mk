@@ -20,6 +20,7 @@ platform-y = \
 	irq.o
 
 platform-$(CONFIG_DEBUG_DEV_UART) += debug_uart.o
+platform-$(CONFIG_DEBUG_DEV_RAM) += debug_ram.o
 
 platform-KPROBES-$(CONFIG_KPROBES) = \
 	kprobes-arch.o \
