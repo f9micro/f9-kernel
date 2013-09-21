@@ -60,7 +60,7 @@ static void insert_fpage_chain_to_as(as_t *as, fpage_t *first, fpage_t *last)
 	else {
 		/* Search for chain in the middle */
 		while (fp->as_next != NULL) {
-			if (FPAGE_BASE(last) < FPAGE_BASE(fp)) {
+			if (FPAGE_BASE(last) < FPAGE_BASE(fp->as_next)) {
 				last->as_next = fp->as_next;
 				break;
 			}
@@ -157,8 +157,8 @@ static void create_fpage_chain(memptr_t base, size_t size, int mpid,
 		else {
 			/* Build chain */
 			fpage->as_next = create_fpage(base, shift, mpid);
-			*plast = fpage;
 			fpage = fpage->as_next;
+			*plast = fpage;
 		}
 
 		size -= (1 << shift);
@@ -170,7 +170,7 @@ fpage_t *split_fpage(as_t *as, fpage_t *fpage, memptr_t split, int rl)
 {
 	memptr_t base = fpage->fpage.base,
 			 end = fpage->fpage.base + (1 << fpage->fpage.shift);
-	fpage_t *lfirst, *llast, *rfirst, *rlast;
+	fpage_t *lfirst = NULL, *llast = NULL, *rfirst = NULL, *rlast = NULL;
 	split = mempool_align(fpage->fpage.mpid, split);
 
 	if (!as)
@@ -200,15 +200,16 @@ fpage_t *split_fpage(as_t *as, fpage_t *fpage, memptr_t split, int rl)
 	insert_fpage_chain_to_as(as, rfirst, rlast);
 
 	if (rl == 0)
-		return lfirst;
-	return llast;
+		return llast;
+	return rfirst;
 }
 
 
 int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
                       fpage_t **pfirst, fpage_t **plast)
 {
-	assert(size > 0);
+	if (size <= 0)
+		return -1;
 
 	/* if mpid is unknown, search using base addr */
 	if (mpid == -1) {

@@ -280,6 +280,10 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 		}
 	}
 	else {
+		if (src == dst) {
+			/* Maps to itself, ignore other actions */
+			return 0;
+		}
 		/* We should determine first and last fpage we will map to:
 		 *
 		 * +----------+    +----------+    +----------+
@@ -347,10 +351,11 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 	/* Map chain of fpages */
 
 	fp = first;
-	do {
+	while (fp != last) {
 		map_fpage(src, dst, fp, action);
 		fp = fp->as_next;
-	} while (fp != last);
+	}
+	map_fpage(src, dst, fp, action);
 
 	return 0;
 }
