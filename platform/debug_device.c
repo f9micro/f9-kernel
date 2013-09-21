@@ -102,7 +102,19 @@ int32_t dbg_register_device(dbg_dev_t *device)
 	return 0;
 }
 
-/* FIXME: function to change device is required */
+int32_t dbg_change_device(dbg_dev_id_t dev_id)
+{
+	if (dev_id >= DBG_DEV_MAX)
+		return -EINVAL;
+
+	if (dbg_dev[dev_id].dev_id == DBG_DEV_MAX)
+		return -ENXIO;
+
+	cur_dev = &dbg_dev[dev_id];
+	return 0;
+
+}
+
 #else /* DEBUG_DEVICE_EXIST */
 uint8_t dbg_getchar(void)
 {
