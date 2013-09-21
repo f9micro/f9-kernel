@@ -66,7 +66,13 @@ L4_ThreadId_t __USER_TEXT create_thread(app_struct *app, void (*func)(void))
 	return child;
 }
 
-static void main(app_struct *app);
+static void __USER_TEXT main(app_struct *app)
+{
+	free_mem = app->fpages[0].base;
+
+	threads[PING_THREAD] = create_thread(app, ping_thread);
+	threads[PONG_THREAD] = create_thread(app, pong_thread);
+}
 
 DECLARE_APP(
 	0,
@@ -74,15 +80,3 @@ DECLARE_APP(
 	main,
 	DECLARE_FPAGE(0x0, 2 * UTCB_SIZE + 2 *STACK_SIZE)
 );
-
-void __USER_TEXT main(app_struct *app)
-{
-	free_mem = _app_struct_pingpong.fpages[0].base;
-
-	threads[PING_THREAD] = create_thread(app, ping_thread);
-	threads[PONG_THREAD] = create_thread(app, pong_thread);
-
-	while (1)
-		L4_Sleep(L4_Never);
-}
-

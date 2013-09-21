@@ -18,7 +18,7 @@ typedef struct {
 
 struct app_struct {
 	L4_Word_t    tid;
-	app_entry    entry;
+	void       (*entry)(void);
 	L4_Word_t    thread_num;
 	app_fpage_t *fpages;
 	const char  *name;
@@ -33,12 +33,19 @@ struct app_struct {
 		__VA_ARGS__	\
 		{.base = 0x0, .size = 0x0}	\
 	};	\
-	const app_struct _app_struct_##_name	\
-			__attribute__((used, section(".user_app"))) = {	\
+	static void _app_entry_##_name(void);	\
+	app_struct _app_struct_##_name	\
+			__attribute__((section(".user_app"))) = {	\
 		.tid = _tid,	\
-		.entry = _entry,	\
+		.entry = _app_entry_##_name,	\
 		.fpages = _app_fpages_##_name,	\
 		.name = #_name,	\
+	};	\
+	static void __USER_TEXT _app_entry_##_name(void)	\
+	{	\
+		_entry(&_app_struct_##_name);	\
+		while (1)	\
+			L4_Sleep(L4_Never);	\
 	}
 
 #endif /* USER_APP_H */
