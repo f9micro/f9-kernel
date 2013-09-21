@@ -113,16 +113,22 @@ void sys_ipc(uint32_t *param1)
 		}
 		else if (to_thr && to_thr->state == T_INACTIVE &&
 			GLOBALID_TO_TID(to_thr->utcb->t_pager) == GLOBALID_TO_TID(caller->t_globalid)) {
-			/* thread start protocol */
+			if (ipc_read_mr(caller, 0) == 0x00000002) {
+				/* thread start protocol */
 
-			dbg_printf(DL_IPC, "IPC: %t thread start\n", to_tid);
+				dbg_printf(DL_IPC, "IPC: %t thread start\n", to_tid);
 
-			thread_init_ctx((void *) ipc_read_mr(caller, 2),
-			                (void *) ipc_read_mr(caller, 1), to_thr);
-			caller->state = T_RUNNABLE;
+				thread_init_ctx((void *) ipc_read_mr(caller, 2),
+					            (void *) ipc_read_mr(caller, 1), to_thr);
+				caller->state = T_RUNNABLE;
 
-			/* Start thread */
-			to_thr->state = T_RUNNABLE;
+				/* Start thread */
+				to_thr->state = T_RUNNABLE;
+			}
+			else {
+				do_ipc(caller, to_thr);
+				to_thr->state = T_INACTIVE;
+			}
 		}
 		else  {
 			/* No waiting, block myself */
