@@ -14,7 +14,7 @@ config DEBUG_DEV_RAM
 	bool "RAM based virtual device"
 	default n
 	help
-	  Not implemented yet.
+	  A simple implementation of RAM base virtual debug device
 endif
 
 endif

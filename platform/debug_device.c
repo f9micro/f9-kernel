@@ -6,11 +6,14 @@
 #include <types.h>
 #include <errno.h>
 #include <lib/stdio.h>
+#include <init_hook.h>
 #include <platform/debug_device.h>
 #ifdef CONFIG_DEBUG_DEV_UART
 #include <platform/debug_uart.h>
 #endif
-#include <init_hook.h>
+#ifdef CONFIG_DEBUG_DEV_RAM
+#include <platform/debug_ram.h>
+#endif
 
 #ifdef DEBUG_DEVICE_EXIST
 static dbg_dev_t dbg_dev[DBG_DEV_MAX];
