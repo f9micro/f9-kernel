@@ -208,6 +208,9 @@ fpage_t *split_fpage(as_t *as, fpage_t *fpage, memptr_t split, int rl)
 int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
                       fpage_t **pfirst, fpage_t **plast)
 {
+	fpage_t **fp;
+	memptr_t  end;
+
 	if (size <= 0)
 		return -1;
 
@@ -219,16 +222,73 @@ int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
 		}
 	}
 
-	dbg_printf(DL_MEMORY,
-		"MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
-		mempool_getbyid(mpid)->name, base, size, as);
+	end = base + size;
 
-	create_fpage_chain(mempool_align(mpid, base),
-	                    mempool_align(mpid, size),
-	                   mpid, pfirst, plast);
+	if (as) {
+		/* find unmapped space */
+		fp = &as->first;
+		while (base < end && *fp) {
+			if (base < FPAGE_BASE(*fp)) {
+				fpage_t *first = NULL, *last = NULL;
+				size = (end < FPAGE_BASE(*fp) ? end : FPAGE_BASE(*fp)) - base;
 
-	if (as)
-		insert_fpage_chain_to_as(as, *pfirst, *plast);
+				dbg_printf(DL_MEMORY,
+					"MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
+					mempool_getbyid(mpid)->name, base, size, as);
+
+				create_fpage_chain(mempool_align(mpid, base),
+				                   mempool_align(mpid, size),
+				                   mpid, &first, &last);
+
+				last->as_next = *fp;
+				*fp = first;
+				fp = &last->as_next;
+
+				if (!*pfirst)
+					*pfirst = first;
+				*plast = last;
+
+				base = FPAGE_END(*fp);
+			}
+			else if (base < FPAGE_END(*fp)) {
+				if (!*pfirst)
+					*pfirst = *fp;
+				*plast = *fp;
+
+				base = FPAGE_END(*fp);
+			}
+
+			fp = &(*fp)->as_next;
+		}
+
+		if (base < end) {
+			fpage_t *first = NULL, *last = NULL;
+			size = end - base;
+
+			dbg_printf(DL_MEMORY,
+				"MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
+				mempool_getbyid(mpid)->name, base, size, as);
+
+			create_fpage_chain(mempool_align(mpid, base),
+			                   mempool_align(mpid, size),
+			                   mpid, &first, &last);
+
+			*fp = first;
+
+			if (!*pfirst)
+				*pfirst = first;
+			*plast = last;
+		}
+	}
+	else {
+		dbg_printf(DL_MEMORY,
+			"MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
+			mempool_getbyid(mpid)->name, base, size, as);
+
+		create_fpage_chain(mempool_align(mpid, base),
+		                   mempool_align(mpid, size),
+		                   mpid, pfirst, plast);
+	}
 
 	return 0;
 }
