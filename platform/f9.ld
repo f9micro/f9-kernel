@@ -115,6 +115,9 @@ SECTIONS {
 		. += ROOT_THREAD_STACK_SIZE;
 		root_stack_end = .;
 		*(.user_data*)
+		user_app_start = .;
+		KEEP(*(.user_app))
+		user_app_end = .;
 		user_data_end = .;
 	} > RamLoc
 
