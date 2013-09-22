@@ -156,7 +156,8 @@ uint32_t ipc_deliver(void *data)
 	for (i = 1; i < thread_count; ++i) {
 		thr = thread_map[i];
 
-		if (thr->state == T_RECV_BLOCKED && thr->ipc_from != L4_NILTHREAD) {
+		if (thr->state == T_RECV_BLOCKED && thr->ipc_from != L4_NILTHREAD &&
+				thr->ipc_from != L4_ANYTHREAD) {
 			from_thr = thread_by_globalid(thr->ipc_from);
 
 			do_ipc(from_thr, thr);
