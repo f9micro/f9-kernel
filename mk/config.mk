@@ -16,5 +16,5 @@ $(foreach k,$(strip $(KCONFIG_FILES)),\
 	$(eval $(call append_mconf_body, \
 		$(addprefix source ,$(k)))))
 define init_mconf
-	echo '$(MCONF_MSG)' > $(1)
+	printf '$(MCONF_MSG)\n' > $(1)
 endef
