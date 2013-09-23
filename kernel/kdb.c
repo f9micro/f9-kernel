@@ -151,4 +151,4 @@ void kdb_init(void)
 	dbg_puts("Press '?' to print KDB menu\n");
 }
 
-INIT_HOOK(kdb_init, kdb_init, INIT_LEVEL_KERNEL);
+INIT_HOOK(kdb_init, INIT_LEVEL_KERNEL);

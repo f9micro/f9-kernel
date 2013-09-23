@@ -33,7 +33,7 @@ void ksym_init()
 	}
 }
 
-INIT_HOOK(ksym_init, ksym_init, INIT_LEVEL_KERNEL_EARLY);
+INIT_HOOK(ksym_init, INIT_LEVEL_KERNEL_EARLY);
 
 int ksym_total()
 {

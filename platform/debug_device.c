@@ -71,7 +71,7 @@ void dbg_device_init_hook(void)
 	dbg_device_init();
 	dbg_layer = DL_KDB;
 }
-INIT_HOOK(dbg_device_init_hook, dbg_device_init_hook, INIT_LEVEL_PLATFORM);
+INIT_HOOK(dbg_device_init_hook, INIT_LEVEL_PLATFORM);
 #endif
 
 /*

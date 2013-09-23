@@ -37,7 +37,7 @@ void syscall_init()
 	softirq_register(SYSCALL_SOFTIRQ, syscall_handler);
 }
 
-INIT_HOOK(syscall_init, syscall_init, INIT_LEVEL_KERNEL);
+INIT_HOOK(syscall_init, INIT_LEVEL_KERNEL);
 
 static void sys_thread_control(uint32_t *param1, uint32_t *param2)
 {

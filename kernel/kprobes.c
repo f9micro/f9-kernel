@@ -15,7 +15,7 @@ void kprobe_init()
 	kprobe_arch_init();
 }
 
-INIT_HOOK(kprobe_init, kprobe_init, INIT_LEVEL_KERNEL);
+INIT_HOOK(kprobe_init, INIT_LEVEL_KERNEL);
 
 struct kprobe *kplist_search(void *addr)
 {

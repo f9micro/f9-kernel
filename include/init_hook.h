@@ -23,12 +23,12 @@ typedef struct {
 	const char *hook_name;
 } init_struct;
 
-#define INIT_HOOK(_name, _hook, _level)					\
-	const init_struct _init_struct_##_name				\
+#define INIT_HOOK(_hook, _level)					\
+	const init_struct _init_struct_##_hook				\
 			__attribute__((section(".init_hook"))) = {	\
 		.level = _level,					\
 		.hook = _hook,						\
-		.hook_name = #_name,					\
+		.hook_name = #_hook,					\
 	};
 
 int run_init_hook(unsigned int level);

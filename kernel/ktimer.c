@@ -294,7 +294,7 @@ void ktimer_event_init()
 	softirq_register(KTE_SOFTIRQ, ktimer_event_handler);
 }
 
-INIT_HOOK(ktimer_event_init, ktimer_event_init, INIT_LEVEL_KERNEL);
+INIT_HOOK(ktimer_event_init, INIT_LEVEL_KERNEL);
 
 #ifdef CONFIG_KDB
 void kdb_dump_events(void)
