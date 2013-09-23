@@ -61,7 +61,7 @@ void __USER_TEXT map_user_sections(kip_t *kip_ptr, L4_ThreadId_t tid)
 	}
 }
 
-void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip, L4_Word_t sp)
+static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip, L4_Word_t sp)
 {
 	L4_Msg_t msg;
 

@@ -51,7 +51,7 @@ static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip, L4_Word_t sp
 	L4_Send(t);
 }
 
-L4_ThreadId_t __USER_TEXT create_thread(app_struct *app, void (*func)(void))
+static L4_ThreadId_t __USER_TEXT create_thread(app_struct *app, void (*func)(void))
 {
 	L4_ThreadId_t myself = L4_MyGlobalId();
 	L4_ThreadId_t child;
