@@ -54,22 +54,28 @@ get_new_tid (void)
 
 
 L4_ThreadId_t
-create_thread (bool new_space, int cpu, L4_Word_t spacectrl)
+create_thread (void (*func)(void), bool new_space, int cpu, L4_Word_t spacectrl)
 {
     static L4_Fpage_t kip_area, utcb_area;
     static L4_Word_t utcb_base;
     static bool initialized = false;
     static void * kip;
+    L4_ThreadId_t me;
+    L4_ThreadId_t tid;
+    L4_Word_t utcb_location;
 
     if (! initialized)
     {
-	kip = L4_KernelInterface ();
+    L4_Word_t ApiVersion, ApiFlags, KernelId;
+	L4_ThreadId_t mylocalid;
+
+	kip = L4_KernelInterface (&ApiVersion, &ApiFlags, &KernelId);
 
 	// Put the kip at the same location in all address spaces
 	// to make sure we can reuse the syscall jump table.
 	kip_area = L4_FpageLog2 ((L4_Word_t) kip, L4_KipAreaSizeLog2 (kip));
 
-	L4_ThreadId_t mylocalid = L4_MyLocalId ();
+	mylocalid = L4_MyLocalId ();
 	utcb_base = *(L4_Word_t *) &mylocalid;
 	utcb_base &= ~(L4_UtcbAreaSize (kip) - 1);
 
@@ -79,20 +85,21 @@ create_thread (bool new_space, int cpu, L4_Word_t spacectrl)
 	initialized = true;
     }
 
-    L4_ThreadId_t me = L4_Myself ();
-    L4_ThreadId_t tid = get_new_tid ();
+    me = L4_Myself ();
+    tid = get_new_tid ();
 
-    L4_Word_t utcb_location =
+    utcb_location =
 	utcb_base + L4_UtcbSize (kip) * ( L4_ThreadNo (tid) - L4_ThreadIdUserBase (kip) + 1 );
 
     if (new_space)
     {
+	L4_Word_t control;
+
 	// Create inactive thread
 	int res = L4_ThreadControl (tid, tid, me, L4_nilthread, (void *) -1);
 	if (res != 1)
 	    printf ("ERROR: ThreadControl returned %d (ERR=%d)\n", res, L4_ErrorCode());
 
-	L4_Word_t control;
 	res = L4_SpaceControl (tid, spacectrl, kip_area, utcb_area,
 			       L4_nilthread, &control);
 	if (res != 1)
@@ -113,18 +120,13 @@ create_thread (bool new_space, int cpu, L4_Word_t spacectrl)
 
     if (cpu != -1)
 	L4_Set_ProcessorNo (tid, cpu);
-	
+
+	if (func != NULL)
+    	start_thread (tid, func);
+
     return tid;
 }
 
-
-L4_ThreadId_t
-create_thread (void (*func)(void), bool new_space, int cpu, L4_Word_t spacectrl)
-{
-    L4_ThreadId_t tid = create_thread (new_space, cpu, spacectrl);
-    start_thread (tid, func);
-    return tid;
-}
 
 L4_Word_t 
 kill_thread (L4_ThreadId_t tid)
@@ -142,10 +144,10 @@ start_thread (L4_ThreadId_t tid, void (*func)(void))
 
     get_startup_values (func, &ip, &sp);
 
-    L4_Clear (&msg);
-    L4_Append (&msg, ip);
-    L4_Append (&msg, sp);
-    L4_Load (&msg);
+    L4_MsgClear (&msg);
+    L4_MsgAppendWord (&msg, ip);
+    L4_MsgAppendWord (&msg, sp);
+    L4_MsgLoad (&msg);
 
     L4_Send (tid);
 }
