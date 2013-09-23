@@ -275,13 +275,6 @@ L4_INLINE L4_ThreadId_t L4_GlobalIdOf (L4_ThreadId_t t)
 	return t;
 }
 
-#if defined(__cplusplus)
-L4_INLINE L4_ThreadId_t L4_GlobalId (L4_ThreadId_t t)
-{
-    return L4_GlobalIdOf (t);
-}
-#endif
-
 L4_INLINE L4_Bool_t L4_SameThreads (L4_ThreadId_t l, L4_ThreadId_t r)
 {
     return L4_GlobalIdOf (l).raw == L4_GlobalIdOf (r).raw;
@@ -299,13 +292,6 @@ L4_INLINE L4_ThreadId_t L4_LocalIdOf (L4_ThreadId_t t)
     else
 	return t;
 }
-
-#if defined(__cplusplus)
-L4_INLINE L4_ThreadId_t L4_LocalId (L4_ThreadId_t t)
-{
-    return L4_LocalIdOf (t);
-}
-#endif
 
 L4_INLINE L4_Word_t L4_UserDefinedHandleOf (L4_ThreadId_t t)
 {
@@ -329,18 +315,6 @@ L4_INLINE void L4_Set_UserDefinedHandleOf (L4_ThreadId_t t, L4_Word_t handle)
 				 &dummy_id);
 }
 
-#if defined(__cplusplus)
-L4_INLINE L4_Word_t L4_UserDefinedHandle (L4_ThreadId_t t)
-{
-    return L4_UserDefinedHandleOf (t);
-}
-
-L4_INLINE void L4_Set_UserDefinedHandle (L4_ThreadId_t t, L4_Word_t handle)
-{
-    L4_Set_UserDefinedHandleOf (t, handle);
-}
-#endif /* __cplusplus */
-
 L4_INLINE L4_ThreadId_t L4_PagerOf (L4_ThreadId_t t)
 {
     L4_Word_t dummy;
@@ -362,18 +336,6 @@ L4_INLINE void L4_Set_PagerOf (L4_ThreadId_t t, L4_ThreadId_t p)
 				 &dummy, &dummy, &dummy, &dummy, &dummy,
 				 &dummy_id);
 }
-
-#if defined(__cplusplus)
-L4_INLINE L4_ThreadId_t L4_Pager (L4_ThreadId_t t)
-{
-    return L4_PagerOf (t);
-}
-
-L4_INLINE void L4_Set_Pager (L4_ThreadId_t t, L4_ThreadId_t p)
-{
-    L4_Set_PagerOf (t, p);
-}
-#endif /* __cplusplus */
 
 L4_INLINE void L4_Start (L4_ThreadId_t t)
 {
@@ -409,20 +371,6 @@ L4_INLINE void L4_Start_SpIpFlags (L4_ThreadId_t t, L4_Word_t sp,
 				 &dummy_id);
 }
 
-#if defined(__cplusplus)
-L4_INLINE void L4_Start (L4_ThreadId_t t, L4_Word_t sp, L4_Word_t ip)
-{
-    L4_Start_SpIp (t, sp, ip);
-}
-
-
-L4_INLINE void L4_Start (L4_ThreadId_t t, L4_Word_t sp,
-			 L4_Word_t ip, L4_Word_t flags)
-{
-    L4_Start_SpIpFlags (t, sp, ip, flags);
-}
-#endif
-
 L4_INLINE L4_ThreadState_t L4_Stop (L4_ThreadId_t t)
 {
     L4_Word_t dummy;
@@ -451,14 +399,6 @@ L4_INLINE L4_ThreadState_t L4_Stop_SpIpFlags (L4_ThreadId_t t,
 
     return state;
 }
-
-#if defined(__cplusplus)
-L4_INLINE L4_ThreadState_t L4_Stop (L4_ThreadId_t t, L4_Word_t *sp,
-				    L4_Word_t *ip, L4_Word_t *flags)
-{
-    return L4_Stop_SpIpFlags (t, sp, ip, flags);
-}
-#endif
 
 L4_INLINE L4_ThreadState_t L4_AbortReceive_and_stop (L4_ThreadId_t t)
 {
@@ -490,16 +430,6 @@ L4_INLINE L4_ThreadState_t L4_AbortReceive_and_stop_SpIpFlags (
     return state;
 }
 
-#if defined(__cplusplus)
-L4_INLINE L4_ThreadState_t L4_AbortReceive_and_stop (L4_ThreadId_t t,
-						     L4_Word_t *sp,
-						     L4_Word_t *ip,
-						     L4_Word_t *flags)
-{
-    return L4_AbortReceive_and_stop_SpIpFlags (t, sp, ip, flags);
-}
-#endif
-    
 L4_INLINE L4_ThreadState_t L4_AbortSend_and_stop (L4_ThreadId_t t)
 {
     L4_Word_t dummy;
@@ -531,16 +461,6 @@ L4_INLINE L4_ThreadState_t L4_AbortSend_and_stop_SpIpFlags (
     return state;
 }
 
-#if defined(__cplusplus)
-L4_INLINE L4_ThreadState_t l4_abort_send_and_stop (L4_ThreadId_t t,
-						   L4_Word_t *sp,
-						   L4_Word_t *ip,
-						   L4_Word_t *flags)
-{
-    return L4_AbortSend_and_stop_SpIpFlags (t, sp, ip, flags);
-}
-#endif
-
 L4_INLINE L4_ThreadState_t L4_AbortIpc_and_stop (L4_ThreadId_t t)
 {
     L4_Word_t dummy;
@@ -569,16 +489,6 @@ L4_INLINE L4_ThreadState_t L4_AbortIpc_and_stop_SpIpFlags (L4_ThreadId_t t,
 
     return state;
 }
-
-#if defined(__cplusplus)
-L4_INLINE L4_ThreadState_t L4_AbortIpc_and_stop (L4_ThreadId_t t,
-						 L4_Word_t *sp,
-						 L4_Word_t *ip,
-						 L4_Word_t *flags)
-{
-    return L4_AbortIpc_and_stop_SpIpFlags (t, sp, ip, flags);
-}
-#endif
 
 #define L4_EXREGS_CTRLXFER_CONF_FLAG    	(1UL <<  9)  
 #define L4_EXREGS_CTRLXFER_READ_FLAG    	(1UL << 10)
