@@ -554,10 +554,10 @@ void string_smpipc_pf (void);
 void all_ipc_tests (void)
 {
     simple_ipc ();
-    string_ipc ();
-    string_ipc_pf ();
-    simple_smpipc ();
-    string_smpipc_pf ();
+    //string_ipc ();
+    //string_ipc_pf ();
+    //simple_smpipc ();
+    //string_smpipc_pf ();
 }
 
 static struct menuitem menu_items[] = 
