@@ -76,20 +76,22 @@ const char * ipc_errorphase (L4_Word_t errcode)
 
 void setup_ipc_threads (void (*f1)(void), void (*f2)(void),
 			bool rcv_same_space, bool snd_same_space,
-			bool xcpu = false)
+			bool xcpu)
 {
+    int threads_to_kill;
+
     ipc_pf_block_address = 0;
     
-    ipc_t1 = create_thread (!rcv_same_space);
-    ipc_t2 = create_thread (!snd_same_space,
-			    xcpu ? ((L4_ProcessorNo () + 1) % 2) : (L4_Word_t) -1);
+    ipc_t1 = create_thread (NULL, !rcv_same_space, -1, 0);
+    ipc_t2 = create_thread (NULL, !snd_same_space,
+			    xcpu ? ((L4_ProcessorNo () + 1) % 2) : (L4_Word_t) -1, 0);
 
 
     // Do not start threads unless both threads have been created.
     start_thread (ipc_t1, f1);
     start_thread (ipc_t2, f2);
 
-    int threads_to_kill = 2;
+    threads_to_kill = 2;
 
     for (;;)
     {
@@ -99,7 +101,9 @@ void setup_ipc_threads (void (*f1)(void), void (*f2)(void),
 
 	for (;;)
 	{
-	    L4_Store (tag, &msg);
+	    L4_Fpage_t fp;
+
+	    L4_MsgStore (tag, &msg);
 
 	    if (L4_UntypedWords (tag) != 2 || L4_TypedWords (tag) != 0 ||
 		!L4_IpcSucceeded (tag))
@@ -112,7 +116,7 @@ void setup_ipc_threads (void (*f1)(void), void (*f2)(void),
 
 	    // Check if we should abort thread doing pagefault on
 	    // current address.
-	    if (L4_Get (&msg, 0) == ipc_pf_abort_address)
+	    if (L4_MsgWord (&msg, 0) == ipc_pf_abort_address)
 	    {
 		L4_Word_t dw;
 		L4_ThreadId_t dt;
@@ -124,13 +128,12 @@ void setup_ipc_threads (void (*f1)(void), void (*f2)(void),
 
 	    // Check if we should not serve the pagefault at this
 	    // address.
-	    if (L4_Get (&msg, 0) == ipc_pf_block_address)
+	    if (L4_MsgWord (&msg, 0) == ipc_pf_block_address)
 		break;
 
 
-	    L4_Clear (&msg);
-	    L4_Fpage_t fp;
-	    fp.raw = L4_Get(&msg, 0);
+	    L4_MsgClear (&msg);
+	    fp.raw = L4_MsgWord(&msg, 0);
 	    
 #if defined(L4_ARCH_IA32) || defined(L4_ARCH_AMD64)
 #define L4_IO_PAGEFAULT		(-8UL << 20)
@@ -141,16 +144,16 @@ void setup_ipc_threads (void (*f1)(void), void (*f2)(void),
 	    {
 		// Touch memory
 		volatile L4_Word_t * mem = (L4_Word_t *)
-		    (L4_Get (&msg, 0) & ~(sizeof (L4_Word_t) - 1));
+		    (L4_MsgWord (&msg, 0) & ~(sizeof (L4_Word_t) - 1));
 		*mem = *mem;
 		
-		fp = L4_FpageLog2 (L4_Get (&msg, 0), PAGE_BITS) + L4_FullyAccessible;
+		fp = L4_FpageAddRights(L4_FpageLog2 (L4_MsgWord (&msg, 0), PAGE_BITS), L4_FullyAccessible);
 	    }	    
 	    
-	    if ((tid == ipc_t1 && !rcv_same_space) ||
-		(tid == ipc_t2 && !snd_same_space))
-		L4_Append (&msg,  L4_MapItem (fp, L4_Get (&msg, 0)));
-	    L4_Load (&msg);
+	    if ((tid.raw == ipc_t1.raw && !rcv_same_space) ||
+		(tid.raw == ipc_t2.raw && !snd_same_space))
+		L4_MsgAppendMapItem (&msg,  L4_MapItem (fp, L4_MsgWord (&msg, 0)));
+	    L4_MsgLoad (&msg);
 	    tag = L4_ReplyWait (tid, &tid);
 	}
     }
@@ -170,6 +173,9 @@ static void simple_ipc_t1_l (void)
     L4_MsgTag_t tag;
     L4_Word_t i, w;
     L4_ThreadId_t tid;
+    unsigned char * buf;
+    L4_Fpage_t fp;
+    L4_ThreadId_t from;
 
     // Correct message contents
     ipc_ok = true;
@@ -188,7 +194,7 @@ static void simple_ipc_t1_l (void)
             break;
 	}
 
-	L4_Store (tag, &msg);
+	L4_MsgStore (tag, &msg);
 	if (L4_Label (tag) != 0xf00f)
 	{
 	    printf ("Xfer %d words -- wrong label: 0x%lx != 0xf00f\n",
@@ -199,7 +205,7 @@ static void simple_ipc_t1_l (void)
 
 	for (i = 1; i <= n; i++)
 	{
-	    L4_Word_t val = L4_Get (&msg, i - 1);
+	    L4_Word_t val = L4_MsgWord (&msg, i - 1);
 	    if (val != i)
 	    {
 		printf ("Xfer %d words -- wrong value in MR[%d]: "
@@ -222,7 +228,7 @@ static void simple_ipc_t1_l (void)
     
     for (L4_Word_t n = 0; n <= 63; n++)
     {
-	L4_Store (tag, &msg);
+	L4_MsgStore (tag, &msg);
 	if (L4_Label (tag) != 0xf00d)
 	{
             L4_KDB_Enter("2 label");
@@ -233,7 +239,7 @@ static void simple_ipc_t1_l (void)
 	}
 	for (i = 1; i <= n; i++)
 	{
-	    L4_Word_t val = L4_Get (&msg, i - 1);
+	    L4_Word_t val = L4_MsgWord (&msg, i - 1);
 	    if (val != i)
 	    {
 		printf ("Xfer %d words -- wrong value in MR[%d]: "
@@ -268,7 +274,7 @@ static void simple_ipc_t1_l (void)
 
     // Send timeout
     L4_Set_MsgTag (L4_Niltag);
-    tag = L4_Send (ipc_t2, L4_TimePeriod (1000*1000));
+    tag = L4_Send_Timeout (ipc_t2, L4_TimePeriod (1000*1000));
     ipc_ok = true;
     if (L4_IpcSucceeded (tag))
     {
@@ -289,7 +295,7 @@ static void simple_ipc_t1_l (void)
     L4_Receive (ipc_t2);
 
     // Receive timeout
-    tag = L4_Receive (ipc_t2, L4_TimePeriod (1000*1000));
+    tag = L4_Receive_Timeout (ipc_t2, L4_TimePeriod (1000*1000));
     ipc_ok = true;
     if (L4_IpcSucceeded (tag))
     {
@@ -312,7 +318,7 @@ static void simple_ipc_t1_l (void)
     L4_Send (ipc_t2);
 
     // Local destintation Id
-    tag = L4_Receive (ipc_t2, L4_TimePeriod (5*1000*1000));
+    tag = L4_Receive_Timeout (ipc_t2, L4_TimePeriod (5*1000*1000));
     print_result ("Local destination Id", L4_IpcSucceeded (tag));
     L4_Set_MsgTag (L4_Niltag);
     tag = L4_Send (ipc_t2);
@@ -363,9 +369,9 @@ static void simple_ipc_t1_l (void)
     L4_Send (ipc_t2);
 
     // Cancel pagefault
-    unsigned char * buf = (unsigned char *) get_pages (1, false);
-    L4_Fpage_t fp = L4_Fpage ((L4_Word_t) buf, PAGE_SIZE)
-	+ L4_FullyAccessible;
+    buf = (unsigned char *) get_pages (1, false);
+    fp = L4_FpageAddRights(L4_Fpage ((L4_Word_t) buf, PAGE_SIZE),
+			 L4_FullyAccessible);
     L4_Flush (fp);
     ipc_pf_abort_address = (L4_Word_t) buf;
 
@@ -389,13 +395,12 @@ static void simple_ipc_t1_l (void)
     print_result ("Pagefault cancelled", ipc_ok);
 
     // From parameter (local)
-    L4_ThreadId_t from;
     tag = L4_Wait (&from);
     ipc_ok = true;
-    if (from != L4_LocalId (ipc_t2))
+    if (from.raw != L4_LocalIdOf (ipc_t2).raw)
     {
 	printf ("Returned Id %lx != %lx (local) [%lx (global)]\n",
-		Word (from), Word (L4_LocalId (ipc_t2)), Word (ipc_t2));
+		Word (from), Word (L4_LocalIdOf (ipc_t2)), Word (ipc_t2));
 	ipc_ok = false;
     }
     print_result ("From parameter (local)", ipc_ok);
@@ -409,13 +414,10 @@ static void simple_ipc_t1_l (void)
 
 static void simple_ipc_t1_g (void)
 {
-    L4_MsgTag_t tag;
-
     // From parameter (global)
     L4_ThreadId_t from;
-    tag = L4_Wait (&from);
     ipc_ok = true;
-    if (from != ipc_t2)
+    if (from.raw != ipc_t2.raw)
     {
 	printf ("Returned Id %lx != %lx\n", Word (from), Word (ipc_t2));
 	ipc_ok = false;
@@ -438,11 +440,11 @@ static void simple_ipc_t2_l (void)
     // Message contents
     for (L4_Word_t n = 0; n <= 63; n++)
     {
-	L4_Clear (&msg);
-	L4_Set_Label (&msg, 0xf00f);
+	L4_MsgClear (&msg);
+	L4_Set_Label (&msg.tag, 0xf00f);
 	for (L4_Word_t i = 1; i <= n; i++)
-	    L4_Append (&msg, i);
-	L4_Load (&msg);
+	    L4_MsgAppendWord (&msg, i);
+	L4_MsgLoad (&msg);
 	tag = L4_Send (ipc_t1);
         if (!L4_IpcSucceeded (tag))
         {
@@ -460,11 +462,11 @@ static void simple_ipc_t2_l (void)
     // Message contents
     for (L4_Word_t n = 0; n <= 63; n++)
     {
-	L4_Clear (&msg);
-	L4_Set_Label (&msg, 0xf00d);
+	L4_MsgClear (&msg);
+	L4_Set_Label (&msg.tag, 0xf00d);
 	for (L4_Word_t i = 1; i <= n; i++)
-	    L4_Append (&msg, i);
-	L4_Load (&msg);
+	    L4_MsgAppendWord (&msg, i);
+	L4_MsgLoad (&msg);
 	if (n == 63)
 	    tag = L4_Send(ipc_t1);
 	else
@@ -490,7 +492,7 @@ static void simple_ipc_t2_l (void)
 
     // Local destination Id
     L4_Set_MsgTag (L4_Niltag);
-    L4_Send (L4_LocalId (ipc_t1));
+    L4_Send (L4_LocalIdOf (ipc_t1));
     L4_Receive (ipc_t1);
 
     // Send cancel
@@ -534,8 +536,8 @@ static void simple_ipc_t2_g (void)
 static void simple_ipc (void)
 {
     printf ("\nSimple IPC test (inter-as, only untyped words)\n");
-    setup_ipc_threads (simple_ipc_t1_g, simple_ipc_t2_g, false, false);
-    setup_ipc_threads (simple_ipc_t1_l, simple_ipc_t2_l, true, true);
+    setup_ipc_threads (simple_ipc_t1_g, simple_ipc_t2_g, false, false, false);
+    setup_ipc_threads (simple_ipc_t1_l, simple_ipc_t2_l, true, true, false);
 }
 
 
