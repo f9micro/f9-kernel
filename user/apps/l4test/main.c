@@ -30,6 +30,7 @@
  *                
  ********************************************************************/
 
+#include <app.h>
 #include <l4/kip.h>
 #include <l4/thread.h>
 #include <l4/ipc.h>
@@ -42,8 +43,16 @@
 
 /* generic stuff */
 #include "l4test.h"
-#include "menu.h"
 #include "assert.h"
+
+#define STACK_SIZE 256
+
+#define L4TEST_AUTORUN
+
+#if defined(L4TEST_AUTORUN)
+static bool autorun = true;
+#else
+#include "menu.h"
 
 /* test modules */
 extern void kip_test(void);
@@ -55,9 +64,6 @@ extern void exreg_test(void);
 extern void tcontrol_test(void);
 extern void schedule_test(void);
 
-#if defined(L4TEST_AUTORUN)
-static bool autorun = true;
-#else
 static bool autorun = false;
 #endif
 
@@ -162,6 +168,17 @@ get_new_page(void)
 }
 
 void
+get_startup_values (void (*func)(void), L4_Word_t * ip, L4_Word_t * sp)
+{
+    // Calculate intial SP
+    L4_Word_t stack = (L4_Word_t) get_pages (STACK_PAGES, 1);
+    stack += STACK_PAGES * PAGE_SIZE;
+
+    *ip = (L4_Word_t) func;
+    *sp = stack;
+}
+
+void
 start_thread_ip_sp( L4_ThreadId_t tid, L4_Word_t ip, L4_Word_t sp )
 {
 	L4_Msg_t msg;
@@ -191,17 +208,18 @@ void all_tests(void)
     extern void all_tc_tests(void);
     extern void all_schedule_tests(void);
 
-    all_kip_tests();
-    all_arch_tests();
-    all_mem_tests();
+    //all_kip_tests();
+    //all_arch_tests();
+    //all_mem_tests();
     all_ipc_tests();
-    all_s0_tests();
-    all_exreg_tests();
-    all_tc_tests();
-    all_schedule_tests();
+    //all_s0_tests();
+    //all_exreg_tests();
+    //all_tc_tests();
+    //all_schedule_tests();
 
 }
 
+#if !defined(L4TEST_AUTORUN)
 /* Main menu code */
 static struct menuitem main_menu_items[] = 
 {
@@ -223,18 +241,26 @@ static struct menu main_menu =
 	NUM_ITEMS(main_menu_items),
 	main_menu_items
 };
+#endif
 
-
-int l4test_main (void)
+static void main (app_struct *app)
 {
 	printf( "L4/Pistachio test suite ready to go.\n\n" );
-        
-        if (autorun)
-            all_tests();
-        
-        menu_input( &main_menu );
+
+#if defined(L4TEST_AUTORUN)
+    all_tests();
+#else
+    menu_input( &main_menu );
+#endif
 
 	assert( !"Shouldn't get here!" );
 
-	return 0;
+	return;
 }
+
+DECLARE_APP(
+	256,
+	l4test,
+	main,
+	DECLARE_FPAGE(0x0, 4 * (UTCB_SIZE + STACK_SIZE))
+);
