@@ -3,4 +3,8 @@
 # found in the LICENSE file.
 
 user-apps-l4test-y = \
-	main.o
+	string.o \
+	threads.o \
+	ipc.o \
+	assert.o \
+	main.o \
