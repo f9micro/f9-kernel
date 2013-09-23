@@ -11,6 +11,7 @@
 #include <memory.h>
 #include <ipc.h>
 #include <sched.h>
+#include <user-log.h>
 
 extern tcb_t *caller;
 
@@ -106,7 +107,11 @@ void sys_ipc(uint32_t *param1)
 	if (to_tid != L4_NILTHREAD) {
 		to_thr = thread_by_globalid(to_tid);
 
-		if ((to_thr && to_thr->state == T_RECV_BLOCKED)
+		if (to_tid == TID_TO_GLOBALID(THREAD_LOG)) {
+			user_log(caller);
+			caller->state = T_RUNNABLE;
+		}
+		else if ((to_thr && to_thr->state == T_RECV_BLOCKED)
 				|| to_tid == caller->t_globalid ) {
 			/* To thread who is waiting for us or sends to myself */
 			do_ipc(caller, to_thr);
