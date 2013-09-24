@@ -50,9 +50,9 @@ bool ipc_ok;
 L4_Word_t ipc_pf_block_address = 0;
 L4_Word_t ipc_pf_abort_address = 0;
 
-L4_Word_t Word (L4_ThreadId_t t) { return t.raw; }
+__USER_TEXT L4_Word_t Word (L4_ThreadId_t t) { return t.raw; }
 
-const char * ipc_errorcode (L4_Word_t errcode)
+__USER_TEXT const char * ipc_errorcode (L4_Word_t errcode)
 {
     switch ((errcode >> 1) & 0x7)
     {
@@ -68,13 +68,13 @@ const char * ipc_errorcode (L4_Word_t errcode)
     return "unknown";
 }
 
-const char * ipc_errorphase (L4_Word_t errcode)
+__USER_TEXT const char * ipc_errorphase (L4_Word_t errcode)
 {
     return errcode & 0x1 ? "receive-phase" : "send-phase";
 }
 
 
-void setup_ipc_threads (void (*f1)(void), void (*f2)(void),
+__USER_TEXT void setup_ipc_threads (void (*f1)(void), void (*f2)(void),
 			bool rcv_same_space, bool snd_same_space,
 			bool xcpu)
 {
@@ -167,7 +167,7 @@ void setup_ipc_threads (void (*f1)(void), void (*f2)(void),
 **
 */
 
-static void simple_ipc_t1_l (void)
+__USER_TEXT static void simple_ipc_t1_l (void)
 {
     L4_Msg_t msg;
     L4_MsgTag_t tag;
@@ -412,7 +412,7 @@ static void simple_ipc_t1_l (void)
     L4_Call (L4_Pager ());
 }
 
-static void simple_ipc_t1_g (void)
+__USER_TEXT static void simple_ipc_t1_g (void)
 {
     // From parameter (global)
     L4_ThreadId_t from;
@@ -429,7 +429,7 @@ static void simple_ipc_t1_g (void)
     L4_Call (L4_Pager ());
 }
 
-static void simple_ipc_t2_l (void)
+__USER_TEXT static void simple_ipc_t2_l (void)
 {
     L4_Msg_t msg;
     L4_Word_t dw;
@@ -521,7 +521,7 @@ static void simple_ipc_t2_l (void)
     L4_Call (L4_Pager ());
 }
 
-static void simple_ipc_t2_g (void)
+__USER_TEXT static void simple_ipc_t2_g (void)
 {
     // From parameter (global)
     L4_Set_MsgTag (L4_Niltag);
@@ -533,7 +533,7 @@ static void simple_ipc_t2_g (void)
 }
 
 
-static void simple_ipc (void)
+__USER_TEXT static void simple_ipc (void)
 {
     printf ("\nSimple IPC test (inter-as, only untyped words)\n");
     setup_ipc_threads (simple_ipc_t1_g, simple_ipc_t2_g, false, false, false);
@@ -551,7 +551,7 @@ void string_ipc_pf (void);
 void simple_smpipc (void);
 void string_smpipc_pf (void);
 
-void all_ipc_tests (void)
+__USER_TEXT void all_ipc_tests (void)
 {
     simple_ipc ();
     //string_ipc ();

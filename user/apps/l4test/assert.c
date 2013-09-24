@@ -32,10 +32,11 @@
 #include <l4/kdebug.h>
 #include <l4io.h>
 #include <config.h>
+#include <platform/link.h>
 
 #include "assert.h"
 
-void
+__USER_TEXT void
 __assert( const char *msg, const char *file, int line )
 {
     printf( "\n\nassertion failed: %s, line %d in %s\n\n", msg, 

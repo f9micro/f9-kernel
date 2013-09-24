@@ -40,7 +40,7 @@
 #include "l4test.h"
 
 
-L4_ThreadId_t
+L4_ThreadId_t __USER_TEXT
 get_new_tid (void)
 {
     static L4_Word_t next_no = 0;
@@ -53,7 +53,7 @@ get_new_tid (void)
 }
 
 
-L4_ThreadId_t
+L4_ThreadId_t __USER_TEXT
 create_thread (void (*func)(void), bool new_space, int cpu, L4_Word_t spacectrl)
 {
     static L4_Fpage_t kip_area, utcb_area;
@@ -128,7 +128,7 @@ create_thread (void (*func)(void), bool new_space, int cpu, L4_Word_t spacectrl)
 }
 
 
-L4_Word_t 
+L4_Word_t __USER_TEXT
 kill_thread (L4_ThreadId_t tid)
 {
     return L4_ThreadControl (tid, L4_nilthread, L4_nilthread,
@@ -136,7 +136,7 @@ kill_thread (L4_ThreadId_t tid)
 }
 
 
-void
+void __USER_TEXT
 start_thread (L4_ThreadId_t tid, void (*func)(void))
 {
     L4_Msg_t msg;

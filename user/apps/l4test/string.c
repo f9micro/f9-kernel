@@ -31,8 +31,9 @@
  ***************************************************************************/
 
 #include "string.h"
+#include <platform/link.h>
 
-int
+int __USER_TEXT
 strlen( const char *str )
 {
 	int len = 0;

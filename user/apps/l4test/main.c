@@ -107,7 +107,7 @@ print_h2( const char *msg )
 	set_colour( BLACK );
 }
 
-void
+__USER_TEXT void
 print_result (const char * str, bool test)
 {
     printf ("  %s: ", str);
@@ -120,7 +120,7 @@ print_result (const char * str, bool test)
 
 
 
-L4_Word_t
+__USER_TEXT L4_Word_t
 safe_mem_touch( void *addr )
 {
 	volatile L4_Word_t *ptr;
@@ -133,7 +133,7 @@ safe_mem_touch( void *addr )
 	return copy;
 }
 
-void *
+__USER_TEXT void *
 get_pages( L4_Word_t count, int touch )
 {
 	void *ret = free_page;
@@ -167,7 +167,7 @@ get_new_page(void)
 	return get_pages( 1, 0 );
 }
 
-void
+__USER_TEXT void
 get_startup_values (void (*func)(void), L4_Word_t * ip, L4_Word_t * sp)
 {
     // Calculate intial SP
@@ -197,7 +197,7 @@ msec_sleep( L4_Word_t msec )
 	L4_Sleep( L4_TimePeriod( msec * 1000 ) );
 }
 
-void all_tests(void)
+__USER_TEXT void all_tests(void)
 {
     extern void all_kip_tests(void);
     extern void all_arch_tests(void);
