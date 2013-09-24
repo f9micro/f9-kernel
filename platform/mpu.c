@@ -5,6 +5,7 @@
 
 #include <fpage.h>
 #include <memory.h>
+#include <debug.h>
 #include <error.h>
 #include <platform/irq.h>
 #include <platform/mpu.h>
@@ -46,7 +47,15 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 
 	while (fp) {
 		if (addr_in_fpage(addr, fp)) {
-			as->lru = fp;
+			fp->mpu_next = as->mpu_first;
+			as->mpu_first = fp;
+
+			/* Remove circular link */
+			while (fp->mpu_next != NULL && fp->mpu_next != as->mpu_first) {
+				fp = fp->mpu_next;
+			}
+			fp->mpu_next = NULL;
+
 			return 0;
 		}
 
@@ -56,29 +65,64 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 	return 1;
 }
 
+void mpu_dump(void)
+{
+	int i = 0;
+	uint32_t *mpu_rnr = (uint32_t *) MPU_RNR_ADDR;
+	uint32_t *mpu_base = (uint32_t *) MPU_BASE_ADDR;
+	uint32_t *mpu_attr = (uint32_t *) MPU_ATTR_ADDR;
+
+	dbg_printf(DL_EMERG, "-------MPU------\n");
+	for (i = 0; i < 8; i++) {
+		*mpu_rnr = i;
+		if (*mpu_attr & 0x1) {
+			dbg_printf(DL_EMERG,
+				"b:%p, sz:2**%d, attr:%04x\n", *mpu_base & MPU_REGION_MASK,
+				((*mpu_attr & 0x3E) >> 1) + 1, *mpu_attr >> 16);
+		}
+	}
+}
+
 void __memmanage_handler(void)
 {
 	uint32_t mmsr = *((uint32_t *) MPU_FAULT_STATUS_ADDR);
 	uint32_t mmar = *((uint32_t *) MPU_FAULT_ADDRESS_ADDR);
 	tcb_t *current = thread_current();
 
-	/* stack / unstacking errors */
-	if (mmsr & MPU_MUSTKERR || mmsr & MPU_MSTKERR) {
-		/* Processor is not writing mmar, so we do it manually */
-		if (mpu_select_lru(current->as, current->ctx.sp) == 0)
-			goto ok;
-	}
-
 	if (mmsr & MPU_MEM_FAULT) {
 		if (mpu_select_lru(current->as, mmar) == 0)
 			goto ok;
 	}
 
-	panic("Memory fault\n");
+	/* stack errors */
+	if (mmsr & MPU_MSTKERR) {
+		/* Processor is not writing mmar, so we do it manually */
+		if (mpu_select_lru(current->as, (uint32_t)PSP()) == 0)
+			goto ok;
+	}
+
+	/* unstacking errors */
+	if (mmsr & MPU_MUSTKERR) {
+		/* Processor is not writing mmar, so we do it manually */
+		if (mpu_select_lru(current->as, (uint32_t)PSP() + 32) == 0) {
+			goto ok;
+		}
+	}
+
+	if (mmsr & MPU_IACCVIOL) {
+		if (mpu_select_lru(current->as, PSP()[REG_PC]) == 0)
+			goto ok;
+	}
+
+	mpu_dump();
+	panic("Memory fault mmsr:%p, mmar:%p,\n"
+		"             current:%t, psp:%p, pc:%p\n",
+		mmsr, mmar, current->t_globalid, PSP(), PSP()[REG_PC]);
 
 ok:
 	/* Clean status register */
-	*((uint32_t *) MPU_FAULT_STATUS_ADDR) = 0;
+	*((uint32_t *) MPU_FAULT_STATUS_ADDR) = mmsr;
+	assert(*(volatile uint32_t *) MPU_FAULT_STATUS_ADDR == 0);
 	return;
 }
 

@@ -178,45 +178,76 @@ INIT_HOOK(memory_init, INIT_LEVEL_KERNEL_EARLY);
  * AS functions
  */
 
-void as_setup_mpu(as_t *as, memptr_t sp)
+void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc)
 {
-	fpage_t *mpu[8];
-	fpage_t *fp = as->first;
-	fpage_t *fpprev = NULL;
-	int i = 0, j = 7, k = 0;
+	fpage_t *fp = as->mpu_first;
+	int i;
+	int pre_sp_exist = 0;
 
 	/*
 	 * We walk through fpage list
-	 * [0:k] are always-mapped fpages + LRU page + stack page
-	 * [k:7] are others
+	 * mpu_fp[0] are pc, sp, fpage before sp
+	 * mpu_fp[1] are always-mapped fpages
+	 * mpu_fp[2] are others
 	 */
-	while (fp != NULL) {
-		if (fp->fpage.flags & FPAGE_ALWAYS ||
-				fp == as->lru ||
-				addr_in_fpage(sp, fp)) {
-			if (k < 8)
-				if (fpprev == NULL || FPAGE_BASE(fp) != FPAGE_BASE(fpprev) ||
-						FPAGE_SIZE(fp) > FPAGE_SIZE(fpprev))
-					mpu[k++] = fp;
+	if (fp == NULL) {
+		fpage_t *mpu_first[3] = {NULL};
+		fpage_t *mpu_fp[3] = {NULL};
+
+		fp = as->first;
+		while (fp != NULL) {
+			int priv = 2;
+
+			if (addr_in_fpage(pc, fp) || addr_in_fpage(sp, fp) ||
+					addr_in_fpage(sp - CONFIG_SMALLEST_FPAGE_SIZE, fp)) {
+				priv = 0;
+			}
+			else if (fp->fpage.flags & FPAGE_ALWAYS) {
+				priv = 1;
+			}
+
+			if (mpu_first[priv] == NULL) {
+				mpu_first[priv] = fp;
+				mpu_fp[priv] = fp;
+			}
+			else {
+				mpu_fp[priv]->mpu_next = fp;
+				mpu_fp[priv] = fp;
+			}
+
+			fp = fp->as_next;
+		}
+
+		if (mpu_first[1]) {
+			mpu_fp[1]->mpu_next = mpu_first[2];
 		}
 		else {
-			if (j >= k)
-				if (fpprev == NULL || FPAGE_BASE(fp) != FPAGE_BASE(fpprev) ||
-						FPAGE_SIZE(fp) > FPAGE_SIZE(fpprev))
-					mpu[j--] = fp;
-		} /* Non-always fpage mapping */
-		fpprev = fp;
-		fp = fp->as_next;
+			mpu_first[1] = mpu_first[2];
+		}
+		if (mpu_first[0]) {
+			mpu_fp[0]->mpu_next = mpu_first[1];
+		}
+		else {
+			mpu_first[0] = mpu_first[1];
+		}
+		as->mpu_first = mpu_first[0];
+
+		fp = as->mpu_first;
 	}
 
-	as->lru = NULL;
+	for (i = 0; i < 8 && fp != NULL; ++i, fp = fp->mpu_next) {
+		mpu_setup_region(i, fp);
 
-	for (i = 0; i < k; ++i) {
-		mpu_setup_region(i, mpu[i]);
+		if (!pre_sp_exist)
+			pre_sp_exist = addr_in_fpage(sp - CONFIG_SMALLEST_FPAGE_SIZE, fp);
 	}
 
-	for (i = 7; i > j; --i) {
-		mpu_setup_region(i, mpu[i]);
+	/* Prevent memory fault occurring when exception entry */
+	if (!pre_sp_exist && mpu_select_lru(as, sp - CONFIG_SMALLEST_FPAGE_SIZE)) {
+		if (i > 7) {
+			i = 7;
+		}
+		mpu_setup_region(i, as->mpu_first);
 	}
 }
 
@@ -255,6 +286,7 @@ as_t *as_create(uint32_t as_spaceid)
 
 	as->as_spaceid = as_spaceid;
 	as->first = NULL;
+	as->mpu_first = NULL;
 
 	return as;
 }
@@ -406,6 +438,7 @@ void kdb_dump_mempool(void)
 
 void kdb_dump_as(void)
 {
+	extern enum { DBG_ASYNC, DBG_PANIC } dbg_state;
 	int idx = 0, nl = 0;
 	as_t *as = NULL;
 	fpage_t *fpage = NULL;
@@ -421,6 +454,13 @@ void kdb_dump_as(void)
 				fpage->fpage.base, fpage->fpage.shift);
 			fpage = fpage->as_next;
 			++nl;
+
+			if (dbg_state != DBG_PANIC && nl == 30) {
+				dbg_puts("Press any key...\n");
+				while (dbg_getchar() == 0)
+					/* */ ;
+				nl = 0;
+			}
 		}
 	}
 }

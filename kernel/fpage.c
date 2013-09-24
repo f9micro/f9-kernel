@@ -103,6 +103,20 @@ static void remove_fpage_from_as(as_t *as, fpage_t *fp)
 
 	/* Remove from chain */
 	fpprev->as_next = fp->as_next;
+
+	/* Remove from lru chain */
+	fpprev = as->mpu_first;
+
+	if (fpprev == fp) {
+		as->mpu_first = fpprev->mpu_next;
+		return;
+	}
+
+	while (fpprev->mpu_next != fp) {
+		fpprev = fpprev->mpu_next;
+	}
+
+	fpprev->mpu_next = fp->mpu_next;
 }
 
 /* FIXME: Support for bit-bang regions. */
@@ -120,6 +134,7 @@ static fpage_t *create_fpage(memptr_t base, size_t shift, int mpid)
 
 	fpage->as_next = NULL;
 	fpage->map_next = fpage; 	/* That is first fpage in mapping */
+	fpage->mpu_next = NULL;
 	fpage->fpage.mpid = mpid;
 	fpage->fpage.flags = 0;
 	fpage->fpage.rwx = MP_USER_PERM(mempool_getbyid(mpid)->flags);
@@ -306,6 +321,7 @@ int map_fpage(as_t *src, as_t *dst, fpage_t *fpage, map_action_t action)
 
 	/* FIXME: check for fpmap == NULL */
 	fpmap->as_next = NULL;
+	fpmap->mpu_next = NULL;
 
 	/* Copy fpage description */
 	fpmap->raw[0] = fpage->raw[0];
@@ -349,9 +365,6 @@ int unmap_fpage(as_t *as, fpage_t *fpage)
 
 	fpprev->map_next = fpage->map_next;
 	remove_fpage_from_as(as, fpage);
-
-	if (as->lru == fpage)
-		as->lru = NULL;
 
 	ktable_free(&fpage_table, fpage);
 

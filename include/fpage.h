@@ -29,6 +29,7 @@
 struct fpage {
 	struct fpage *as_next;
 	struct fpage *map_next;
+	struct fpage *mpu_next;
 
 	union {
 		struct {
