@@ -57,7 +57,7 @@
 
 typedef L4_Word_t		L4_Bool_t;
 
-#define L4_INLINE		static inline
+#define L4_INLINE		static inline __attribute__((always_inline))
 #define L4_BITS_PER_WORD	(sizeof (L4_Word_t) * 8)
 
 #if defined(L4_64BIT)
