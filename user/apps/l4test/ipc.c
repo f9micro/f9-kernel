@@ -43,12 +43,12 @@
 #include "menu.h"
 #include "assert.h"
 
-L4_ThreadId_t ipc_t1;
-L4_ThreadId_t ipc_t2;
-bool ipc_ok;
+__USER_BSS L4_ThreadId_t ipc_t1;
+__USER_BSS L4_ThreadId_t ipc_t2;
+__USER_BSS bool ipc_ok;
 
-L4_Word_t ipc_pf_block_address = 0;
-L4_Word_t ipc_pf_abort_address = 0;
+__USER_BSS L4_Word_t ipc_pf_block_address = 0;
+__USER_BSS L4_Word_t ipc_pf_abort_address = 0;
 
 __USER_TEXT L4_Word_t Word (L4_ThreadId_t t) { return t.raw; }
 

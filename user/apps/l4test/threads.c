@@ -43,7 +43,7 @@
 L4_ThreadId_t __USER_TEXT
 get_new_tid (void)
 {
-    static L4_Word_t next_no = 0;
+    __USER_BSS static L4_Word_t next_no = 0;
 
     if (next_no == 0)
 	// Initialize with my thread_no + 1
@@ -56,10 +56,10 @@ get_new_tid (void)
 L4_ThreadId_t __USER_TEXT
 create_thread (void (*func)(void), bool new_space, int cpu, L4_Word_t spacectrl)
 {
-    static L4_Fpage_t kip_area, utcb_area;
-    static L4_Word_t utcb_base;
-    static bool initialized = false;
-    static void * kip;
+    __USER_BSS static L4_Fpage_t kip_area, utcb_area;
+    __USER_BSS static L4_Word_t utcb_base;
+    __USER_BSS static bool initialized = false;
+    __USER_BSS static void * kip;
     L4_ThreadId_t me;
     L4_ThreadId_t tid;
     L4_Word_t utcb_location;
