@@ -41,6 +41,10 @@ struct fpage {
 		} fpage;
 		uint32_t raw[2];
 	};
+
+#ifdef CONFIG_KDB
+	int used;
+#endif /* CONFIG_KDB */
 };
 
 typedef struct fpage fpage_t;

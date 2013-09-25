@@ -439,7 +439,7 @@ void kdb_dump_mempool(void)
 void kdb_dump_as(void)
 {
 	extern enum { DBG_ASYNC, DBG_PANIC } dbg_state;
-	int idx = 0, nl = 0;
+	int idx = 0, nl = 0, i;
 	as_t *as = NULL;
 	fpage_t *fpage = NULL;
 
@@ -448,8 +448,24 @@ void kdb_dump_as(void)
 		dbg_printf(DL_KDB, "Address Space %p\n", as->as_spaceid);
 
 		while (fpage) {
+			fpage->used = 0;
+			fpage = fpage->as_next;
+		}
+
+		i = 0;
+		fpage = as->mpu_first;
+		while (i < 8 && fpage) {
+			fpage->used = 1;
+			fpage = fpage->mpu_next;
+			++i;
+		}
+
+		nl = 0;
+		fpage = as->first;
+		while (fpage) {
 			dbg_printf(DL_KDB,
-				"MEM: fpage %5s [b:%p, sz:2**%d]\n",
+				"MEM: %c fpage %5s [b:%p, sz:2**%d]\n",
+				fpage->used ? 'o' : ' ',
 				memmap[fpage->fpage.mpid].name,
 				fpage->fpage.base, fpage->fpage.shift);
 			fpage = fpage->as_next;
