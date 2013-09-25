@@ -10,9 +10,6 @@
 #include <types.h>
 #include <app.h>
 
-#define L4_THREAD_NUM(n, b) \
-	((L4_ThreadId_t)((b + n) << 14))
-
 extern app_struct user_app_start[];
 extern app_struct user_app_end[];
 
@@ -85,7 +82,7 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 		L4_Word_t stack;
 		app_fpage_t *fpage = ptr->fpages;
 
-		tid = L4_THREAD_NUM(ptr->tid, kip_ptr->thread_info.s.user_base);
+		tid = L4_GlobalId(ptr->tid + kip_ptr->thread_info.s.user_base, 2);
 
 		/* create thread */
 		L4_ThreadControl(tid, tid, L4_nilthread, myself, free_mem);
