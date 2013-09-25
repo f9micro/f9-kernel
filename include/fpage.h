@@ -53,9 +53,10 @@ typedef struct fpage fpage_t;
 #define FPAGE_SIZE(fp)  (1 << (fp)->fpage.shift)
 #define FPAGE_END(fp)	(FPAGE_BASE(fp) + FPAGE_SIZE(fp))
 
-static inline int addr_in_fpage(memptr_t addr, fpage_t *fpage)
+static inline int addr_in_fpage(memptr_t addr, fpage_t *fpage, int incl_end)
 {
-	return (addr >= FPAGE_BASE(fpage) && addr <= FPAGE_END(fpage));
+	return ((addr >= FPAGE_BASE(fpage) && addr < FPAGE_END(fpage)) ||
+			(incl_end && FPAGE_END(fpage)));
 }
 
 #endif /* FPAGE_H_ */

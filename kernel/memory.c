@@ -198,8 +198,8 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc)
 		while (fp != NULL) {
 			int priv = 2;
 
-			if (addr_in_fpage(pc, fp) || addr_in_fpage(sp, fp) ||
-					addr_in_fpage(sp - CONFIG_SMALLEST_FPAGE_SIZE, fp)) {
+			if (addr_in_fpage(pc, fp, 0) || addr_in_fpage(sp, fp, 0) ||
+					addr_in_fpage(sp - CONFIG_SMALLEST_FPAGE_SIZE, fp, 0)) {
 				priv = 0;
 			}
 			else if (fp->fpage.flags & FPAGE_ALWAYS) {
@@ -239,15 +239,12 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc)
 		mpu_setup_region(i, fp);
 
 		if (!pre_sp_exist)
-			pre_sp_exist = addr_in_fpage(sp - CONFIG_SMALLEST_FPAGE_SIZE, fp);
+			pre_sp_exist = addr_in_fpage(sp - CONFIG_SMALLEST_FPAGE_SIZE, fp, 0);
 	}
 
 	/* Prevent memory fault occurring when exception entry */
-	if (!pre_sp_exist && mpu_select_lru(as, sp - CONFIG_SMALLEST_FPAGE_SIZE)) {
-		if (i > 7) {
-			i = 7;
-		}
-		mpu_setup_region(i, as->mpu_first);
+	if (!pre_sp_exist) {
+		mpu_select_lru(as, sp - CONFIG_SMALLEST_FPAGE_SIZE);
 	}
 }
 
@@ -333,11 +330,11 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 		 * probe checks that addresses in fpage are sequental
 		 */
 		while (fp) {
-			if (!first && addr_in_fpage(base, fp)) {
+			if (!first && addr_in_fpage(base, fp, 1)) {
 				first = fp;
 			}
 
-			if (!last && addr_in_fpage(end, fp)) {
+			if (!last && addr_in_fpage(end, fp, 1)) {
 				last = fp;
 				break;
 			}
@@ -346,7 +343,7 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 				/* Check weather if addresses in fpage list
 				 * are sequental
 				 */
-				if (!addr_in_fpage(probe, fp))
+				if (!addr_in_fpage(probe, fp, 1))
 					return -1;
 
 				probe += (1 << fp->fpage.shift);
@@ -376,7 +373,7 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 	if (last_invalid) {
 		fp = first;
 		while (fp) {
-			if (addr_in_fpage(end, fp)) {
+			if (addr_in_fpage(end, fp, 1)) {
 				last = fp;
 				break;
 			}
@@ -471,7 +468,7 @@ void kdb_dump_as(void)
 			fpage = fpage->as_next;
 			++nl;
 
-			if (dbg_state != DBG_PANIC && nl == 30) {
+			if (dbg_state != DBG_PANIC && nl == 12) {
 				dbg_puts("Press any key...\n");
 				while (dbg_getchar() == 0)
 					/* */ ;

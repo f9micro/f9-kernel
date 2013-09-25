@@ -42,7 +42,7 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 
 	fp = as->first;
 	while (fp) {
-		if (addr_in_fpage(addr, fp)) {
+		if (addr_in_fpage(addr, fp, 0)) {
 			fp->mpu_next = as->mpu_first;
 			as->mpu_first = fp;
 
@@ -52,7 +52,7 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 
 			while (fp->mpu_next != NULL && fp->mpu_next != as->mpu_first) {
 				if (i < 8)
-					mpu_setup_region(i++, fp);
+					mpu_setup_region(i++, fp->mpu_next);
 				fp = fp->mpu_next;
 			}
 			fp->mpu_next = NULL;
@@ -105,7 +105,7 @@ void __memmanage_handler(void)
 	/* unstacking errors */
 	if (mmsr & MPU_MUSTKERR) {
 		/* Processor is not writing mmar, so we do it manually */
-		if (mpu_select_lru(current->as, (uint32_t)PSP() + 32) == 0) {
+		if (mpu_select_lru(current->as, (uint32_t)PSP() + 31) == 0) {
 			goto ok;
 		}
 	}
