@@ -34,24 +34,25 @@ void mpu_enable(mpu_state_t i)
 int mpu_select_lru(as_t *as, uint32_t addr)
 {
 	fpage_t *fp = NULL;
+	int i;
 
 	/* Kernel fault? */
 	if (as == NULL)
 		return 1;
 
 	fp = as->first;
-
-	/* No need to setup mpu here
-	 * because it will be done when context switches
-	 */
-
 	while (fp) {
 		if (addr_in_fpage(addr, fp)) {
 			fp->mpu_next = as->mpu_first;
 			as->mpu_first = fp;
 
-			/* Remove circular link */
+			/* Remove circular link and update MPU */
+			i = 0;
+			mpu_setup_region(i++, fp);
+
 			while (fp->mpu_next != NULL && fp->mpu_next != as->mpu_first) {
+				if (i < 8)
+					mpu_setup_region(i++, fp);
 				fp = fp->mpu_next;
 			}
 			fp->mpu_next = NULL;
