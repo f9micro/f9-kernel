@@ -68,7 +68,7 @@ static bool autorun = false;
 #endif
 
 /* where to start allocating RAM */
-static char *free_page = (char*) SCRATCHMEM_START;
+__USER_BSS static char *free_page;
 
 /* colours */
 static void 
@@ -246,6 +246,8 @@ static struct menu main_menu =
 static void main (app_struct *app)
 {
 	printf( "L4/Pistachio test suite ready to go.\n\n" );
+
+	free_page = (void*)app->fpages[0].base;
 
 #if defined(L4TEST_AUTORUN)
     all_tests();

@@ -34,14 +34,10 @@
 
 #define ARCH_NAME               "IA-32"
 
-#define PAGE_BITS		(12)
+#define PAGE_BITS		(8)
 #define PAGE_SIZE		(1 << PAGE_BITS)
-#define MAX_MEM			(256L*1024L*1024L)
+#define MAX_MEM			(4L*256L)
 
-#define STACK_PAGES             4
-
-
-/* some place to start reading/writing junk */
-#define SCRATCHMEM_START        (16*1024*1024)
+#define STACK_PAGES             1
 
 #endif /* __ARCH_H__ */

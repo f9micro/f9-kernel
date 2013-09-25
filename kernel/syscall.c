@@ -59,6 +59,7 @@ static void sys_thread_control(uint32_t *param1, uint32_t *param2)
 		tcb_t *thr = thread_create(dest, utcb);
 		thread_space(thr, space, utcb);
 		thr->utcb->t_pager = pager;
+		param1[REG_R0] = 1;
 	}
 	else {
 		/* TODO: Thread destroy */
