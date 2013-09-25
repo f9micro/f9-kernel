@@ -39,8 +39,7 @@ __USER_TEXT void * L4_KernelInterface (L4_Word_t *ApiVersion,
 				     L4_Word_t *ApiFlags,
 				     L4_Word_t *KernelId)
 {
-    void * base_address = 0;
-    return base_address;
+    return &kip_start;
 }
 
 
