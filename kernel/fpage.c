@@ -17,6 +17,22 @@
 
 DECLARE_KTABLE(fpage_t, fpage_table, CONFIG_MAX_FPAGES);
 
+#define remove_fpage_from_list(as, fpage, first, next) {	\
+	fpage_t *fpprev = (as)->first;	\
+	int end;	\
+	if (fpprev == (fpage)) {	\
+		(as)->first = fpprev->next;	\
+	}	\
+	else {	\
+		while (!end && fpprev->next != (fpage)) {	\
+			if (fpprev->next == NULL)	\
+				end = 1;	\
+			fpprev = fpprev->next;	\
+		}	\
+		fpprev->next = (fpage)->next;	\
+	}	\
+}
+
 /*
  * Helper functions
  */
@@ -91,32 +107,8 @@ static void insert_fpage_to_as(as_t *as, fpage_t *fpage)
  */
 static void remove_fpage_from_as(as_t *as, fpage_t *fp)
 {
-	fpage_t *fpprev = as->first;
-
-	while (fpprev->as_next != fp) {
-		/* Fpage from wrong AS */
-		if (fpprev->as_next == NULL)
-			return;
-
-		fpprev = fpprev->as_next;
-	}
-
-	/* Remove from chain */
-	fpprev->as_next = fp->as_next;
-
-	/* Remove from lru chain */
-	fpprev = as->mpu_first;
-
-	if (fpprev == fp) {
-		as->mpu_first = fpprev->mpu_next;
-		return;
-	}
-
-	while (fpprev->mpu_next != fp) {
-		fpprev = fpprev->mpu_next;
-	}
-
-	fpprev->mpu_next = fp->mpu_next;
+	remove_fpage_from_list(as, fp, first, as_next);
+	remove_fpage_from_list(as, fp, mpu_first, mpu_next);
 }
 
 /* FIXME: Support for bit-bang regions. */
