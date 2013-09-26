@@ -63,7 +63,7 @@ SECTIONS {
 	{
 		user_text_start = .;
 		*(.user_text*)
-		. = 0x00001000;
+		. = ALIGN (256);
 		user_text_end = .;
 	} > MFlash
 
@@ -108,7 +108,7 @@ SECTIONS {
 
 	.user_data :
 	AT( ADDR(.user_text) + SIZEOF(.user_text) )
-	ALIGN (128)
+	ALIGN (256)
 	{
 		user_data_start = .;
 		root_stack_start = .;
@@ -118,14 +118,16 @@ SECTIONS {
 		user_app_start = .;
 		KEEP(*(.user_app))
 		user_app_end = .;
+		. = ALIGN (256);
 		user_data_end = .;
 	} > RamLoc
 
 	.user_bss (NOLOAD) :
-	ALIGN (128)
+	ALIGN (256)
 	{
 		user_bss_start = .;
 		*(.user_bss*)
+		. = ALIGN (256);
 		user_bss_end = .;
 	} > RamLoc
 
