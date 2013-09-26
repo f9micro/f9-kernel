@@ -383,6 +383,12 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 
 	last  = split_fpage(src, last, end, 0);
 
+	if (!last || !first) {
+		/* Splitting not supported for mapped pages */
+		/* UNIMPLIMENTED */
+		return -1;
+	}
+
 	/* Map chain of fpages */
 
 	fp = first;
