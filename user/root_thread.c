@@ -58,13 +58,15 @@ void __USER_TEXT map_user_sections(kip_t *kip_ptr, L4_ThreadId_t tid)
 	}
 }
 
-static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip, L4_Word_t sp)
+static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
+		L4_Word_t sp, L4_Word_t stack_size)
 {
 	L4_Msg_t msg;
 
 	L4_MsgClear(&msg);
 	L4_MsgAppendWord(&msg, ip);
 	L4_MsgAppendWord(&msg, sp);
+	L4_MsgAppendWord(&msg, stack_size);
 	L4_MsgLoad(&msg);
 
 	L4_Send(t);
@@ -111,7 +113,7 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 		}
 
 		/* start thread */
-		start_thread(tid, (L4_Word_t)ptr->entry, stack);
+		start_thread(tid, (L4_Word_t)ptr->entry, stack, STACK_SIZE);
 	}
 
 	while (1)

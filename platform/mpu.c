@@ -15,13 +15,20 @@ void mpu_setup_region(int n, fpage_t *fp)
 	static uint32_t *mpu_base = (uint32_t *) MPU_BASE_ADDR;
 	static uint32_t *mpu_attr = (uint32_t *) MPU_ATTR_ADDR;
 
-	*mpu_base = (FPAGE_BASE(fp) & MPU_REGION_MASK) | 0x10 | (n & 0xF);
-	*mpu_attr = ((mempool_getbyid(fp->fpage.mpid)->flags & MP_UX) ?
-			0 :
-			(1 << 28)) |	/* XN bit */
-			(0x3 << 24) /* Full access */ |
-			((fp->fpage.shift - 1) << 1) /* Region */ |
-			1 /* Enable */;
+	if (fp) {
+		*mpu_base = (FPAGE_BASE(fp) & MPU_REGION_MASK) | 0x10 | (n & 0xF);
+		*mpu_attr = ((mempool_getbyid(fp->fpage.mpid)->flags & MP_UX) ?
+				0 :
+				(1 << 28)) |	/* XN bit */
+				(0x3 << 24) /* Full access */ |
+				((fp->fpage.shift - 1) << 1) /* Region */ |
+				1 /* Enable */;
+	}
+	else {
+		/* Clean MPU region */
+		*mpu_base = 0x10 | (n & 0xF);
+		*mpu_attr = 0;
+	}
 }
 
 void mpu_enable(mpu_state_t i)
@@ -43,19 +50,25 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 	fp = as->first;
 	while (fp) {
 		if (addr_in_fpage(addr, fp, 0)) {
+			fpage_t *sfp = as->mpu_stack_first;
+
 			fp->mpu_next = as->mpu_first;
 			as->mpu_first = fp;
 
-			/* Remove circular link and update MPU */
+			/* Get first avalible MPU index */
 			i = 0;
+			while (sfp != NULL) {
+				++i;
+				sfp = sfp->mpu_next;
+			}
+
+			/* Update MPU */
 			mpu_setup_region(i++, fp);
 
-			while (fp->mpu_next != NULL && fp->mpu_next != as->mpu_first) {
-				if (i < 8)
-					mpu_setup_region(i++, fp->mpu_next);
+			while (i < 8 && fp->mpu_next != NULL) {
+				mpu_setup_region(i++, fp->mpu_next);
 				fp = fp->mpu_next;
 			}
-			fp->mpu_next = NULL;
 
 			return 0;
 		}
@@ -122,7 +135,6 @@ void __memmanage_handler(void)
 ok:
 	/* Clean status register */
 	*((uint32_t *) MPU_FAULT_STATUS_ADDR) = mmsr;
-	assert(*(volatile uint32_t *) MPU_FAULT_STATUS_ADDR == 0);
 	return;
 }
 

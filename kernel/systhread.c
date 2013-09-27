@@ -30,6 +30,8 @@ void create_root_thread(void)
 	as_map_user(root->as);
 
 	thread_init_ctx((void *) &root_stack_end, root_thread, root);
+	root->stack_base = (memptr_t)&root_stack_start;
+	root->stack_size = (uint32_t)&root_stack_end - (uint32_t)&root_stack_start;
 
 	sched_slot_dispatch(SSI_ROOT_THREAD, root);
 	root->state = T_RUNNABLE;

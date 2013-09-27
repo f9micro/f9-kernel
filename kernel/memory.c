@@ -178,18 +178,42 @@ INIT_HOOK(memory_init, INIT_LEVEL_KERNEL_EARLY);
  * AS functions
  */
 
-void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc)
+void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc,
+		memptr_t stack_base, size_t stack_size)
 {
-	fpage_t *fp = as->mpu_first;
-	int i;
-	int pre_sp_exist = 0;
+	fpage_t *mpu[8] = {NULL};
+	fpage_t *fp;
+	int mpu_first_i;
+	int i, j;
+
+	fpage_t *mpu_stack_first = NULL;
+	memptr_t start = stack_base;
+	memptr_t end = stack_base + stack_size;
+
+	/* Find stack fpages */
+	fp = as->first;
+	i = 0;
+	while (i < 8 && fp != NULL && start < end) {
+		if (addr_in_fpage(start, fp, 0)) {
+			if (!mpu_stack_first)
+				mpu_stack_first = fp;
+
+			mpu[i++] = fp;
+			start = FPAGE_END(fp);
+		}
+		fp = fp->as_next;
+	}
+
+	as->mpu_stack_first = mpu_stack_first;
+	mpu_first_i = i;
 
 	/*
 	 * We walk through fpage list
-	 * mpu_fp[0] are pc, sp, fpage before sp
+	 * mpu_fp[0] are pc
 	 * mpu_fp[1] are always-mapped fpages
 	 * mpu_fp[2] are others
 	 */
+	fp = as->mpu_first;
 	if (fp == NULL) {
 		fpage_t *mpu_first[3] = {NULL};
 		fpage_t *mpu_fp[3] = {NULL};
@@ -198,8 +222,7 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc)
 		while (fp != NULL) {
 			int priv = 2;
 
-			if (addr_in_fpage(pc, fp, 0) || addr_in_fpage(sp, fp, 0) ||
-					addr_in_fpage(sp - CONFIG_SMALLEST_FPAGE_SIZE, fp, 0)) {
+			if (addr_in_fpage(pc, fp, 0)) {
 				priv = 0;
 			}
 			else if (fp->fpage.flags & FPAGE_ALWAYS) {
@@ -231,20 +254,40 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc)
 			mpu_first[0] = mpu_first[1];
 		}
 		as->mpu_first = mpu_first[0];
-
-		fp = as->mpu_first;
 	}
 
-	for (i = 0; i < 8 && fp != NULL; ++i, fp = fp->mpu_next) {
-		mpu_setup_region(i, fp);
-
-		if (!pre_sp_exist)
-			pre_sp_exist = addr_in_fpage(sp - CONFIG_SMALLEST_FPAGE_SIZE, fp, 0);
+	/* Prevent link to stack pages */
+	for (fp = as->mpu_first; i < 8 && fp != NULL; fp = fp->mpu_next) {
+		for(j = 0; j < mpu_first_i; j++) {
+			if (fp == mpu[j])
+				continue;
+		}
+		mpu[i++] = fp;
 	}
 
-	/* Prevent memory fault occurring when exception entry */
-	if (!pre_sp_exist) {
-		mpu_select_lru(as, sp - CONFIG_SMALLEST_FPAGE_SIZE);
+	as->mpu_first = mpu[mpu_first_i];
+
+	/* Setup MPU stack regions */
+	for (j = 0; j < mpu_first_i; ++j) {
+		mpu_setup_region(j, mpu[j]);
+
+		if (j < mpu_first_i - 1)
+			mpu[j]->mpu_next = mpu[j + 1];
+		else
+			mpu[j]->mpu_next = NULL;
+	}
+
+	/* Setup MPU fifo regions */
+	for (; j < i; ++j) {
+		mpu_setup_region(j, mpu[j]);
+
+		if (j < i - 1)
+			mpu[j]->mpu_next = mpu[j+1];
+	}
+
+	/* Clean unused MPU regions */
+	for (; j < 8; ++j) {
+		mpu_setup_region(j, NULL);
 	}
 }
 
@@ -456,6 +499,13 @@ void kdb_dump_as(void)
 		}
 
 		i = 0;
+		fpage = as->mpu_stack_first;
+		while (i < 8 && fpage) {
+			fpage->used = 1;
+			fpage = fpage->mpu_next;
+			++i;
+		}
+
 		fpage = as->mpu_first;
 		while (i < 8 && fpage) {
 			fpage->used = 1;

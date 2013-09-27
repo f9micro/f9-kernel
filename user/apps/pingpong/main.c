@@ -39,13 +39,15 @@ void __USER_TEXT pong_thread(void)
 	}
 }
 
-static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip, L4_Word_t sp)
+static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
+		L4_Word_t sp, L4_Word_t stack_size)
 {
 	L4_Msg_t msg;
 
 	L4_MsgClear(&msg);
 	L4_MsgAppendWord(&msg, ip);
 	L4_MsgAppendWord(&msg, sp);
+	L4_MsgAppendWord(&msg, stack_size);
 	L4_MsgLoad(&msg);
 
 	L4_Send(t);
@@ -61,7 +63,7 @@ static L4_ThreadId_t __USER_TEXT create_thread(app_struct *app, void (*func)(voi
 	L4_ThreadControl(child, myself, L4_nilthread, myself, (void*)free_mem);
 	free_mem += UTCB_SIZE + STACK_SIZE;
 
-	start_thread(child, (L4_Word_t)func, free_mem);
+	start_thread(child, (L4_Word_t)func, free_mem, STACK_SIZE);
 
 	return child;
 }

@@ -78,6 +78,9 @@ struct tcb {
 
 	thread_state_t state;
 
+	memptr_t stack_base;
+	size_t stack_size;
+
 	context_t ctx;
 
 	as_t *as;
