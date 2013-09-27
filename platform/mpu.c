@@ -90,15 +90,14 @@ void __memmanage_handler(void)
 	uint32_t mmar = *((uint32_t *) MPU_FAULT_ADDRESS_ADDR);
 	tcb_t *current = thread_current();
 
-	if (mmsr & MPU_MEM_FAULT) {
-		if (mpu_select_lru(current->as, mmar) == 0)
-			goto ok;
-	}
-
 	/* stack errors */
 	if (mmsr & MPU_MSTKERR) {
-		/* Processor is not writing mmar, so we do it manually */
-		if (mpu_select_lru(current->as, (uint32_t)PSP()) == 0)
+		panic("Corrupted Stack, current = %t, psp = %p\n",
+			current->t_globalid, PSP());
+	}
+
+	if (mmsr & MPU_MEM_FAULT) {
+		if (mpu_select_lru(current->as, mmar) == 0)
 			goto ok;
 	}
 
