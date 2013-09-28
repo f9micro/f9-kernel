@@ -259,10 +259,14 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc,
 	/* Prevent link to stack pages */
 	for (fp = as->mpu_first; i < 8 && fp != NULL; fp = fp->mpu_next) {
 		for(j = 0; j < mpu_first_i; j++) {
-			if (fp == mpu[j])
-				continue;
+			if (fp == mpu[j]) {
+				break;
+			}
 		}
-		mpu[i++] = fp;
+
+		if (j == mpu_first_i) {
+			mpu[i++] = fp;
+		}
 	}
 
 	as->mpu_first = mpu[mpu_first_i];
