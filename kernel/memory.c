@@ -373,7 +373,7 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 		 * probe checks that addresses in fpage are sequental
 		 */
 		while (fp) {
-			if (!first && addr_in_fpage(base, fp, 1)) {
+			if (!first && addr_in_fpage(base, fp, 0)) {
 				first = fp;
 			}
 
