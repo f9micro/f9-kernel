@@ -86,8 +86,8 @@ typedef union {
 
 typedef struct {
     L4_BITFIELD2( L4_Word_t,
-	n:L4_BITS_PER_WORD / 2,
-	MemDescPtr:L4_BITS_PER_WORD / 2
+	MemDescPtr:L4_BITS_PER_WORD / 2,
+	n:L4_BITS_PER_WORD / 2
     );
 } L4_MemoryInfo_t;
 
