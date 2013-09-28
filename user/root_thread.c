@@ -72,7 +72,7 @@ static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
 	L4_Send(t);
 }
 
-#define STACK_SIZE 256
+#define STACK_SIZE 0x200
 
 void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 {
