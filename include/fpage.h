@@ -56,7 +56,7 @@ typedef struct fpage fpage_t;
 static inline int addr_in_fpage(memptr_t addr, fpage_t *fpage, int incl_end)
 {
 	return ((addr >= FPAGE_BASE(fpage) && addr < FPAGE_END(fpage)) ||
-			(incl_end && FPAGE_END(fpage)));
+			(incl_end && addr == FPAGE_END(fpage)));
 }
 
 #endif /* FPAGE_H_ */
