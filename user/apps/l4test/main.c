@@ -161,14 +161,15 @@ get_pages( L4_Word_t count, int touch )
 	return (void*) ret;
 }
 
-void *
+__USER_TEXT void *
 get_new_page(void)
 {
 	return get_pages( 1, 0 );
 }
 
 __USER_TEXT void
-get_startup_values (void (*func)(void), L4_Word_t * ip, L4_Word_t * sp)
+get_startup_values (void (*func)(void), L4_Word_t * ip, L4_Word_t * sp,
+		L4_Word_t * stack_size)
 {
     // Calculate intial SP
     L4_Word_t stack = (L4_Word_t) get_pages (STACK_PAGES, 1);
@@ -176,6 +177,7 @@ get_startup_values (void (*func)(void), L4_Word_t * ip, L4_Word_t * sp)
 
     *ip = (L4_Word_t) func;
     *sp = stack;
+    *stack_size = STACK_PAGES * PAGE_SIZE;
 }
 
 void

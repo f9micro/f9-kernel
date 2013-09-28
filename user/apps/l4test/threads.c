@@ -53,6 +53,48 @@ get_new_tid (void)
 }
 
 
+__USER_TEXT static int
+L4_Map(L4_ThreadId_t where, memptr_t base, size_t size)
+{
+	L4_Msg_t msg;
+	L4_Word_t page[2] = {
+		(base & 0xFFFFFFC0) | 0xA,
+		size & 0xFFFFFFC0
+	};
+
+	L4_MsgPut(&msg, 0, 0, NULL, 2, page);
+	L4_MsgLoad(&msg);
+
+	L4_Send(where);
+	return 0;
+}
+
+
+__USER_TEXT static void
+map_user_sections(L4_ThreadId_t tid)
+{
+	L4_KernelInterfacePage_t *kip = L4_GetKernelInterface();
+	int n = L4_NumMemoryDescriptors(kip);
+	int i = 0;
+
+	for (i = 0; i < n; ++i) {
+		L4_MemoryDesc_t *desc;
+		L4_Word_t base;
+		L4_Word_t size;
+		L4_Word_t tag;
+
+		desc = L4_MemoryDesc(kip, i);
+		base = desc->raw[0];
+		size = desc->raw[1];
+		tag = size & 0x3F;
+
+		if (tag == 2 || tag == 3) {
+			L4_Map(tid, base, size);
+		}
+	}
+}
+
+
 L4_ThreadId_t __USER_TEXT
 create_thread (void (*func)(void), bool new_space, int cpu, L4_Word_t spacectrl)
 {
@@ -88,8 +130,7 @@ create_thread (void (*func)(void), bool new_space, int cpu, L4_Word_t spacectrl)
     me = L4_Myself ();
     tid = get_new_tid ();
 
-    utcb_location =
-	utcb_base + L4_UtcbSize (kip) * ( L4_ThreadNo (tid) - L4_ThreadIdUserBase (kip) + 1 );
+    utcb_location = (L4_Word_t)get_new_page();
 
     if (new_space)
     {
@@ -109,6 +150,8 @@ create_thread (void (*func)(void), bool new_space, int cpu, L4_Word_t spacectrl)
 	res = L4_ThreadControl (tid, tid, me, me, (void *) utcb_location);
 	if (res != 1)
 	    printf ("ERROR: ThreadControl returned %d (ERR=%d)\n", res, L4_ErrorCode());
+
+	map_user_sections(tid);
     }
     else
     {
@@ -140,13 +183,17 @@ void __USER_TEXT
 start_thread (L4_ThreadId_t tid, void (*func)(void))
 {
     L4_Msg_t msg;
-    L4_Word_t ip, sp;
+    L4_Word_t ip, sp, stack_size;
 
-    get_startup_values (func, &ip, &sp);
+    get_startup_values (func, &ip, &sp, &stack_size);
+
+    // Map stack
+    L4_Map(tid, sp - stack_size, stack_size);
 
     L4_MsgClear (&msg);
     L4_MsgAppendWord (&msg, ip);
     L4_MsgAppendWord (&msg, sp);
+    L4_MsgAppendWord (&msg, stack_size);
     L4_MsgLoad (&msg);
 
     L4_Send (tid);

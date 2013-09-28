@@ -114,7 +114,8 @@ void start_thread (L4_ThreadId_t tid, void (*func)(void));
 
 
 /* architecture helper functions */
-void get_startup_values (void (*func)(void), L4_Word_t * ip, L4_Word_t * sp);
+void get_startup_values (void (*func)(void), L4_Word_t * ip, L4_Word_t * sp,
+		L4_Word_t * stack_size);
 void *code_addr( void *addr );
 void setup_exreg( L4_Word_t *ip, L4_Word_t *sp, void (*func)(void) );
 
