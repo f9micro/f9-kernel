@@ -37,9 +37,6 @@
 #include __L4_INC_ARCH(vregs.h)
 #include __L4_INC_ARCH(specials.h)
 
-#define __L4_NUM_MRS	16
-#define __L4_NUM_BRS	8
-
 #if defined(L4_64BIT)
 # define __PLUS32	+ 32
 #else

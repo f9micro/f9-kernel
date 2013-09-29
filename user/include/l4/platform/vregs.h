@@ -34,6 +34,9 @@
 
 #include <l4/utcb.h>
 
+#define __L4_NUM_MRS	16
+#define __L4_NUM_BRS	8
+
 register L4_Word32_t __L4_MR0 asm ("r4");
 register L4_Word32_t __L4_MR1 asm ("r5");
 register L4_Word32_t __L4_MR2 asm ("r6");
@@ -161,6 +164,11 @@ L4_INLINE void __L4_TCR_Set_VirtualSender (L4_Word_t w)
  * Message Registers.
  */
 
+L4_INLINE L4_Word32_t L4_NumMRs (void)
+{
+	return __L4_NUM_MRS;
+}
+
 L4_INLINE void L4_StoreMR (int i, L4_Word_t * w)
 {
 	switch (i) {
@@ -173,7 +181,10 @@ L4_INLINE void L4_StoreMR (int i, L4_Word_t * w)
 		case 6: *w = __L4_MR6; break;
 		case 7: *w = __L4_MR7; break;
 		default:
-			*w = __L4_Utcb()->mr[i - 8];
+			if (i >= 0 && i < __L4_NUM_MRS)
+				*w = __L4_Utcb()->mr[i - 8];
+			else
+				*w = 0;
 	}
 }
 
@@ -189,12 +200,16 @@ L4_INLINE void L4_LoadMR (int i, L4_Word_t w)
 		case 6: __L4_MR6 = w; break;
 		case 7: __L4_MR7 = w; break;
 		default:
-			__L4_Utcb()->mr[i - 8] = w;
+			if (i >= 0 && i < __L4_NUM_MRS)
+				__L4_Utcb()->mr[i - 8] = w;
 	}
 }
 
 L4_INLINE void L4_StoreMRs (int i, int k, L4_Word_t * w)
 {
+	if (i < 0 || k <= 0 || i + k >= __L4_NUM_MRS)
+		return;
+
 	switch (i) {
 		case 0: *w++ = __L4_MR0; if (--k <= 0) break;
 		case 1: *w++ = __L4_MR1; if (--k <= 0) break;
@@ -215,6 +230,9 @@ L4_INLINE void L4_StoreMRs (int i, int k, L4_Word_t * w)
 
 L4_INLINE void L4_LoadMRs (int i, int k, L4_Word_t * w)
 {
+	if (i < 0 || k <= 0 || i + k >= __L4_NUM_MRS)
+		return;
+
 	switch (i) {
 		case 0: __L4_MR0 = *w++; if (--k <= 0) break;
 		case 1: __L4_MR1 = *w++; if (--k <= 0) break;
@@ -239,28 +257,43 @@ L4_INLINE void L4_LoadMRs (int i, int k, L4_Word_t * w)
  * Buffer Registers.
  */
 
+L4_INLINE L4_Word32_t L4_NumBRs (void)
+{
+	return __L4_NUM_BRS;
+}
+
 L4_INLINE void L4_StoreBR (int i, L4_Word_t * w)
 {
-    *w = __L4_Utcb()->br[i];
+	if (i >= 0 && i < __L4_NUM_BRS)
+		*w = __L4_Utcb()->br[i];
 }
 
 L4_INLINE void L4_LoadBR (int i, L4_Word_t w)
 {
-    __L4_Utcb()->br[i] = w;
+	if (i >= 0 && i < __L4_NUM_BRS)
+		__L4_Utcb()->br[i] = w;
 }
 
 L4_INLINE void L4_StoreBRs (int i, int k, L4_Word_t * w)
 {
-    L4_Word_t * br = __L4_Utcb()->br + i;
+    L4_Word_t * br;
 
+	if (i < 0 || k <= 0 || i + k >= __L4_NUM_BRS)
+		return;
+
+    br = __L4_Utcb()->br + i;
     while (k-- > 0)
 	*w++ = *br++;
 }
 
 L4_INLINE void L4_LoadBRs (int i, int k, const L4_Word_t * w)
 {
-    L4_Word_t * br = __L4_Utcb()->br + i;
+    L4_Word_t * br;
 
+	if (i < 0 || k <= 0 || i + k >= __L4_NUM_BRS)
+		return;
+
+    br = __L4_Utcb()->br + i;
     while (k-- > 0)
 	*br++ = *w++;
 }
