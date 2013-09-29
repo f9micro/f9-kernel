@@ -38,6 +38,25 @@ void mpu_enable(mpu_state_t i)
 	*mpu_ctrl = i | MPU_PRIVDEFENA;
 }
 
+int addr_in_mpu(uint32_t addr)
+{
+	static uint32_t *mpu_rnr = (uint32_t *) MPU_RNR_ADDR;
+	static uint32_t *mpu_base = (uint32_t *) MPU_BASE_ADDR;
+	static uint32_t *mpu_attr = (uint32_t *) MPU_ATTR_ADDR;
+	int i;
+
+	for (i = 0; i < 8; ++i) {
+		*mpu_rnr = i;
+		if (*mpu_attr & 0x1) {
+			uint32_t base = *mpu_base & MPU_REGION_MASK;
+			uint32_t size = 1 << (((*mpu_attr >> 1) & 0x1F) + 1);
+			if (addr >= base && addr < base + size)
+				return 1;
+		}
+	}
+	return 0;
+}
+
 int mpu_select_lru(as_t *as, uint32_t addr)
 {
 	fpage_t *fp = NULL;
@@ -45,6 +64,9 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 
 	/* Kernel fault? */
 	if (as == NULL)
+		return 1;
+
+	if (addr_in_mpu(addr))
 		return 1;
 
 	fp = as->first;
@@ -123,7 +145,12 @@ void __memmanage_handler(void)
 	}
 
 	if (mmsr & MPU_IACCVIOL) {
-		if (mpu_select_lru(current->as, PSP()[REG_PC]) == 0)
+		uint32_t pc = PSP()[REG_PC];
+
+		if (mpu_select_lru(current->as, pc) == 0)
+			goto ok;
+
+		if (mpu_select_lru(current->as, pc + 2) == 0)
 			goto ok;
 	}
 
