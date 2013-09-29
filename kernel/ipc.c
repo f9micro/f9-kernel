@@ -41,6 +41,7 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 	int untyped_idx, typed_idx, typed_item_idx;
 	int typed_last, untyped_last;
 	uint32_t typed_data;		/* typed item extra word */
+	l4_thread_t from_recv_tid;
 
 	/* Copy tag of message */
 	tag.raw = ipc_read_mr(from, 0);
@@ -88,7 +89,18 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 
 	to->state = T_RUNNABLE;
 	to->ipc_from = L4_NILTHREAD;
-	from->state = T_RUNNABLE;
+
+	/* If from has receive phases, lock myself */
+	from_recv_tid = ((uint32_t*)from->ctx.sp)[REG_R1];
+	if (from_recv_tid == L4_NILTHREAD) {
+		from->state = T_RUNNABLE;
+	}
+	else {
+		from->state = T_RECV_BLOCKED;
+		from->ipc_from = from_recv_tid;
+
+		dbg_printf(DL_IPC, "IPC: %t receiving\n", from->t_globalid);
+	}
 
 	/* Dispatch communicating threads */
 	sched_slot_dispatch(SSI_NORMAL_THREAD, from);
@@ -146,6 +158,8 @@ void sys_ipc(uint32_t *param1)
 			caller->utcb->intended_receiver = to_tid;
 
 			dbg_printf(DL_IPC, "IPC: %t sending\n", caller->t_globalid);
+
+			return;
 		}
 	}
 
