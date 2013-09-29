@@ -53,7 +53,7 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 		return;
 	}
 
-	ipc_write_mr(to, 0, tag.s.label << 16);
+	ipc_write_mr(to, 0, tag.raw);
 
 	/* Copy untyped words */
 	for (untyped_idx = 1; untyped_idx < untyped_last; ++untyped_idx) {
