@@ -89,6 +89,7 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 
 	to->state = T_RUNNABLE;
 	to->ipc_from = L4_NILTHREAD;
+	((uint32_t*)to->ctx.sp)[REG_R0] = from->t_globalid;
 
 	/* If from has receive phases, lock myself */
 	from_recv_tid = ((uint32_t*)from->ctx.sp)[REG_R1];

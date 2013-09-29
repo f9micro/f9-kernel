@@ -109,10 +109,16 @@ __USER_TEXT L4_MsgTag_t L4_Ipc (L4_ThreadId_t to,
 			      L4_ThreadId_t * from)
 {
     L4_MsgTag_t result;
+    L4_ThreadId_t from_ret;
 
-	 __asm__ __volatile__ ("svc #6\n");
+	 __asm__ __volatile__ ("svc #6\n"
+	                       "str r0, %[from]\n"
+	                       : [from] "=m" (from_ret));
 
 	result.raw = __L4_MR0;
+
+	if (from != NULL)
+		*from = from_ret;
 
 	 return result;
 }
