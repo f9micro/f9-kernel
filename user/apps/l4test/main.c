@@ -111,8 +111,10 @@ __USER_TEXT void
 print_result (const char * str, bool test)
 {
     printf ("  %s: ", str);
+#if 0
     for (int __i = 60 - strlen (str); __i > 0; __i--)
 	putc (' ');
+#endif
     printf ("  %s\n", (test) ? STR_OK : STR_FAILED);
     if (! test && !autorun)
 	L4_KDB_Enter ("test failed");
