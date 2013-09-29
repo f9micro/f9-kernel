@@ -180,9 +180,9 @@ __USER_TEXT static void simple_ipc_t1_l (void)
     // Correct message contents
     ipc_ok = true;
     
-    for (L4_Word_t n = 0; n <= 63; n++)
+    for (L4_Word_t n = 0; n < L4_NumMRs(); n++)
     {
-	for (L4_Word_t k = 1; k <= 63; k++)
+	for (L4_Word_t k = 1; k < L4_NumMRs(); k++)
 	    L4_LoadMR (k, 0);
 	tag = L4_Receive (ipc_t2);
         if (!L4_IpcSucceeded (tag))
@@ -226,7 +226,7 @@ __USER_TEXT static void simple_ipc_t1_l (void)
     ipc_ok = true;
     tag = L4_Call (ipc_t2);
     
-    for (L4_Word_t n = 0; n <= 63; n++)
+    for (L4_Word_t n = 0; n < L4_NumMRs(); n++)
     {
 	L4_MsgStore (tag, &msg);
 	if (L4_Label (tag) != 0xf00d)
@@ -253,10 +253,10 @@ __USER_TEXT static void simple_ipc_t1_l (void)
             
 	}
         
-        if (n == 63)
+        if (n == L4_NumMRs() - 1)
             break;
         
-	for (L4_Word_t k = 1; k <= 63; k++)
+	for (L4_Word_t k = 1; k < L4_NumMRs(); k++)
 	    L4_LoadMR (k, 0);
 	tag = L4_ReplyWait (ipc_t2, &tid);
 
@@ -375,13 +375,13 @@ __USER_TEXT static void simple_ipc_t1_l (void)
     L4_Flush (fp);
     ipc_pf_abort_address = (L4_Word_t) buf;
 
-    for (i = 0; i <= 63; i++)
+    for (i = 0; i < L4_NumMRs(); i++)
 	L4_LoadMR (i, i+1);
 
     *buf = 0xff;
 
     ipc_ok = true;
-    for (i = 0; i <= 63; i++)
+    for (i = 0; i < L4_NumMRs(); i++)
     {
 	L4_StoreMR (i, &w);
 	if (w != i + 1)
@@ -440,7 +440,7 @@ __USER_TEXT static void simple_ipc_t2_l (void)
         
 
     // Message contents
-    for (L4_Word_t n = 0; n <= 63; n++)
+    for (L4_Word_t n = 0; n < L4_NumMRs(); n++)
     {
 	L4_MsgClear (&msg);
 	L4_Set_Label (&msg.tag, 0xf00f);
@@ -462,14 +462,14 @@ __USER_TEXT static void simple_ipc_t2_l (void)
     L4_Receive (ipc_t1);
 
     // Message contents
-    for (L4_Word_t n = 0; n <= 63; n++)
+    for (L4_Word_t n = 0; n < L4_NumMRs(); n++)
     {
 	L4_MsgClear (&msg);
 	L4_Set_Label (&msg.tag, 0xf00d);
 	for (L4_Word_t i = 1; i <= n; i++)
 	    L4_MsgAppendWord (&msg, i);
 	L4_MsgLoad (&msg);
-	if (n == 63)
+	if (n == L4_NumMRs() - 1)
 	    tag = L4_Send(ipc_t1);
 	else
 	    tag = L4_ReplyWait (ipc_t1, &dt);
