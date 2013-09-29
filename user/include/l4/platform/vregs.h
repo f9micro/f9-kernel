@@ -207,7 +207,7 @@ L4_INLINE void L4_LoadMR (int i, L4_Word_t w)
 
 L4_INLINE void L4_StoreMRs (int i, int k, L4_Word_t * w)
 {
-	if (i < 0 || k <= 0 || i + k >= __L4_NUM_MRS)
+	if (i < 0 || k <= 0 || i + k > __L4_NUM_MRS)
 		return;
 
 	switch (i) {
@@ -221,7 +221,7 @@ L4_INLINE void L4_StoreMRs (int i, int k, L4_Word_t * w)
 		case 7: *w++ = __L4_MR7; if (--k <= 0) break;
 		default:
 		{
-			uint32_t *mr = __L4_Utcb()->mr + i - 8;
+			uint32_t *mr = __L4_Utcb()->mr;
 			while (k-- > 0)
 				*w++ = *mr++;
 		}
@@ -230,7 +230,7 @@ L4_INLINE void L4_StoreMRs (int i, int k, L4_Word_t * w)
 
 L4_INLINE void L4_LoadMRs (int i, int k, L4_Word_t * w)
 {
-	if (i < 0 || k <= 0 || i + k >= __L4_NUM_MRS)
+	if (i < 0 || k <= 0 || i + k > __L4_NUM_MRS)
 		return;
 
 	switch (i) {
@@ -244,7 +244,7 @@ L4_INLINE void L4_LoadMRs (int i, int k, L4_Word_t * w)
 		case 7: __L4_MR7 = *w++; if (--k <= 0) break;
 		default:
 		{
-			uint32_t *mr = __L4_Utcb()->mr + i - 8;
+			uint32_t *mr = __L4_Utcb()->mr;
 			while (k-- > 0)
 				*mr++ = *w++;
 		}
@@ -278,7 +278,7 @@ L4_INLINE void L4_StoreBRs (int i, int k, L4_Word_t * w)
 {
     L4_Word_t * br;
 
-	if (i < 0 || k <= 0 || i + k >= __L4_NUM_BRS)
+	if (i < 0 || k <= 0 || i + k > __L4_NUM_BRS)
 		return;
 
     br = __L4_Utcb()->br + i;
@@ -290,7 +290,7 @@ L4_INLINE void L4_LoadBRs (int i, int k, const L4_Word_t * w)
 {
     L4_Word_t * br;
 
-	if (i < 0 || k <= 0 || i + k >= __L4_NUM_BRS)
+	if (i < 0 || k <= 0 || i + k > __L4_NUM_BRS)
 		return;
 
     br = __L4_Utcb()->br + i;
