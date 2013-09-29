@@ -171,10 +171,13 @@ __USER_TEXT static void simple_ipc_t1_l (void)
 {
     L4_Msg_t msg;
     L4_MsgTag_t tag;
-    L4_Word_t i, w;
+    L4_Word_t i;
     L4_ThreadId_t tid;
+#if 0
+    L4_Word_t w;
     unsigned char * buf;
     L4_Fpage_t fp;
+#endif
     L4_ThreadId_t from;
 
     // Correct message contents
@@ -272,6 +275,7 @@ __USER_TEXT static void simple_ipc_t1_l (void)
     }
     print_result ("ReplyWait Message transfer", ipc_ok);
 
+#if 0
     // Send timeout
     L4_Set_MsgTag (L4_Niltag);
     tag = L4_Send_Timeout (ipc_t2, L4_TimePeriod (1000*1000));
@@ -393,6 +397,7 @@ __USER_TEXT static void simple_ipc_t1_l (void)
 	}
     }
     print_result ("Pagefault cancelled", ipc_ok);
+#endif
 
     // From parameter (local)
     tag = L4_Wait (&from);
@@ -434,7 +439,9 @@ __USER_TEXT static void simple_ipc_t1_g (void)
 __USER_TEXT static void simple_ipc_t2_l (void)
 {
     L4_Msg_t msg;
+#if 0
     L4_Word_t dw;
+#endif
     L4_ThreadId_t dt;
     L4_MsgTag_t tag;
         
@@ -485,6 +492,7 @@ __USER_TEXT static void simple_ipc_t2_l (void)
         
     }
 
+#if 0
     // Send timeout
     L4_Set_MsgTag (L4_Niltag);
     L4_Send (ipc_t1);
@@ -512,6 +520,7 @@ __USER_TEXT static void simple_ipc_t2_l (void)
 			  0, 0, 0, 0, L4_nilthread,
 			  &dw, &dw, &dw, &dw, &dw, &dt);
     L4_Receive (ipc_t1);
+#endif
 
     // From parameter (local)
     L4_Set_MsgTag (L4_Niltag);
