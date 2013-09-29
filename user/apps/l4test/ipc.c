@@ -412,6 +412,7 @@ __USER_TEXT static void simple_ipc_t1_l (void)
     L4_Call (L4_Pager ());
 }
 
+#if 0
 __USER_TEXT static void simple_ipc_t1_g (void)
 {
     // From parameter (global)
@@ -428,6 +429,7 @@ __USER_TEXT static void simple_ipc_t1_g (void)
     L4_Set_MsgTag (L4_Niltag);
     L4_Call (L4_Pager ());
 }
+#endif
 
 __USER_TEXT static void simple_ipc_t2_l (void)
 {
@@ -521,6 +523,7 @@ __USER_TEXT static void simple_ipc_t2_l (void)
     L4_Call (L4_Pager ());
 }
 
+#if 0
 __USER_TEXT static void simple_ipc_t2_g (void)
 {
     // From parameter (global)
@@ -531,12 +534,15 @@ __USER_TEXT static void simple_ipc_t2_g (void)
     L4_Set_MsgTag (L4_Niltag);
     L4_Call (L4_Pager ());
 }
+#endif
 
 
 __USER_TEXT static void simple_ipc (void)
 {
     printf ("\nSimple IPC test (inter-as, only untyped words)\n");
+#if 0
     setup_ipc_threads (simple_ipc_t1_g, simple_ipc_t2_g, false, false, false);
+#endif
     setup_ipc_threads (simple_ipc_t1_l, simple_ipc_t2_l, true, true, false);
 }
 
