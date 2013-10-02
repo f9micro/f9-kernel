@@ -47,26 +47,6 @@
 
 #define STACK_SIZE 256
 
-#define L4TEST_AUTORUN
-
-#if defined(L4TEST_AUTORUN)
-static bool autorun = true;
-#else
-#include "menu.h"
-
-/* test modules */
-extern void kip_test(void);
-extern void arch_test(void);
-extern void mem_test(void);
-extern void ipc_test(void);
-extern void sig0_test(void);
-extern void exreg_test(void);
-extern void tcontrol_test(void);
-extern void schedule_test(void);
-
-static bool autorun = false;
-#endif
-
 /* where to start allocating RAM */
 __USER_BSS static char *free_page;
 
@@ -110,14 +90,14 @@ print_h2( const char *msg )
 __USER_TEXT void
 print_result (const char * str, bool test)
 {
-    printf ("  %s: ", str);
+	printf ("  %s: ", str);
 #if 0
-    for (int __i = 60 - strlen (str); __i > 0; __i--)
-	putc (' ');
+	for (int __i = 60 - strlen (str); __i > 0; __i--)
+		putc (' ');
 #endif
-    printf ("  %s\n", (test) ? STR_OK : STR_FAILED);
-    if (! test && !autorun)
-	L4_KDB_Enter ("test failed");
+	printf ("  %s\n", (test) ? STR_OK : STR_FAILED);
+	if (! test)
+		L4_KDB_Enter ("test failed");
 }
 
 
@@ -223,43 +203,13 @@ __USER_TEXT void all_tests(void)
 
 }
 
-#if !defined(L4TEST_AUTORUN)
-/* Main menu code */
-static struct menuitem main_menu_items[] = 
-{
-	{ kip_test, "Test KIP" },
-	{ arch_test, ARCH_NAME " Tests" },
-	{ mem_test, "Test Memory" },
-	{ ipc_test, "Test IPC" },
-	{ sig0_test, "Test Sigma0" },
-	{ exreg_test, "Test ExReg" },
-	{ tcontrol_test, "Test ThreadControl" },
-	{ schedule_test, "Test Schedule" },
-	{ all_tests, "All tests" },
-};
-
-static struct menu main_menu = 
-{
-	"Main menu",
-	1, 
-	NUM_ITEMS(main_menu_items),
-	main_menu_items
-};
-#endif
-
 static void main (app_struct *app)
 {
-	printf( "L4/Pistachio test suite ready to go.\n\n" );
+	printf( "\nL4/Pistachio test suite starts\n" );
 
 	free_page = (void*)app->fpages[0].base;
 
-#if defined(L4TEST_AUTORUN)
-    all_tests();
-#else
-    menu_input( &main_menu );
-#endif
-
-	assert( !"Shouldn't get here!" );
+	all_tests();
 
 	return;
 }
