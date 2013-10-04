@@ -6,7 +6,7 @@ menu "Platform"
 
 config BITMAP_BITBAND
 	bool "Generate bitmap address in bit-band region"
-	default y
+	default n
 
 config FPU
 	bool "Floating point support"
