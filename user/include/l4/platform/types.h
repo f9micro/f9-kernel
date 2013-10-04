@@ -2,8 +2,7 @@
  *                
  * Copyright (C) 2001, 2002, 2003,  Karlsruhe University
  *                
- * File path:     l4/ia32/types.h
- * Description:   x86 specific type declararions
+ * Description:   platform specific type declararions
  *                
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,13 +28,12 @@
  * $Id: types.h,v 1.9 2006/10/26 12:09:19 reichelt Exp $
  *                
  ********************************************************************/
-#ifndef __L4__X86__TYPES_H__
-#define __L4__X86__TYPES_H__
+#ifndef __L4_PLATFORM_TYPES_H__
+#define __L4_PLATFORM_TYPES_H__
 
-
+/* FIXME: specify ARM Cortex-M in filename */
 #define L4_32BIT
 #define L4_LITTLE_ENDIAN
-
 
 typedef unsigned int __attribute__((__mode__(__DI__))) L4_Word64_t;
 typedef unsigned int		L4_Word32_t;
@@ -54,4 +52,4 @@ typedef signed long		L4_SignedWord_t;
 typedef unsigned int		L4_Size_t;
 typedef L4_Word64_t		L4_Paddr_t;
 
-#endif /* !__L4__X86__TYPES_H__ */
+#endif /* !__L4_PLATFORM_TYPES_H__ */

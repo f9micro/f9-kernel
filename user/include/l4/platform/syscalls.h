@@ -29,8 +29,8 @@
  * $Id: syscalls.h,v 1.31 2004/08/23 18:43:11 skoglund Exp $
  *                
  ********************************************************************/
-#ifndef __L4__X86__SYSCALLS_H__
-#define __L4__X86__SYSCALLS_H__
+#ifndef __L4_PLATFORM_SYSCALLS_H__
+#define __L4_PLATFORM_SYSCALLS_H__
 
 #include <platform/link.h>
 #include __L4_INC_ARCH(vregs.h)
@@ -91,4 +91,4 @@ __USER_TEXT L4_Word_t L4_ProcessorControl (L4_Word_t ProcessorNo,
 __USER_TEXT L4_Word_t L4_MemoryControl (L4_Word_t control,
 				 const L4_Word_t * attributes);
 
-#endif /* !__L4__X86__SYSCALLS_H__ */
+#endif /* !__L4_PLATFORM_SYSCALLS_H__ */

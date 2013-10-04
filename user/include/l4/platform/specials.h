@@ -1,9 +1,7 @@
 /*********************************************************************
- *                
+ *
+ * Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
  * Copyright (C) 2002-2003, 2005-2007, 2010,  Karlsruhe University
- *                
- * File path:     l4/ia32/specials.h
- * Description:   x86 specific functions and defines
  *                
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,6 +27,44 @@
  * $Id: specials.h,v 1.12 2006/11/17 16:48:17 skoglund Exp $
  *                
  ********************************************************************/
+
+#ifndef __L4_PLATFORM_SPECIALS_H__
+#define __L4_PLATFORM_SPECIALS_H__
+
+L4_INLINE int __L4_Msb (L4_Word_t w) __attribute__ ((const));
+
+L4_INLINE int __L4_Msb (L4_Word_t w)
+{
+	int zeros;
+
+	__asm__ __volatile__(
+		"clz %0, %1\n"
+		: /* outputs */ "=r" (zeros)
+		: /* inputs */ "r" (w)
+		);
+
+	return 31 - zeros;
+}
+
+L4_INLINE int __L4_Lsb (L4_Word_t w) __attribute__ ((const));
+
+L4_INLINE int __L4_Lsb (L4_Word_t w)
+{
+	L4_Word_t bitnum;
+
+	__asm__ __volatile__ (
+		"bsf %1, %0\n"
+		: /* outputs */ "=r" (bitnum)
+		: /* inputs */ "rm" (w)
+		);
+
+	return bitnum;
+}
+
+#endif	/* __L4_PLATFORM_SPECIALS_H__ */
+
+#if 0	/* FIXME: IA32 specific implementation */
+
 #ifndef __L4__IA32__SPECIALS_H__
 #define __L4__IA32__SPECIALS_H__
 
@@ -44,43 +80,6 @@ L4_INLINE void __L4_Inc_Atomic (L4_Word_t *w)
         : "=m"(w));
 }
 
-
-L4_INLINE int __L4_Msb (L4_Word_t w) __attribute__ ((const));
-
-L4_INLINE int __L4_Msb (L4_Word_t w)
-{
-    int zeros;
-
-    __asm__ (
-	"/* l4_msb()		*/			\n"
-	"	clz	%0, %1				\n"
-
-	: /* outputs */
-	"=r" (zeros)
-	: /* inputs */
-	"r" (w)
-	);
-
-    return 31 - zeros;
-}
-
-L4_INLINE int __L4_Lsb (L4_Word_t w) __attribute__ ((const));
-
-L4_INLINE int __L4_Lsb (L4_Word_t w)
-{
-    L4_Word_t bitnum;
-
-    __asm__ (
-	"/* l4_lsb()		*/			\n"
-	"bsf	%1, %0					\n"
-	: /* outputs */
-	"=r" (bitnum)
-	: /* inputs */
-	"rm" (w)
-	);
-
-    return bitnum;
-}
 
 L4_INLINE L4_Word64_t __L4_Rdtsc (void)
 {
@@ -147,3 +146,5 @@ L4_INLINE L4_Word_t L4_SmallSpace (L4_Word_t location, L4_Word_t size)
 
 
 #endif /* !__L4__IA32__SPECIALS_H__ */
+
+#endif	/* IA32 specific implementation */

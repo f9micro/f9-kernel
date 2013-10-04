@@ -29,13 +29,20 @@
  * $Id: kdebug.h,v 1.10 2006/12/05 17:08:39 skoglund Exp $
  *                
  ********************************************************************/
-#ifndef __L4__X86__KDEBUG_H__
-#define __L4__X86__KDEBUG_H__
 
+#ifndef __L4_PLATFORM_KDEBUG_H__
+#define __L4_PLATFORM_KDEBUG_H__
 
 #define L4_KDB_Enter(str...)			\
 do {						\
 } while (0)
+#endif	/* __L4_PLATFORM_KDEBUG_H__ */
+
+
+#if 0	/* FIXME: IA32 specific implementation */
+
+#ifndef __L4__X86__KDEBUG_H__
+#define __L4__X86__KDEBUG_H__
 
 #define __L4_KDB_Op(op, name)			\
 L4_INLINE void L4_KDB_##name (void)		\
@@ -82,3 +89,5 @@ __L4_KDB_Op_Ret (0x0d, ReadChar_Blocked, char);
 
 
 #endif /* !__L4__X86__KDEBUG_H__ */
+
+#endif	/* IA32 specific implementation */

@@ -2,9 +2,6 @@
  *                
  * Copyright (C) 2002, 2003, 2005-2010,  Karlsruhe University
  *                
- * File path:     l4/ia32/arch.h
- * Description:   x86 specific functions and defines
- *                
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -30,8 +27,8 @@
  *                
  ********************************************************************/
 
-#ifndef __L4__IA32__ARCH_H__
-#define __L4__IA32__ARCH_H__
+#ifndef __L4_PLATFORM_ARCH_H__
+#define __L4_PLATFORM_ARCH_H__
 
 #include <l4/platform/specials.h>
 #include <l4/kip.h>
@@ -206,6 +203,9 @@ L4_INLINE L4_Bool_t L4_IsIoFpage (L4_Fpage_t f)
 
 #define L4_CTRLXFER_REG_ID(id, reg)	((id * 0x10) + reg)
 
+#endif	/* __L4_PLATFORM_ARCH_H__ */
+
+#if 0	/* FIXME: IA32 specific implementation */
 /*
  * IA32 GPRegs 
  */
@@ -921,4 +921,4 @@ L4_INLINE L4_Word_t L4_Set_Logid (L4_ThreadId_t tid, L4_Word_t logid)
 #define L4_X86_PMC_MR                      (13)          
 #define L4_X86_PMC_LDM                     (14)
 
-#endif /* !__L4__IA32__ARCH_H__ */
+#endif	/* IA32 specific implementation */
