@@ -275,7 +275,7 @@ __USER_TEXT static void simple_ipc_t1_l (void)
     }
     print_result ("ReplyWait Message transfer", ipc_ok);
 
-#if 0
+#if 0	/* UNIMPLEMENTED */
     // Send timeout
     L4_Set_MsgTag (L4_Niltag);
     tag = L4_Send_Timeout (ipc_t2, L4_TimePeriod (1000*1000));
@@ -417,7 +417,7 @@ __USER_TEXT static void simple_ipc_t1_l (void)
     L4_Call (L4_Pager ());
 }
 
-#if 0
+#if 0	/* UNIMPLEMENTED */
 __USER_TEXT static void simple_ipc_t1_g (void)
 {
     // From parameter (global)
@@ -492,7 +492,7 @@ __USER_TEXT static void simple_ipc_t2_l (void)
         
     }
 
-#if 0
+#if 0	/* UNIMPLEMENTED */
     // Send timeout
     L4_Set_MsgTag (L4_Niltag);
     L4_Send (ipc_t1);
@@ -532,7 +532,7 @@ __USER_TEXT static void simple_ipc_t2_l (void)
     L4_Call (L4_Pager ());
 }
 
-#if 0
+#if 0	/* UNIMPLEMENTED */
 __USER_TEXT static void simple_ipc_t2_g (void)
 {
     // From parameter (global)
