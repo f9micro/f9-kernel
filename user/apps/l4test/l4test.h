@@ -1,35 +1,10 @@
-/*********************************************************************
- *                
- * Copyright (C) 1999-2010,  Karlsruhe University
- * Copyright (C) 2008-2009,  Volkmar Uhlig, IBM Corporation
- *                
- * File path:     l4test/l4test.h
- * Description:   
- *                
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *                
- * $Id$
- *                
- ********************************************************************/
+/* Copyright (C) 1999-2010 Karlsruhe University
+ * Copyright (C) 2008-2009 Volkmar Uhlig, IBM Corporation
+ * All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 #ifndef __L4TEST_H__
 #define __L4TEST_H__
 
@@ -77,8 +52,8 @@
 
 #define IPC_ERROR(tag) ((tag.X.flags & IF_ERR) == IF_ERR)
 
-const char * ipc_errorcode (L4_Word_t errcode);
-const char * ipc_errorphase (L4_Word_t errcode);
+const char *ipc_errorcode(L4_Word_t errcode);
+const char *ipc_errorphase(L4_Word_t errcode);
 
 
 /* testing macros */
@@ -89,17 +64,16 @@ extern void *next_touch;
 
 
 /* boring output functions */
-void print_h1( const char *msg );
-void print_h2( const char *msg );
-void print_result (const char * str, bool test);
+void print_h1(const char *msg);
+void print_h2(const char *msg);
+void print_result(const char *str, bool test);
 
-/* good for lazy debugging :) */
-void msec_sleep( L4_Word_t msec );
+/* good for lazy debugging */
+void msec_sleep(L4_Word_t msec);
 
 /* resource allocation */
-void * get_pages( L4_Word_t count, int touch );
+void *get_pages(L4_Word_t count, int touch);
 void *get_new_page(void);
-
 
 /* do useful stuff */
 L4_Word_t safe_mem_touch( void *addr );
@@ -108,7 +82,7 @@ void start_thread_ip_sp( L4_ThreadId_t tid, L4_Word_t ip, L4_Word_t sp );
 /* Thread/address space management */
 L4_ThreadId_t get_new_tid (void);
 L4_ThreadId_t create_thread (void (*func)(void), bool new_space,
-			     int cpu, L4_Word_t spacectrl);
+		int cpu, L4_Word_t spacectrl);
 L4_Word_t kill_thread (L4_ThreadId_t tid);
 void start_thread (L4_ThreadId_t tid, void (*func)(void));
 
@@ -122,16 +96,13 @@ void setup_exreg( L4_Word_t *ip, L4_Word_t *sp, void (*func)(void) );
 
 L4_INLINE bool l4_has_feature( const char *feature_name )
 {
-    void *kip = L4_GetKernelInterface();
-    char *name;
+	void *kip = L4_GetKernelInterface();
+	char *name;
 
-    for( L4_Word_t i = 0; (name = L4_Feature(kip,i)) != '\0'; i++ )
-	if( !strcmp(feature_name, name) )
-	    return true;
-    return false;
+	for (L4_Word_t i = 0; (name = L4_Feature(kip,i)) != '\0'; i++)
+		if (!strcmp(feature_name, name))
+			return true;
+	return false;
 }
-
-
-
 
 #endif /* !__L4TEST_H__ */
