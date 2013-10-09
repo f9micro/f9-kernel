@@ -46,6 +46,9 @@ extern uint32_t bitmap_end;
 extern uint32_t bitmap_bitband_start;
 extern uint32_t bitmap_bitband_end;
 
+extern uint32_t symtab_start;
+extern uint32_t symtab_end;
+
 #define __BSS 			__attribute__ ((section(".bss")))
 #define __KIP 			__attribute__ ((section(".kip")))
 #define __ISR_VECTOR		__attribute__ ((section(".isr_vector")))

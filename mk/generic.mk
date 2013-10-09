@@ -13,7 +13,7 @@ _dir_create := $(foreach d,$(dirs),$(shell [ -d $(out)/$(d) ] || \
 _dir_y_create := $(foreach d,$(dirs-y),$(shell [ -d $(out)/$(d) ] || \
 	    mkdir -p $(out)/$(d)))
 
-bin-list = $(bin-list-y)
+symmap_obj-list = $(symmap_obj-list-y)
 
 # Decrease verbosity unless you pass V=1
 quiet = $(if $(V),,@echo '  $(2)' $(subst $(out)/,,$@) ; )$(cmd_$(1))
@@ -23,6 +23,8 @@ silent = $(if $(V),,1>/dev/null)
 cmd_obj_to_bin = $(OBJCOPY) -O binary $< $@
 cmd_elf_to_list = $(OBJDUMP) -S $< > $@
 cmd_elf = $(LD) $(LDFLAGS) $(objs) -o $@ \
+	-L platform -T f9.ld $(LIBGCC)
+cmd_elf_relink = $(LD) $(LDFLAGS) $(objs) $(symmap_obj-list) -o $@ \
 	-L platform -T f9.ld $(LIBGCC) \
 	-Map $(out)/$*.map
 cmd_c_to_o = $(CC) $(CFLAGS) -MMD -MF $@.d -c $< -o $@
@@ -54,7 +56,10 @@ $(out)/%.elf.bin: $(out)/%.elf
 $(out)/%.list: $(out)/%.elf
 	$(call quiet,elf_to_list,OBJDUMP)
 
-$(out)/%.elf: $(objs)
+$(out)/%.elf: $(out)/f9_nosym.elf $(symmap_obj-list)
+	$(call quiet,elf_relink,LD     )
+
+$(out)/f9_nosym.elf: $(objs)
 	$(call quiet,elf,LD     )
 
 $(out)/user/%.o:user/%.c

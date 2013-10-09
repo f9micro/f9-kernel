@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+
 ifeq "$(CONFIG_SYMMAP)" "y"
 
+
 cmd_elf_to_symmap = $(NM) $< | sort | cut -d' ' -f1,3 | \
-	sed -n "H;/kernel_text_start/h;/end_of_MFlash/{x;p}"| \
+	sed -n "H;/kernel_text_start/h;/end_of_text/{x;p}"| \
 	awk 'BEGIN { STRCOUNT = 0; COUNT = 0; } \
 	{ \
 		SYM = SYM "{ (void*) (0x"$$1"), "STRCOUNT" },\n"; \
@@ -15,21 +17,21 @@ cmd_elf_to_symmap = $(NM) $< | sort | cut -d' ' -f1,3 | \
 	} \
 	END { \
 		print "typedef struct _ksym { void *addr; int strid; } ksym;"; \
-		print "int magic = 0xA2CB;"; \
-		print "int symcount = " COUNT ";"; \
-		print "ksym data[] = {"; \
+		print "\#define __SYMTAB  __attribute__ ((section(\".sym_tab\")))"; \
+		print "int magic __SYMTAB = 0xA2CB;"; \
+		print "int symcount __SYMTAB = " COUNT ";"; \
+		print "ksym data[] __SYMTAB = {"; \
 		printf "%s", SYM; \
 		print "};"; \
-		print "char strings [] = {" ; \
+		print "char strings [] __SYMTAB = {" ; \
 		printf "%s", STRNAME; \
 		print "};" \
 	}' > $(out)/$*_symmap.c && \
-	$(CC) -c $(out)/$*_symmap.c -o $(out)/$*_symmap.o && \
-	$(OBJCOPY) -O binary $(out)/$*_symmap.o $@
+	$(CC) -c $(out)/$*_symmap.c -o $(out)/$*.symmap.o
 
-$(out)/%.symmap.bin: $(out)/%.elf
+$(out)/%.symmap.o: $(out)/f9_nosym.elf
 	$(call quiet,elf_to_symmap,NM     )
 
-bin-list-$(CONFIG_SYMMAP) += $(out)/$(PROJECT).symmap.bin
+symmap_obj-list-$(CONFIG_SYMMAP) += $(out)/$(PROJECT).symmap.o
 
 endif

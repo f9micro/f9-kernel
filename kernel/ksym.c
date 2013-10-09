@@ -7,16 +7,15 @@
 #include <types.h>
 #include <lib/stdlib.h>
 #include <init_hook.h>
+#include <platform/link.h>
 
 static int __ksym_count;
 static const ksym_t *__ksym_tbl;
 static const char *__ksym_strings;
 
-extern int *end_of_MFlash;
-
 void ksym_init()
 {
-	void *ksym_addr = (void *) &end_of_MFlash;
+	void *ksym_addr = (void *) &symtab_start;
 
 	if (*((int *) ksym_addr) == KSYM_MAGIC) {
 		__ksym_count = *((int *) ksym_addr + 1);

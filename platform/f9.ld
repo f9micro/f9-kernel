@@ -66,8 +66,7 @@ SECTIONS {
 		. = ALIGN (256);
 		user_text_end = .;
 	} > MFlash
-
-	end_of_MFlash = .;
+	end_of_text = .;
 
 	.stack :
 	{
@@ -139,4 +138,12 @@ SECTIONS {
 		bitmap_end = .;
 		kernel_ahb_end = .;
 	} > RamCCM
+
+	.sym_tab ( ADDR(.user_text) + SIZEOF(.user_text) + SIZEOF(.user_data) ) :
+	{
+		symtab_start = .;
+		KEEP(*(.sym_tab*))
+		symtab_end = .;
+	} > MFlash
+
 }
