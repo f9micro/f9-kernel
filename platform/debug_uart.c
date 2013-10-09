@@ -144,7 +144,7 @@ void dbg_uart_init(void)
 	dbg_state = DBG_ASYNC;
 	usart_config_interrupt(&console_uart, USART_IT_RXNE, 1);
 
-	NVIC_SetPriority(BOARD_UART_DEVICE, 2, 0);
+	NVIC_SetPriority(BOARD_UART_DEVICE, 0xf, 0);
 	NVIC_ClearPendingIRQ(BOARD_UART_DEVICE);
 	NVIC_EnableIRQ(BOARD_UART_DEVICE);
 
