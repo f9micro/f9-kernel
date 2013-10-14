@@ -6,6 +6,8 @@
 #ifndef PLATFORM_HW_DEBUG_H_
 #define PLATFORM_HW_DEBUG_H_
 
+#include <stdint.h>
+
 typedef struct {
 	uint32_t comp;
 	uint32_t mask;
@@ -51,10 +53,9 @@ typedef struct {
 #define FPB_COMP_REPLACE_LOWER	(uint32_t) (1 << 30)
 #define FPB_COMP_REPLACE_UPPER	(uint32_t) (2 << 30)
 
-void hw_debug_init(void);
-int breakpoint_install(uint32_t addr);
-void breakpoint_uninstall(int id);
-
+/* FP_COMPx: 000:COMP_ADDR:00 */
+/* Ref: ARMv7-M Architecture Reference Manual, page.C1-65 */
+#define FPB_COMP_ADDR_MASK 0x1FFFFFFC
 #define cpu_enable_single_step()				\
 	do {							\
 		*DCB_DEMCR |= DCB_DEMCR_MON_STEP;		\
@@ -73,11 +74,11 @@ void breakpoint_uninstall(int id);
 		*(FPB_COMP + (id)) &= ~FPB_COMP_ENABLE;		\
 	} while (0)
 
-#define enable_hw_breakpoint()					\
+#define enable_all_hard_breakpoints()					\
 	do {							\
 		*FPB_CTRL = FPB_CTRL_KEY | FPB_CTRL_ENABLE;	\
 	} while (0)
-#define disable_hw_breakpoint()					\
+#define disable_all_hard_breakpoints()					\
 	do {							\
 		*FPB_CTRL = FPB_CTRL_KEY | ~FPB_CTRL_ENABLE;	\
 	} while (0)

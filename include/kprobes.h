@@ -7,6 +7,7 @@
 #define KPROBES_H
 
 #include <types.h>
+#include <platform/breakpoint.h>
 
 #define is_thumb32(inst) ((unsigned)(inst) >= 0xe800)
 
@@ -36,10 +37,9 @@ struct kprobe {
 	void *addr;
 	kprobe_pre_handler_t pre_handler;
 	kprobe_post_handler_t post_handler;
-
+	struct breakpoint *bkpt;
 	void *step_addr;
 	struct kprobe *next;
-	int bkptid;
 };
 
 int kprobe_register(struct kprobe *p);
@@ -57,6 +57,9 @@ int kretprobe_uinregister(struct kretprobe *p);
 void kprobe_init(void);
 void kprobe_prebreak(uint32_t *stack, uint32_t *kp_regs);
 void kprobe_postbreak(uint32_t *stack, uint32_t *kp_regs);
+void kprobe_breakpoint_enable(uint32_t *stack);
+void kprobe_breakpoint_disable(uint32_t *stack);
+
 struct kprobe *kplist_search(void *addr);
 
 void kprobe_arch_init(void);

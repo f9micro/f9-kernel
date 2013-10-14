@@ -23,6 +23,9 @@ platform-$(CONFIG_DEBUG_DEV_UART) += debug_uart.o
 
 platform-KPROBES-$(CONFIG_KPROBES) = \
 	kprobes-arch.o \
+	breakpoint.o \
+	breakpoint-hard.o \
+	breakpoint-soft.o \
 	hw_debug.o
 
 platform-y += $(platform-KPROBES-y)
