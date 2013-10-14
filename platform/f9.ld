@@ -14,9 +14,7 @@ ENTRY (__l4_start)
  * +--------------------	0x0000 1000 (PROC_TABLE_BASE)
  * +  proc_table       |
  * +--------------------	0x0000 2000 (KERNEL_BASE)
- * +  text / data      + 30k
- * +--------------------	0x0000 8000 (USERSPACE_BASE)
- * |....userspace......|
+ * |  text / data      | 30k
  * ~~~~~~~~~~~~~~~~~~~~~
  *
  * +-------------------+        0x1000 0000
@@ -28,6 +26,8 @@ ENTRY (__l4_start)
  * +  stack            + 1k
  * +-------------------+	0x2000 0400 (+KERNEL_STACK)
  * +  data / bss       +
+ * +-------------------+
+ * +..userspace........+
  * +-------------------+
  *
  * +-------------------+	0x4000 0000
@@ -59,16 +59,8 @@ SECTIONS {
 		kernel_text_end = .;
 	} > MFlash
 
-	.user_text 0x0800C000 :
-	{
-		user_text_start = .;
-		*(.user_text*)
-		. = ALIGN (256);
-		user_text_end = .;
-	} > MFlash
-	end_of_text = .;
-
 	.stack :
+	ALIGN (256)
 	{
 		idle_stack_start = .;
 		. += IDLE_STACK_SIZE;
@@ -79,7 +71,7 @@ SECTIONS {
 
 	.data :
 	AT( ADDR(.text) + SIZEOF(.text) )
-	ALIGN (128)
+	ALIGN (256)
 	{
 		kernel_data_start = .;
 		kip_start = .;
@@ -92,6 +84,7 @@ SECTIONS {
 
 	/* zero initialized data */
 	.bss (NOLOAD) :
+	ALIGN (256)
 	{
 		bss_start = .;
 		kernel_bss_start = .;
@@ -105,8 +98,21 @@ SECTIONS {
 		bss_end = .;
 	} > RamLoc
 
+	user_text_flash_start = ADDR(.text) + 0xc000;
+	.user_text :
+	AT ( 0x0800c000 )
+	ALIGN (256)
+	{
+		user_text_start = .;
+		*(.user_text*)
+		. = ALIGN (256);
+		user_text_end = .;
+	} > RamLoc
+	user_text_flash_end = user_text_flash_start + SIZEOF(.user_text);
+	end_of_text = .;
+
 	.user_data :
-	AT( ADDR(.user_text) + SIZEOF(.user_text) )
+	AT( 0x0800c000 + SIZEOF(.user_text) )
 	ALIGN (256)
 	{
 		user_data_start = .;
@@ -139,7 +145,7 @@ SECTIONS {
 		kernel_ahb_end = .;
 	} > RamCCM
 
-	.sym_tab ( ADDR(.user_text) + SIZEOF(.user_text) + SIZEOF(.user_data) ) :
+	.sym_tab ( 0x800c000 + SIZEOF(.user_text) + SIZEOF(.user_data) ) :
 	{
 		symtab_start = .;
 		KEEP(*(.sym_tab*))

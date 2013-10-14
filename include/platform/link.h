@@ -34,6 +34,8 @@ extern uint32_t user_data_start;
 extern uint32_t user_data_end;
 extern uint32_t user_bss_start;
 extern uint32_t user_bss_end;
+extern uint32_t user_text_flash_start;
+extern uint32_t user_text_flash_end;
 
 extern uint32_t root_stack_start;
 extern uint32_t root_stack_end;
