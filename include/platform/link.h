@@ -34,6 +34,8 @@ extern uint32_t user_data_start;
 extern uint32_t user_data_end;
 extern uint32_t user_bss_start;
 extern uint32_t user_bss_end;
+extern uint32_t user_text_flash_start;
+extern uint32_t user_text_flash_end;
 
 extern uint32_t root_stack_start;
 extern uint32_t root_stack_end;
@@ -45,6 +47,9 @@ extern uint32_t bitmap_start;
 extern uint32_t bitmap_end;
 extern uint32_t bitmap_bitband_start;
 extern uint32_t bitmap_bitband_end;
+
+extern uint32_t symtab_start;
+extern uint32_t symtab_end;
 
 #define __BSS 			__attribute__ ((section(".bss")))
 #define __KIP 			__attribute__ ((section(".kip")))

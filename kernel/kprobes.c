@@ -5,7 +5,9 @@
 
 #include <kprobes.h>
 #include <platform/armv7m.h>
+#include <platform/breakpoint.h>
 #include <init_hook.h>
+#include <debug.h>
 
 static struct kprobe *kp_list;
 
@@ -131,6 +133,26 @@ void kprobe_postbreak(uint32_t *stack, uint32_t *kp_regs)
 	while (kp != NULL) {
 		if ((uint32_t) kp->step_addr == stack[REG_PC] && kp->post_handler)
 			kp->post_handler(kp, stack, kp_regs);
+		kp = kp->next;
+	}
+}
+
+void kprobe_breakpoint_enable(uint32_t *stack)
+{
+	struct kprobe *kp = kp_list;
+	while (kp != NULL) {
+		if ((uint32_t) kp->step_addr == stack[REG_PC])
+			enable_breakpoint(kp->bkpt);
+		kp = kp->next;
+	}
+}
+
+void kprobe_breakpoint_disable(uint32_t *stack)
+{
+	struct kprobe *kp = kp_list;
+	while(kp != NULL) {
+		if ((uint32_t) kp->addr == stack[REG_PC])
+			disable_breakpoint(kp->bkpt);
 		kp = kp->next;
 	}
 }
