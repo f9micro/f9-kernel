@@ -7,7 +7,10 @@
 #include <platform/debug_uart.h>
 #include <platform/irq.h>
 #include <lib/queue.h>
+
+#ifdef CONFIG_KDB
 #include <softirq.h>
+#endif
 
 /* board speficic UART definitions */
 #include "board.h"
