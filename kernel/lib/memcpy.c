@@ -1,6 +1,5 @@
-/* Copyright (c) 2005-2013 Rich Felker
- * Copyright (c) 2013 The F9 Microkernel Project
- * All rights reserved.
+/* Copyright (c) 2005-2013 Rich Felker. All rights reserved.
+ * Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
  * Use of this source code is governed by MIT license that can be found
  * in the LICENSE file.
  */
@@ -26,10 +25,10 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t n)
 	typedef uint32_t __attribute__((__may_alias__)) u32;
 	uint32_t w, x;
 
-	for (; (uintptr_t)s % 4 && n; n--)
+	for (; (uintptr_t) s % 4 && n; n--)
 		*d++ = *s++;
 
-	if ((uintptr_t)d % 4 == 0) {
+	if ((uintptr_t) d % 4 == 0) {
 		for (; n >= 16; s += 16, d += 16, n -= 16) {
 			*(u32 *)(d + 0) = *(u32 *)(s + 0);
 			*(u32 *)(d + 4) = *(u32 *)(s + 4);
@@ -58,9 +57,9 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t n)
 	}
 
 	if (n >= 32)
-		switch ((uintptr_t)d % 4) {
+		switch ((uintptr_t) d % 4) {
 		case 1:
-			w = *(u32 *)s;
+			w = *(u32 *) s;
 			*d++ = *s++;
 			*d++ = *s++;
 			*d++ = *s++;
@@ -77,7 +76,7 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t n)
 			}
 			break;
 		case 2:
-			w = *(u32 *)s;
+			w = *(u32 *) s;
 			*d++ = *s++;
 			*d++ = *s++;
 			n -= 2;
@@ -93,7 +92,7 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t n)
 			}
 			break;
 		case 3:
-			w = *(u32 *)s;
+			w = *(u32 *) s;
 			*d++ = *s++;
 			n -= 1;
 			for (; n >= 19; s += 16, d += 16, n -= 16) {

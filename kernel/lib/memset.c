@@ -1,6 +1,5 @@
-/* Copyright (c) 2005-2013 Rich Felker
- * Copyright (c) 2013 The F9 Microkernel Project
- * All rights reserved.
+/* Copyright (c) 2005-2013 Rich Felker. All rights reserved.
+ * Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
  * Use of this source code is governed by MIT license that can be found
  * in the LICENSE file.
  */
@@ -43,13 +42,13 @@ void *memset(void *dest, int c, size_t n)
 	 * by the alignment.
 	 */
 
-	k = -(uintptr_t)s & 3;
+	k = - (uintptr_t) s & 3;
 	s += k;
 	n -= k;
 	n &= -4;
 
 #ifdef __GNUC__
-	c32 = ((u32)-1)/255 * (unsigned char)c;
+	c32 = ((u32) -1) / 255 * (unsigned char) c;
 	/* In preparation to copy 32 bytes at a time, aligned on
 	 * an 8-byte bounary, fill head/tail up to 28 bytes each.
 	 * As in the initial byte-based head/tail fill, each
@@ -81,7 +80,7 @@ void *memset(void *dest, int c, size_t n)
 	 * practical without introducing additional branching.
 	 */
 
-	k = 24 + ((uintptr_t)s & 4);
+	k = 24 + ((uintptr_t) s & 4);
 	s += k;
 	n -= k;
 

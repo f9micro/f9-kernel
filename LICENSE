@@ -86,11 +86,10 @@ SUCH DAMAGE.
 
 ----------------------------------------------------------------------------
 
-F9 Microkernel utilizes parts of MUSL library project
-(http://www.musl-libc.org/) which are freely redistributable under MIT
-License:
+F9 Microkernel utilizes parts of MUSL C library which is freely
+redistributable under MIT License:
 
-Copyright © 2005-2013 Rich Felker
+Copyright (C) 2005-2013 Rich Felker
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
