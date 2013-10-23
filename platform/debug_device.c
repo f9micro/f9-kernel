@@ -6,15 +6,32 @@
 #include <types.h>
 #include <errno.h>
 #include <lib/stdio.h>
+#include <init_hook.h>
 #include <platform/debug_device.h>
 #ifdef CONFIG_DEBUG_DEV_UART
 #include <platform/debug_uart.h>
 #endif
-#include <init_hook.h>
+#ifdef CONFIG_DEBUG_DEV_RAM
+#include <platform/debug_ram.h>
+#endif
 
-#ifdef CONFIG_DEBUG
+#ifdef DEBUG_DEVICE_EXIST
 static dbg_dev_t dbg_dev[DBG_DEV_MAX];
 static dbg_dev_t *cur_dev = &dbg_dev[0];
+
+static uint8_t default_getchar(void)
+{
+	return (EOF);
+}
+
+static void default_putchar(uint8_t chr)
+{
+	chr = 0;
+}
+
+static void default_start_panic(void)
+{
+}
 
 /*
  * Receive a character from debug port
@@ -40,39 +57,32 @@ void dbg_start_panic(void)
 {
 	if (!cur_dev || !cur_dev->start_panic)
 		return;
-	cur_dev->start_panic();
+	(*cur_dev->start_panic)();
 }
 
 /*
  * Initialization procedure for debug IO port
  */
-void dbg_device_init(void)
+static void dbg_device_init(void)
 {
 	int i;
 
-	for (i = 0; i < DBG_DEV_MAX; i++) {
+	for (i = 0; i < (DBG_DEV_MAX - 1); i++) {
 		dbg_dev_t *pdev = &dbg_dev[i];
 		pdev->dev_id = DBG_DEV_MAX;
-		pdev->getchar = NULL;
-		pdev->putchar = NULL;
-		pdev->start_panic = NULL;
+		pdev->getchar = default_getchar;
+		pdev->putchar = default_putchar;
+		pdev->start_panic = default_start_panic;
 	}
 
 #ifdef CONFIG_DEBUG_DEV_UART
 	dbg_uart_init();
 #endif
-}
 
-#ifdef CONFIG_DEBUG
-extern dbg_layer_t dbg_layer;
-
-void dbg_device_init_hook(void)
-{
-	dbg_device_init();
-	dbg_layer = DL_KDB;
-}
-INIT_HOOK(dbg_device_init_hook, INIT_LEVEL_PLATFORM);
+#ifdef CONFIG_DEBUG_DEV_RAM
+	dbg_ram_init();
 #endif
+}
 
 /*
  * Register device IO port objects
@@ -83,12 +93,11 @@ int32_t dbg_register_device(dbg_dev_t *device)
 	if (!device)
 		return -EINVAL;
 
-	if (!device->getchar ||
-	    !device->putchar ||
-	     device->dev_id >= DBG_DEV_MAX)
+	if (device->dev_id >= DBG_DEV_MAX)
 		return -EINVAL;
 
 	pdev = &dbg_dev[device->dev_id];
+	pdev->dev_id = device->dev_id;
 	pdev->getchar = device->getchar;
 	pdev->putchar = device->putchar;
 	pdev->start_panic = device->start_panic;
@@ -96,9 +105,20 @@ int32_t dbg_register_device(dbg_dev_t *device)
 	return 0;
 }
 
-/* FIXME: function to change device is required */
-#else /* CONFIG_DEBUG */
+int32_t dbg_change_device(dbg_dev_id_t dev_id)
+{
+	if (dev_id >= DBG_DEV_MAX)
+		return -EINVAL;
 
+	if (dbg_dev[dev_id].dev_id == DBG_DEV_MAX)
+		return -ENXIO;
+
+	cur_dev = &dbg_dev[dev_id];
+	return 0;
+
+}
+
+#else /* DEBUG_DEVICE_EXIST */
 uint8_t dbg_getchar(void)
 {
 	return (EOF);
@@ -112,7 +132,20 @@ void dbg_putchar(uint8_t chr)
 void dbg_start_panic(void)
 {
 }
-#endif /* CONFIG_DEBUG */
+#endif /* DEBUG_DEVICE_EXIST */
+
+#ifdef CONFIG_DEBUG
+extern dbg_layer_t dbg_layer;
+
+void dbg_device_init_hook(void)
+{
+#ifdef DEBUG_DEVICE_EXIST
+	dbg_device_init();
+#endif
+	dbg_layer = DL_KDB;
+}
+INIT_HOOK(dbg_device_init_hook, INIT_LEVEL_PLATFORM);
+#endif
 
 #ifdef CONFIG_STDIO_USE_DBGPORT
 uint8_t __l4_getchar(void)

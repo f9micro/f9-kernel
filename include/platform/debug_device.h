@@ -8,11 +8,20 @@
 #include <types.h>
 #include <debug.h>
 
+#if defined (CONFIG_DEBUG) && \
+      (defined(CONFIG_DEBUG_DEV_UART) || \
+       defined(CONFIG_DEBUG_DEV_RAM))
+
+#define DEBUG_DEVICE_EXIST
+#endif
+
 /*
  * Identify the device of debug IO port
  */
 typedef enum {
-	DBG_DEV_UART	= 0,
+#ifdef CONFIG_DEBUG_DEV_UART
+	DBG_DEV_UART,
+#endif
 #ifdef CONFIG_DEBUG_DEV_RAM
 	DBG_DEV_RAM,
 #endif
@@ -25,10 +34,12 @@ typedef enum {
 typedef struct {
 	dbg_dev_id_t	dev_id;
 	uint8_t 	(*getchar)(void);
-	void 		(*putchar)(char);
+	void 		(*putchar)(uint8_t);
 	void 		(*start_panic)(void);
 } dbg_dev_t;
 
+
+#ifdef DEBUG_DEVICE_EXIST
 /*
  * Register device IO port objects
  */
@@ -38,6 +49,7 @@ int32_t dbg_register_device(dbg_dev_t *device);
  * Change current debug IO port
  */
 int32_t dbg_change_device(dbg_dev_id_t dev_id);
+#endif
 
 /*
  * Do the preparing before entering panic. Previous characters in
@@ -54,10 +66,5 @@ extern uint8_t dbg_getchar(void);
  * Send a character to debug port
  */
 extern void dbg_putchar(uint8_t chr);
-
-/*
- * Initialization procedure for debug IO port
- */
-void dbg_device_init(void);
 
 #endif /* DEBUG_DEVICE_H_ */

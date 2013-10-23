@@ -101,7 +101,7 @@ uint8_t dbg_uart_getchar(void)
 
 }
 
-void dbg_uart_putchar(char chr)
+void dbg_uart_putchar(uint8_t chr)
 {
 	/* During panic, we cannot use async dbg uart, so switch to
 	 * synchronious mode
