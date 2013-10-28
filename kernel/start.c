@@ -87,17 +87,6 @@ void __l4_start(void)
 {
 	run_init_hook(INIT_LEVEL_EARLIEST);
 
-	/* Copy data segments */
-	init_copy_seg(&kernel_text_end,
-			&kernel_data_start, &kernel_data_end);
-			/* DATA (ROM) -> DATA (RAM) */
-	init_copy_seg(&user_text_flash_start,
-			&user_text_start, &user_text_end);
-			/* USER TEXT (ROM) -> USER TEXT (RAM) */
-	init_copy_seg(&user_text_flash_end,
-			&user_data_start, &user_data_end);
-			/* USER DATA (ROM) -> USER DATA (RAM) */
-
 	/* Fill bss with zeroes */
 	init_zero_seg(&bss_start, &bss_end);
 	init_zero_seg(&kernel_ahb_start, &kernel_ahb_end);
