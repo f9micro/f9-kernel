@@ -42,7 +42,8 @@ $(eval BOARD_$(BOARD)=y)
 # Kconfig files to use
 KCONFIG_FILES = \
 	platform/Kconfig \
-	kernel/Kconfig
+	kernel/Kconfig \
+	loader/Kconfig
 
 # Read configurations about system features and characteristics
 include mk/config.mk
@@ -53,6 +54,7 @@ include platform/build.mk
 include kernel/lib/build.mk
 include kernel/build.mk
 include user/build.mk
+include loader/build.mk
 
 includes += $(includes-y)
 
