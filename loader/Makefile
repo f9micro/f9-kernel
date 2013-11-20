@@ -23,18 +23,26 @@ KERNEL_IMG = f9.elf
 
 # kernel lib
 VPATH += $(KERNEL_SRC)/lib
-SRCS += queue.c stdio.c
+SRCS += queue.c memcpy.c memset.c strcmp.c stdio.c
 
 #board
 BOARD_SRC = $(PROJECT_ROOT)/board/$(PLATFORM_BOARD)
 
+# platform
+VPATH += $(PLATFORM_SRC)
+SRCS += irq.c debug_device.c
+
 # platform/<CHIP>/
 VPATH += $(PLATFORM_SRC)/$(CHIP)/
-SRCS += gpio.c nvic.c rcc.c usart.c
+SRCS += gpio.c nvic.c rcc.c usart.c systick.c
+
+# kernel
+VPATH += $(KERNEL_SRC)/
+SRCS += error.c init.c debug_uart.c debug.c
 
 # loader source
 VPATH += $(LOADER_SRC)/
-SRCS += init_ld.c irq_ld.c main.c error_ld.c debug_ld.c memcpy_ld.c memset_ld.c strcmp_ld.c debug_uart_ld.c
+SRCS += main.c
 
 # elf lib
 VPATH += $(LOADER_SRC)/elf
@@ -68,15 +76,17 @@ CFLAGS += -Wdouble-promotion -fsingle-precision-constant -fshort-double
 
 
 CFLAGS += -DDEBUG
-CFLAGS += -I include/
+CFLAGS += -I $(PROJECT_ROOT)/include/ -I $(PROJECT_ROOT)/board/discoveryf4/ -I $(PROJECT_ROOT)/loader/
 CFLAGS += -D __PLATFORM__=$(PLATFORM)
 CFLAGS += -D __BOARD_HEADER__="$(PLATFORM_BOARD).h"
 CFLAGS += \
 	-D __CHIP__=$(CHIP) \
-	-D'INC_PLAT(x)=<platform/__CHIP__/x>'
+	-D'INC_PLAT(x)=<platform/__CHIP__/x>' \
+	-D LOADER
 	
 DATE := "$(shell LC_ALL=C date -u)"
 CFLAGS += -D BUILD_TIME='$(DATE)'
+CFLAGS += -include $(PROJECT_ROOT)/include/autoconf.h
 
 #CFLAGS += -save-temps --verbose -Xlinker --verbose
 

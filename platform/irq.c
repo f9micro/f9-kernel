@@ -27,6 +27,7 @@ void irq_init(void)
 	NVIC_SetPriority(PendSV_IRQn, 0xF, 0);
 }
 
+#ifndef LOADER
 void pendsv_handler(void) __NAKED;
 void pendsv_handler(void)
 {
@@ -34,3 +35,4 @@ void pendsv_handler(void)
 	schedule_in_irq();
 	irq_return();
 }
+#endif

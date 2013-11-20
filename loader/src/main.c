@@ -6,6 +6,8 @@
 #include INC_PLAT(gpio.h)
 #include INC_PLAT(rcc.h)
 #include INC_PLAT(syscfg.h)
+#include INC_PLAT(systick.h)
+#include INC_PLAT(nvic.h)
 
 #include <platform/debug_uart.h>
 #include <platform/irq.h>
@@ -16,17 +18,28 @@
 
 #include <elf/elf.h>
 
+/* linker variables */
+extern uint32_t kernel_flash_start;
+extern uint32_t kernel_start;
+extern uint32_t kernel_end;
+extern uint32_t data_start;
+extern uint32_t data_end;
+extern uint32_t bss_start;
+extern uint32_t bss_end;
+
+
 extern dbg_layer_t dbg_layer;
 
 int main(void)
 {
 	void (*kernel_entry)(void);
 
+	irq_disable();
 	irq_init();
-	//irq_disable();
+	irq_enable();
 
-	dbg_uart_init();
 	dbg_layer = DL_BASIC;
+	dbg_uart_init();
 	
 	dbg_printf(DL_BASIC, "loading kernel ...\n");
 

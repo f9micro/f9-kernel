@@ -22,24 +22,9 @@ extern uint32_t data_start;
 extern uint32_t data_end;
 extern uint32_t stack_end;
 
-extern uint32_t root_stack_start;
-extern uint32_t root_stack_end;
-
-extern uint32_t kip_start;
-extern uint32_t kip_end;
-
-extern uint32_t bitmap_start;
-extern uint32_t bitmap_end;
-extern uint32_t bitmap_bitband_start;
-extern uint32_t bitmap_bitband_end;
-
 #define __BSS 			__attribute__ ((section(".bss")))
 #define __ISR_VECTOR		__attribute__ ((section(".isr_vector")))
 
-#define __USER_TEXT		__attribute__ ((section(".user_text")))
-#define __USER_DATA		__attribute__ ((section(".user_data")))
-#define __USER_BSS		__attribute__ ((section(".user_bss")))
-#define __USER_SC		__attribute__ ((section(".syscall")))
 
 #define __PACKED		__attribute__ ((packed))
 
