@@ -13,6 +13,10 @@ typedef uintptr_t memptr_t;
 
 typedef uint32_t l4_thread_t;
 
+typedef uint32_t bool;
+#define true 1;
+#define false 0;
+
 #define _SIZE_T_
 typedef uint32_t size_t;
 
