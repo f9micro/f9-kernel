@@ -16,5 +16,6 @@ int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
 
 int map_fpage(as_t *src, as_t *dst, fpage_t *fpage, map_action_t action);
 int unmap_fpage(as_t *as, fpage_t *fpage);
+void destroy_fpage(fpage_t *fpage);
 
 #endif /* FPAGE_IMPL_H_ */

@@ -140,6 +140,11 @@ static fpage_t *create_fpage(memptr_t base, size_t shift, int mpid)
 	return fpage;
 }
 
+void destroy_fpage(fpage_t *fpage)
+{
+	ktable_free(&fpage_table, fpage);
+}
+
 static void create_fpage_chain(memptr_t base, size_t size, int mpid,
                                fpage_t **pfirst, fpage_t **plast)
 {

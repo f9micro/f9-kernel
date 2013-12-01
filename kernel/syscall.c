@@ -62,7 +62,10 @@ static void sys_thread_control(uint32_t *param1, uint32_t *param2)
 		param1[REG_R0] = 1;
 	}
 	else {
-		/* TODO: Thread destroy */
+		/* Removal of thread */
+		tcb_t *thr = thread_by_globalid(dest);
+		thread_free_space(thr);
+		thread_destroy(thr);
 	}
 }
 

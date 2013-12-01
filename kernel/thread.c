@@ -142,6 +142,19 @@ static void thread_map_insert(l4_thread_t globalid, tcb_t *thr)
 	}
 }
 
+static void thread_map_delete(l4_thread_t globalid)
+{
+	if (thread_count == 1) {
+		thread_count = 0;
+	}
+	else {
+		int i = thread_map_search(globalid, 0, thread_count);
+		--thread_count;
+		for (; i < thread_count; i++)
+			thread_map[i] = thread_map[i + 1];
+	}
+}
+
 /*
  * Initialize thread
  */
@@ -174,6 +187,12 @@ tcb_t *thread_init(l4_thread_t globalid, utcb_t *utcb)
 	dbg_printf(DL_THREAD, "T: New thread: %t @[%p] \n", globalid, thr);
 
 	return thr;
+}
+
+void thread_deinit(tcb_t *thr)
+{
+	thread_map_delete(thr->t_globalid);
+	ktable_free(&thread_table, (void *) thr);
 }
 
 /* Called from user thread */
@@ -216,6 +235,41 @@ tcb_t *thread_create(l4_thread_t globalid, utcb_t *utcb)
 	return thr;
 }
 
+void thread_destroy(tcb_t *thr)
+{
+	tcb_t *parent, *child, *prev_child;
+
+	/* move thr's children to caller */
+	child = thr->t_child;
+
+	while (child) {
+		child->t_parent = caller;
+		if (child->t_sibling == NULL)
+			break;
+		child = child->t_sibling;
+	}
+	/* connect thr's children to caller's children */
+	child->t_sibling = caller->t_child;
+	caller->t_child = thr->t_child;
+
+	/* remove thr from its parent and its siblings */
+	parent = thr->t_parent;
+
+	if (parent->t_child == thr) {
+		parent->t_child = thr->t_sibling;
+	}
+	else {
+		child = parent->t_child;
+		while (child != thr) {
+			prev_child = child;
+			child = child->t_sibling;
+		}
+		prev_child->t_sibling = child->t_sibling;
+	}
+
+	thread_deinit(thr);
+}
+
 void thread_space(tcb_t *thr, l4_thread_t spaceid, utcb_t *utcb)
 {
 	/* If spaceid == dest than create new address space
@@ -235,6 +289,7 @@ void thread_space(tcb_t *thr, l4_thread_t spaceid, utcb_t *utcb)
 		tcb_t *space = thread_by_globalid(spaceid);
 
 		thr->as = space->as;
+		++(space->as->shared);
 	}
 
 	/* If no caller, than it is mapping from kernel to root thread
@@ -245,6 +300,12 @@ void thread_space(tcb_t *thr, l4_thread_t spaceid, utcb_t *utcb)
 				sizeof(utcb_t), GRANT, thread_ispriviliged(caller));
 	else
 		map_area(thr->as, thr->as, (memptr_t) utcb, sizeof(utcb_t), GRANT, 1);
+}
+
+void thread_free_space(tcb_t *thr)
+{
+	/* free address space */
+	as_destroy(thr->as);
 }
 
 void thread_init_ctx(void *sp, void *pc, tcb_t *thr)

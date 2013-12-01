@@ -330,9 +330,35 @@ as_t *as_create(uint32_t as_spaceid)
 
 	as->as_spaceid = as_spaceid;
 	as->first = NULL;
-	as->mpu_first = NULL;
+	as->shared = 0;
 
 	return as;
+}
+
+void as_destroy(as_t *as)
+{
+	fpage_t *fp, *fpnext;
+	fp = as->first;
+
+	if (as->shared > 0) {
+		--as->shared;
+		return;
+	}
+
+	/*
+	 * FIXME: What if a CLONED fpage which is MAPPED is to be deleted
+	 */
+	while (fp) {
+		if (fp->fpage.flags & FPAGE_CLONE)
+			unmap_fpage(as, fp);
+		else
+			destroy_fpage(fp);
+
+		fpnext = fp->as_next;
+		fp = fpnext;
+	}
+
+	ktable_free(&as_table, (void *) as);
 }
 
 int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,

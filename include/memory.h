@@ -23,6 +23,7 @@ typedef struct {
 
 	struct fpage *mpu_first;	/*! head of MPU fpage list */
 	struct fpage *mpu_stack_first;	/*! head of MPU stack fpage list */
+	uint32_t shared;	/*! shared user number */
 } as_t;
 
 /**
@@ -118,6 +119,7 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 		map_action_t action, int is_priviliged);
 
 as_t *as_create(uint32_t as_spaceid);
+void as_destroy(as_t *as);
 void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc,
 		memptr_t stack_base, size_t stack_size);
 void as_map_user(as_t *as);
