@@ -9,7 +9,7 @@ CHIP := stm32f4
 
 PROJECT_ROOT = ..
 PLATFORM_SRC = $(PROJECT_ROOT)/platform
-LOADER_SRC = $(PROJECT_ROOT)/loader/src
+LOADER_SRC = $(PROJECT_ROOT)/loader
 KERNEL_SRC = $(PROJECT_ROOT)/kernel
 
 
@@ -42,7 +42,7 @@ SRCS += error.c init.c debug_uart.c debug.c
 
 # loader source
 VPATH += $(LOADER_SRC)/
-SRCS += main.c
+SRCS += loader.c
 
 # elf lib
 VPATH += $(LOADER_SRC)/elf
@@ -76,7 +76,7 @@ CFLAGS += -Wdouble-promotion -fsingle-precision-constant -fshort-double
 
 
 CFLAGS += -DDEBUG
-CFLAGS += -I $(PROJECT_ROOT)/include/ -I $(PROJECT_ROOT)/board/discoveryf4/ -I $(PROJECT_ROOT)/loader/
+CFLAGS += -I $(PROJECT_ROOT)/include/ -I $(PROJECT_ROOT)/board/discoveryf4/ -I $(PROJECT_ROOT)/loader/include
 CFLAGS += -D __PLATFORM__=$(PLATFORM)
 CFLAGS += -D __BOARD_HEADER__="$(PLATFORM_BOARD).h"
 CFLAGS += \
