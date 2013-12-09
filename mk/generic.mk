@@ -24,6 +24,7 @@ cmd_obj_to_bin = $(OBJCOPY) -O binary $< $@
 cmd_elf_to_list = $(OBJDUMP) -S $< > $@
 cmd_elf = $(LD) $(LDFLAGS) $(objs) -o $@ \
 	-L platform -T $(F9_LD_FILE) $(LIBGCC)
+cmd_strip = $(STRIP) $< -o $@
 cmd_elf_relink = $(LD) $(LDFLAGS) $(objs) $(symmap_obj-list) -o $@ \
 	-L platform -T $(F9_LD_FILE) $(LIBGCC) \
 	-Map $(out)/$*.map
