@@ -34,3 +34,7 @@ TICKLESS-VERIFY-$(CONFIG_KTIMER_TICKLESS_VERIFY) = \
 	tickless-verify.o
 
 kernel-y += $(KDB-y) $(KPROBES-y) $(SYMMAP-y) $(TICKLESS-VERIFY-y)
+
+loader-kernel-y = \
+	error.lo \
+	debug.lo

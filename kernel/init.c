@@ -10,14 +10,10 @@
 #include <ktimer.h>
 #include <init_hook.h>
 
-#ifdef LOADER
-extern void __loader_start(void);
-#else
 extern void __l4_start(void);
 extern void memmanage_handler(void);
 extern void debugmon_handler(void);
 extern void pendsv_handler(void);
-#endif
 
 void busfault(void)
 {
@@ -55,43 +51,6 @@ extern void (* const g_pfnVectors[])(void);
 
 #include INC_PLAT(nvic.h)
 
-#ifdef LOADER
-
-void systick_handler(void)
-{
-	return;
-}
-
-void pendsv_handler(void)
-{
-	return;
-}
-
-__ISR_VECTOR
-void (* const g_pfnVectors[])(void) = {
-	/* Core Level - ARM Cortex-M */
-	(void *) &stack_end,	/* initial stack pointer */
-	__loader_start,			/* reset handler */
-	nointerrupt,			/* NMI handler */
-	nointerrupt,		/* hard fault handler */
-	nointerrupt,		/* MPU fault handler */
-	nointerrupt,			/* bus fault handler */
-	nointerrupt,			/* usage fault handler */
-	0,				/* Reserved */
-	0,				/* Reserved */
-	0,				/* Reserved */
-	0,				/* Reserved */
-	nointerrupt,			/* SVCall handler */
-	nointerrupt,			/* Debug monitor handler */
-	0,				/* Reserved */
-	pendsv_handler,			/* PendSV handler */
-	systick_handler, 		/* SysTick handler */
-	/* Chip Level: vendor specific */
-	/* FIXME: use better IRQ vector generator */
-	#include INC_PLAT(nvic_table.h)
-};
-
-#else
 __ISR_VECTOR
 void (* const g_pfnVectors[])(void) = {
 	/* Core Level - ARM Cortex-M */
@@ -120,7 +79,6 @@ void (* const g_pfnVectors[])(void) = {
 	/* FIXME: use better IRQ vector generator */
 	#include INC_PLAT(nvic_table.h)
 };
-#endif
 
 #define MAX(a, b) \
 	((a) > (b) ? (a) : (b))

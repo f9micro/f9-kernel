@@ -45,8 +45,8 @@ cmd_kconfig = $(MAKE) --no-print-directory -C $(KCONFIG) -f Makefile.f9 mconf \
 		CC="$(BUILDCC)" HOSTCC="$(BUILDCC)"
 cmd_mconf = $(out_host)/mconf $(MCONF_INPUT)
 
-.PHONY: all
-all: $(out)/$(PROJECT).bin
+.PHONY: bare
+bare: $(out)/$(PROJECT).bin
 
 $(out)/%.bin: $(out)/%.elf.bin $(bin-list)
 	$(call quiet,bin,CAT    )

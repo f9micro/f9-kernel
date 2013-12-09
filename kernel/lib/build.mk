@@ -4,7 +4,8 @@
 
 lib-str-y += \
 	memcpy.o \
-	memset.o
+	memset.o \
+
 
 kernel-lib-y += \
 	queue.o \
@@ -13,3 +14,11 @@ kernel-lib-y += \
 	bsearch.o \
 	sort.o \
 	$(lib-str-y)
+
+loader-kernel-lib-y += \
+	stdio.lo \
+	queue.lo \
+	strcmp.lo \
+	memcpy.lo \
+	memset.lo
+	

@@ -10,6 +10,13 @@ chip-y = \
 	systick.o \
 	hwtimer.o
 
+loader-chip-y = \
+	gpio.lo \
+	rcc.lo \
+	usart.lo \
+	nvic.lo \
+	systick.lo
+
 # FIXME: move to toplevel definitions
 define platform-flash-command
 	st-flash write $1 0x8000000

@@ -30,3 +30,8 @@ platform-KPROBES-$(CONFIG_KPROBES) = \
 	hw_debug.o
 
 platform-y += $(platform-KPROBES-y)
+
+loader-platform-y = \
+	irq.lo \
+	debug_uart.lo \
+	debug_device.lo

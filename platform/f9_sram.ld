@@ -84,6 +84,7 @@ SECTIONS {
 		idle_stack_end = .;
 		. += KERNEL_STACK_SIZE;
 		kernel_stack_end = .;
+		stack_end = .;
 	} > RamLoc
 
 	.data :

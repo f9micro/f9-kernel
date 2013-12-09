@@ -11,6 +11,7 @@
 
 #include <platform/debug_uart.h>
 #include <platform/irq.h>
+#include <platform/link.h>
 #include <error.h>
 #include <debug.h>
 #include <types.h>
@@ -29,6 +30,43 @@ extern uint32_t bss_end;
 
 
 extern dbg_layer_t dbg_layer;
+
+void __loader_start(void);
+
+void nointerrupt(void)
+{
+	while (1)
+		/* wait */ ;
+}
+
+void dummy_handler(void)
+{
+	return;
+}
+
+__ISR_VECTOR
+void (* const g_pfnVectors[])(void) = {
+	/* Core Level - ARM Cortex-M */
+	(void *) &stack_end,	/* initial stack pointer */
+	__loader_start,			/* reset handler */
+	nointerrupt,			/* NMI handler */
+	nointerrupt,		/* hard fault handler */
+	nointerrupt,		/* MPU fault handler */
+	nointerrupt,			/* bus fault handler */
+	nointerrupt,			/* usage fault handler */
+	0,				/* Reserved */
+	0,				/* Reserved */
+	0,				/* Reserved */
+	0,				/* Reserved */
+	nointerrupt,			/* SVCall handler */
+	nointerrupt,			/* Debug monitor handler */
+	0,				/* Reserved */
+	dummy_handler,			/* PendSV handler */
+	dummy_handler, 		/* SysTick handler */
+	/* Chip Level: vendor specific */
+	/* FIXME: use better IRQ vector generator */
+	#include INC_PLAT(nvic_table.h)
+};
 
 int main(void)
 {
