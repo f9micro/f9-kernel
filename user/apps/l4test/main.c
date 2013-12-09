@@ -10,12 +10,12 @@
 #include <l4/ipc.h>
 #include <l4/kdebug.h>
 #include <l4io.h>
-#include <config.h>
 
 /* for the current arch */
-#include <platform/arch.h>
+#include "platform/arch.h"
 
 /* generic stuff */
+#include "config.h"
 #include "l4test.h"
 #include "assert.h"
 

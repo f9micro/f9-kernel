@@ -10,10 +10,9 @@
 #include <l4/arch.h>
 #include <l4/kdebug.h>
 #include <l4io.h>
-#include <config.h>
 
-#include <arch.h>
-
+#include "arch.h"
+#include "config.h"
 #include "l4test.h"
 #include "menu.h"
 #include "assert.h"
