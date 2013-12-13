@@ -5,7 +5,7 @@ ifeq "$(CONFIG_LOADER)" "y"
 F9_LD_FILE = f9_sram.ld
 include mk/loader.mk
 else
-F9_LD_FILE = f9_nor.ld
+F9_LD_FILE = f9_flash.ld
 endif
 
 # TODO: Put final target here temporarily
