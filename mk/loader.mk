@@ -4,7 +4,7 @@
 
 #
 loader-objs := $(loader-all-y)
-kernel-obj := $(out)/kernel.lo
+kernel-obj := $(out)/kernel.loader.o
 CFLAGS_INCLUDE_LOADER = -Iloader/include
 
 KERNEL_OBJ_LDS = kernel.bin.lds
@@ -27,12 +27,12 @@ $(out)/loader.bin: $(out)/loader.elf
 $(out)/loader.elf: $(kernel-obj) $(loader-objs)
 	$(call quiet,loader_elf,LD)
 
-$(out)/kernel.lo: $(out)/kernel_strip.elf
+$(out)/kernel.loader.o: $(out)/kernel_strip.elf
 	$(call quiet,kernel_to_o,LD)
 
 $(out)/kernel_strip.elf: $(out)/$(PROJECT).elf
 	$(call quiet,strip,STRIP)
 
-$(out)/%.lo: %.c
+$(out)/%.loader.o: %.c
 	$(call quiet,c_to_o_loader,CC     )
 

@@ -11,11 +11,11 @@ chip-y = \
 	hwtimer.o
 
 loader-chip-y = \
-	gpio.lo \
-	rcc.lo \
-	usart.lo \
-	nvic.lo \
-	systick.lo
+	gpio.loader.o \
+	rcc.loader.o \
+	usart.loader.o \
+	nvic.loader.o \
+	systick.loader.o
 
 # FIXME: move to toplevel definitions
 define platform-flash-command

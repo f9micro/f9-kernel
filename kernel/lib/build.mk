@@ -16,9 +16,9 @@ kernel-lib-y += \
 	$(lib-str-y)
 
 loader-kernel-lib-y += \
-	stdio.lo \
-	queue.lo \
-	strcmp.lo \
-	memcpy.lo \
-	memset.lo
+	stdio.loader.o \
+	queue.loader.o \
+	strcmp.loader.o \
+	memcpy.loader.o \
+	memset.loader.o
 	

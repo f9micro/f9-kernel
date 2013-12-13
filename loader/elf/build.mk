@@ -2,5 +2,5 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 loader-elf-y = \
-	elf32.lo \
-	elf.lo
+	elf32.loader.o \
+	elf.loader.o
