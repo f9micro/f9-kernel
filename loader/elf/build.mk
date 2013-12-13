@@ -3,5 +3,4 @@
 # found in the LICENSE file.
 loader-elf-y = \
 	elf32.lo \
-	elf64.lo \
 	elf.lo
