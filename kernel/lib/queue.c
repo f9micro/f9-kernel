@@ -12,7 +12,7 @@ static uint32_t queue_length(struct queue_t *queue)
 			(queue->size + queue->top - queue->end);
 }
 
-uint32_t queue_init(struct queue_t *queue, uint8_t *addr, uint32_t size)
+uint32_t queue_init(struct queue_t *queue, uint8_t *addr, size_t size)
 {
 	queue->top = 0;
 	queue->end = 0;

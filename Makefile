@@ -36,13 +36,13 @@ includes = \
 	board/$(BOARD) \
 	include \
 	include/platform \
-	$(dirs) $(out)
 $(eval BOARD_$(BOARD)=y)
 
 # Kconfig files to use
 KCONFIG_FILES = \
 	platform/Kconfig \
-	kernel/Kconfig
+	kernel/Kconfig \
+	loader/Kconfig
 
 # Read configurations about system features and characteristics
 include mk/config.mk
@@ -53,6 +53,8 @@ include platform/build.mk
 include kernel/lib/build.mk
 include kernel/build.mk
 include user/build.mk
+include loader/build.mk
+include loader/elf/build.mk
 
 includes += $(includes-y)
 
@@ -66,12 +68,23 @@ all-y += $(call objs_from_dir,platform,platform)
 all-y += $(call objs_from_dir,kernel/lib,kernel-lib)
 all-y += $(call objs_from_dir,kernel,kernel)
 all-y += $(call objs_from_dir,user,user)
+
+loader-all-y += $(call objs_from_dir,loader,loader)
+loader-all-y += $(call objs_from_dir,loader/elf,loader-elf)
+loader-all-y += $(call objs_from_dir,platform/$(CHIP),loader-chip)
+loader-all-y += $(call objs_from_dir,board/$(BOARD),loader-board)
+loader-all-y += $(call objs_from_dir,platform,loader-platform)
+loader-all-y += $(call objs_from_dir,kernel/lib,loader-kernel-lib)
+loader-all-y += $(call objs_from_dir,kernel,loader-kernel)
+
 dirs = \
 	kernel/lib \
 	kernel \
 	platform/$(CHIP) \
 	board/$(BOARD) \
 	user \
+	loader \
+	loader/elf \
 	$(user-dirs)
 
 # Get special rules
@@ -79,4 +92,5 @@ dir-rules := mk/rules
 $(foreach rule, $(shell ls $(dir-rules)), \
 	$(eval include $(dir-rules)/$(rule)))
 
+include mk/target.mk
 include mk/generic.mk

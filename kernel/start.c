@@ -87,6 +87,7 @@ void __l4_start(void)
 {
 	run_init_hook(INIT_LEVEL_EARLIEST);
 
+#ifndef CONFIG_LOADER
 	/* Copy data segments */
 	init_copy_seg(&kernel_text_end,
 			&kernel_data_start, &kernel_data_end);
@@ -97,6 +98,7 @@ void __l4_start(void)
 	init_copy_seg(&user_text_flash_end,
 			&user_data_start, &user_data_end);
 			/* USER DATA (ROM) -> USER DATA (RAM) */
+#endif
 
 	/* Fill bss with zeroes */
 	init_zero_seg(&bss_start, &bss_end);

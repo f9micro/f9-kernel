@@ -13,6 +13,11 @@
 #include <platform/debug_device.h>
 #include <lib/stdarg.h>
 
+#ifdef LOADER
+extern uint32_t stack_end;
+#endif
+
+#ifndef LOADER
 extern volatile tcb_t *caller;
 
 void set_user_error(tcb_t *thread, enum user_error_t error)
@@ -29,6 +34,7 @@ void set_caller_error(enum user_error_t error)
 	else
 		panic("User-level error %d during in-kernel call!", error);
 }
+#endif
 
 #ifdef CONFIG_PANIC_DUMP_STACK
 static void panic_dump_stack(void)
@@ -38,7 +44,11 @@ static void panic_dump_stack(void)
 
 	dbg_puts("\n\nStack dump:\n");
 
+#ifdef LOADER
+	while (current_sp < &stack_end) {
+#else
 	while (current_sp < &kernel_stack_end) {
+#endif
 		dbg_printf(DL_EMERG, "%p ", *(++current_sp));
 
 		if (++word % 8 == 0)
@@ -57,8 +67,10 @@ void panic_impl(char *fmt, ...)
 	irq_disable();
 	dbg_vprintf(DL_EMERG, fmt, va);
 
+#ifndef LOADER
 #ifdef CONFIG_KDB
 	kdb_dump_error();
+#endif
 #endif
 
 #ifdef CONFIG_PANIC_DUMP_STACK

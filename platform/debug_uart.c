@@ -7,7 +7,10 @@
 #include <platform/debug_uart.h>
 #include <platform/irq.h>
 #include <lib/queue.h>
+
+#ifdef CONFIG_KDB
 #include <softirq.h>
+#endif
 
 /* board speficic UART definitions */
 #include "board.h"
@@ -41,9 +44,10 @@ static void dbg_uart_recv(void)
 
 	/* Put sequence on queue */
 	queue_push(&(dbg_uart.rx), chr);
-
+#ifndef LOADER
 #ifdef CONFIG_KDB
 	softirq_schedule(KDB_SOFTIRQ);
+#endif
 #endif
 }
 

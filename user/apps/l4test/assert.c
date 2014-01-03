@@ -5,9 +5,9 @@
 
 #include <l4/kdebug.h>
 #include <l4io.h>
-#include <config.h>
 #include <platform/link.h>
 
+#include "config.h"
 #include "assert.h"
 
 __USER_TEXT void

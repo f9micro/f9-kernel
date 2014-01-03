@@ -175,6 +175,17 @@
 #define RCC_APB1ENR                     (volatile uint32_t *) (RCC_BASE + 0x40)                 /* APB1 Peripheral Clock Enable Register */
 #define RCC_APB2ENR                     (volatile uint32_t *) (RCC_BASE + 0x44)                 /* APB2 Peripheral Clock Enable Register */
 
+/* SYSCFG */
+#define SYSCFG_MEMRMP					(volatile uint32_t *)(SYSCFG_BASE + 0x0)				/* Memory remap register */
+#define SYSCFG_PMC						(volatile uint32_t *)(SYSCFG_BASE + 0x4)				/* Peripheral mode config register */
+#define SYSCFG_EXTICR1					(volatile uint32_t *)(SYSCFG_BASE + 0x8)				/* External INT config register1 */
+#define SYSCFG_EXTICR2					(volatile uint32_t *)(SYSCFG_BASE + 0xc)				/* External INT config register2 */
+#define SYSCFG_EXTICR3					(volatile uint32_t *)(SYSCFG_BASE + 0x10)				/* External INT config register3 */
+#define SYSCFG_EXTICR4					(volatile uint32_t *)(SYSCFG_BASE + 0x14)				/* External INT config register4 */
+#define SYSCFG_CMPCR					(volatile uint32_t *)(SYSCFG_BASE + 0x20)				/* Compensation cell control register*/
+
+
+
 /* APB1 RCC ENR */
 #define RCC_TIM2_APBENR					RCC_APB1ENR
 #define RCC_TIM3_APBENR					RCC_APB1ENR

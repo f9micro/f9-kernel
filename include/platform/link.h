@@ -15,6 +15,15 @@
 extern uint32_t bss_start;
 extern uint32_t bss_end;
 
+#ifdef LOADER
+extern uint32_t stack_end;
+extern uint32_t kernel_flash_start;
+extern uint32_t kernel_start;
+extern uint32_t kernel_end;
+extern uint32_t data_start;
+extern uint32_t data_end;
+extern uint32_t stack_end;
+#else
 extern uint32_t kernel_text_start;
 extern uint32_t kernel_text_end;
 extern uint32_t kernel_data_start;
@@ -50,10 +59,12 @@ extern uint32_t bitmap_bitband_end;
 
 extern uint32_t symtab_start;
 extern uint32_t symtab_end;
+#endif
 
 #define __BSS 			__attribute__ ((section(".bss")))
-#define __KIP 			__attribute__ ((section(".kip")))
 #define __ISR_VECTOR		__attribute__ ((section(".isr_vector")))
+#ifndef LOADER
+#define __KIP 			__attribute__ ((section(".kip")))
 #define __KTABLE		__attribute__ ((section(".ktable")))
 
 #ifdef CONFIG_BITMAP_BITBAND
@@ -66,6 +77,7 @@ extern uint32_t symtab_end;
 #define __USER_DATA		__attribute__ ((section(".user_data")))
 #define __USER_BSS		__attribute__ ((section(".user_bss")))
 #define __USER_SC		__attribute__ ((section(".syscall")))
+#endif
 
 #define __PACKED		__attribute__ ((packed))
 
