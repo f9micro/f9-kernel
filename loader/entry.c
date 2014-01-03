@@ -77,7 +77,7 @@ int main(void)
 
 	dbg_layer = DL_BASIC;
 	dbg_uart_init();
-	
+
 	dbg_printf(DL_BASIC, "loading kernel ...\n");
 
 	dbg_printf(DL_BASIC, "ELF check result = %d\n",
@@ -87,9 +87,9 @@ int main(void)
 	irq_disable();
 
 	memory_remap_sram();
-	
+
 	kernel_entry();
-	
+
 	while (1)
 		;
 	/* Not reached */
