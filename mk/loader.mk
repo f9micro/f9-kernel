@@ -2,20 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-#
+EXEC_FORMAT = elf32-littlearm
+
 loader-objs := $(loader-all-y)
 kernel-obj := $(out)/kernel.loader.o
-CFLAGS_INCLUDE_LOADER = -Iloader/include
+CFLAGS_INCLUDE_LOADER = -I loader/include
 
 KERNEL_OBJ_LDS = kernel.bin.lds
 KLDFLAGS = \
-	--oformat elf32-littlearm \
+	--oformat $(EXEC_FORMAT) \
 	-r \
 	-b binary
 
 cmd_kernel_to_o = $(LD) -L loader -T $(KERNEL_OBJ_LDS) $(KLDFLAGS) $< -o $@
 cmd_c_to_o_loader = $(CC) $(CFLAGS_INCLUDE_LOADER) -DLOADER $(CFLAGS) -MMD -MF $@.d -c $< -o $@
-cmd_loader_elf = $(LD) --oformat elf32-littlearm $(loader-objs) $(kernel-obj) -o $@ -L loader -T loader.ld $(LIBGCC)
+cmd_loader_elf = $(LD) --oformat $(EXEC_FORMAT) $(loader-objs) $(kernel-obj) -o $@ -L loader -T loader.ld $(LIBGCC)
 
 .PHONY: loader
 loader: $(out)/loader.bin
@@ -35,4 +36,3 @@ $(out)/kernel_strip.elf: $(out)/$(PROJECT).elf
 
 $(out)/%.loader.o: %.c
 	$(call quiet,c_to_o_loader,CC     )
-
