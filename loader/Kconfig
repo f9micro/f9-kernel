@@ -2,10 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-menu "Loader"
-
 config LOADER
-	bool "Build loader to load f9"
+	bool "Enable ELF loader"
 	default n
-
-endmenu
