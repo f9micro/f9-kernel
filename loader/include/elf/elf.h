@@ -102,7 +102,6 @@ ELF file into memory.
 #define __ELF_ELF_H__
 
 #include "elf32.h"
-#include "elf64.h"
 #include <debug.h>
 #include <types.h>
 
