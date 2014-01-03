@@ -6,7 +6,6 @@ INCLUDE "loader_mem.ld"
 
 ENTRY (__loader_start)
 
-
 SYSTEM_CALL_BASE	= 0x00000800;
 TEXT_BASE		= 0x00001000;
 KERNEL_START_OFFSET	= 0xC000;
@@ -58,5 +57,4 @@ SECTIONS {
 		*(COMMON)
 		bss_end = .;
 	} > RamLoc
-
 }

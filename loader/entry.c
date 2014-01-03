@@ -28,7 +28,6 @@ extern uint32_t data_end;
 extern uint32_t bss_start;
 extern uint32_t bss_end;
 
-
 extern dbg_layer_t dbg_layer;
 
 void __loader_start(void);
@@ -81,19 +80,18 @@ int main(void)
 	
 	dbg_printf(DL_BASIC, "loading kernel ...\n");
 
-	dbg_printf(DL_BASIC, "elf check result = %d\n",
-		elf_checkFile((void*)0x800c000));
+	dbg_printf(DL_BASIC, "ELF check result = %d\n",
+			elf_checkFile((void *) 0x800c000));
 
-	kernel_entry = (void (*)(void))(elf_loadFile((void*)0x800c000));
+	kernel_entry = (void (*)(void))(elf_loadFile((void *) 0x800c000));
 	irq_disable();
 
 	memory_remap_sram();
 	
 	kernel_entry();
 	
-	//switch_to_kernel();
-	while(1);
-
+	while (1)
+		;
 	/* Not reached */
 	return 0;
 }
