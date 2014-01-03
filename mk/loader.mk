@@ -26,13 +26,13 @@ $(out)/loader.bin: $(out)/loader.elf
 	$(call quiet,obj_to_bin,OBJCOPY)
 
 $(out)/loader.elf: $(kernel-obj) $(loader-objs)
-	$(call quiet,loader_elf,LD)
+	$(call quiet,loader_elf,LD     )
 
 $(out)/kernel.loader.o: $(out)/kernel_strip.elf
-	$(call quiet,kernel_to_o,LD)
+	$(call quiet,kernel_to_o,LD     )
 
 $(out)/kernel_strip.elf: $(out)/$(PROJECT).elf
-	$(call quiet,strip,STRIP)
+	$(call quiet,strip,STRIP  )
 
 $(out)/%.loader.o: %.c
 	$(call quiet,c_to_o_loader,CC     )
