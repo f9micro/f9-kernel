@@ -60,7 +60,7 @@ static L4_ThreadId_t __USER_TEXT create_thread(app_struct *app, void (*func)(voi
 
 	child.raw = myself.raw + (++last_thread << 14);
 
-	L4_ThreadControl(child, myself, L4_nilthread, myself, (void*)free_mem);
+	L4_ThreadControl(child, myself, L4_nilthread, myself, (void *) free_mem);
 	free_mem += UTCB_SIZE + STACK_SIZE;
 
 	start_thread(child, (L4_Word_t)func, free_mem, STACK_SIZE);
@@ -80,5 +80,5 @@ DECLARE_APP(
 	0,
 	pingpong,
 	main,
-	DECLARE_FPAGE(0x0, 2 * UTCB_SIZE + 2 *STACK_SIZE)
+	DECLARE_FPAGE(0x0, 2 * UTCB_SIZE + 2 * STACK_SIZE)
 );
