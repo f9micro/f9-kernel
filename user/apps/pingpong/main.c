@@ -4,7 +4,7 @@
  */
 
 #include <platform/link.h>
-#include <app.h>
+#include <user_runtime.h>
 #include <l4/ipc.h>
 #include <l4/utcb.h>
 
@@ -53,7 +53,7 @@ static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
 	L4_Send(t);
 }
 
-static L4_ThreadId_t __USER_TEXT create_thread(app_struct *app, void (*func)(void))
+static L4_ThreadId_t __USER_TEXT create_thread(user_struct *user, void (*func)(void))
 {
 	L4_ThreadId_t myself = L4_MyGlobalId();
 	L4_ThreadId_t child;
@@ -68,15 +68,15 @@ static L4_ThreadId_t __USER_TEXT create_thread(app_struct *app, void (*func)(voi
 	return child;
 }
 
-static void __USER_TEXT main(app_struct *app)
+static void __USER_TEXT main(user_struct *user)
 {
-	free_mem = app->fpages[0].base;
+	free_mem = user->fpages[0].base;
 
-	threads[PING_THREAD] = create_thread(app, ping_thread);
-	threads[PONG_THREAD] = create_thread(app, pong_thread);
+	threads[PING_THREAD] = create_thread(user, ping_thread);
+	threads[PONG_THREAD] = create_thread(user, pong_thread);
 }
 
-DECLARE_APP(
+DECLARE_USER(
 	0,
 	pingpong,
 	main,

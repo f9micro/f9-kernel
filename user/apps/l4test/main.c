@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include <app.h>
+#include <user_runtime.h>
 #include <l4/kip.h>
 #include <l4/thread.h>
 #include <l4/ipc.h>
@@ -175,18 +175,18 @@ __USER_TEXT void all_tests(void)
 #endif
 }
 
-static void main(app_struct *app)
+static void main(user_struct *user)
 {
 	printf("\nL4/Pistachio test suite starts\n");
 
-	free_page = (void *) app->fpages[0].base;
+	free_page = (void *) user->fpages[0].base;
 
 	all_tests();
 
 	return;
 }
 
-DECLARE_APP(
+DECLARE_USER(
 	256,
 	l4test,
 	main,

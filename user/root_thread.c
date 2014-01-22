@@ -8,10 +8,10 @@
 #include <l4/utcb.h>
 #include <l4/ipc.h>
 #include <types.h>
-#include <app.h>
+#include <user_runtime.h>
 
-extern app_struct user_app_start[];
-extern app_struct user_app_end[];
+extern user_struct user_runtime_start[];
+extern user_struct user_runtime_end[];
 
 int __USER_TEXT L4_Map(L4_ThreadId_t where, memptr_t base, size_t size)
 {
@@ -79,10 +79,10 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 	L4_ThreadId_t myself = {.raw = utcb_ptr->t_globalid};
 	char *free_mem = (char *) get_free_base(kip_ptr);
 
-	for (app_struct *ptr = user_app_start; ptr != user_app_end; ++ptr) {
+	for (user_struct *ptr = user_runtime_start; ptr != user_runtime_end; ++ptr) {
 		L4_ThreadId_t tid;
 		L4_Word_t stack;
-		app_fpage_t *fpage = ptr->fpages;
+		user_fpage_t *fpage = ptr->fpages;
 
 		tid = L4_GlobalId(ptr->tid + kip_ptr->thread_info.s.user_base, 2);
 
