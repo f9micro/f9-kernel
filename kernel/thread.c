@@ -74,11 +74,11 @@ void thread_init_subsys()
 	 * last is ignored, because kip fpages is aligned
 	 */
 	assign_fpages_ext(-1, NULL,
-			(memptr_t) &kip, sizeof(kip_t),
-			&kip_fpage, &last);
+	                  (memptr_t) &kip, sizeof(kip_t),
+	                  &kip_fpage, &last);
 	assign_fpages_ext(-1, NULL,
-			(memptr_t) kip_extra, CONFIG_KIP_EXTRA_SIZE,
-			&kip_extra_fpage, &last);
+	                  (memptr_t) kip_extra, CONFIG_KIP_EXTRA_SIZE,
+	                  &kip_extra_fpage, &last);
 
 	sched_slot_set_handler(SSI_NORMAL_THREAD, thread_sched);
 }
@@ -124,8 +124,7 @@ static void thread_map_insert(l4_thread_t globalid, tcb_t *thr)
 {
 	if (thread_count == 0) {
 		thread_map[thread_count++] = thr;
-	}
-	else {
+	} else {
 		int i = thread_map_search(globalid, 0, thread_count);
 		int j = thread_count;
 
@@ -146,8 +145,7 @@ static void thread_map_delete(l4_thread_t globalid)
 {
 	if (thread_count == 1) {
 		thread_count = 0;
-	}
-	else {
+	} else {
 		int i = thread_map_search(globalid, 0, thread_count);
 		--thread_count;
 		for (; i < thread_count; i++)
@@ -224,8 +222,7 @@ tcb_t *thread_create(l4_thread_t globalid, utcb_t *utcb)
 		t->t_sibling = thr;
 
 		thr->t_localid = t->t_localid + (1 << 6);
-	}
-	else {
+	} else {
 		/* That is first thread in child chain */
 		caller->t_child = thr;
 
@@ -257,8 +254,7 @@ void thread_destroy(tcb_t *thr)
 
 	if (parent->t_child == thr) {
 		parent->t_child = thr->t_sibling;
-	}
-	else {
+	} else {
 		child = parent->t_child;
 		while (child != thr) {
 			prev_child = child;
@@ -283,9 +279,8 @@ void thread_space(tcb_t *thr, l4_thread_t spaceid, utcb_t *utcb)
 		map_fpage(NULL, thr->as, kip_extra_fpage, GRANT);
 
 		dbg_printf(DL_THREAD,
-			"\tNew space: as: %p, utcb: %p \n", thr->as, utcb);
-	}
-	else {
+		           "\tNew space: as: %p, utcb: %p \n", thr->as, utcb);
+	} else {
 		tcb_t *space = thread_by_globalid(spaceid);
 
 		thr->as = space->as;
@@ -297,7 +292,7 @@ void thread_space(tcb_t *thr, l4_thread_t spaceid, utcb_t *utcb)
 	 */
 	if (caller)
 		map_area(caller->as, thr->as, (memptr_t) utcb,
-				sizeof(utcb_t), GRANT, thread_ispriviliged(caller));
+		         sizeof(utcb_t), GRANT, thread_ispriviliged(caller));
 	else
 		map_area(thr->as, thr->as, (memptr_t) utcb, sizeof(utcb_t), GRANT, 1);
 }
@@ -323,8 +318,7 @@ void thread_init_ctx(void *sp, void *pc, tcb_t *thr)
 
 		((uint32_t *) sp)[REG_R0] = (uint32_t) &kip;
 		((uint32_t *) sp)[REG_R1] = (uint32_t) thr->utcb;
-	}
-	else {
+	} else {
 		thr->ctx.ret = 0xFFFFFFF9;
 		thr->ctx.ctl = 0x0;
 
@@ -362,7 +356,7 @@ tcb_t *thread_by_globalid(l4_thread_t globalid)
 	int idx = thread_map_search(globalid, 0, thread_count);
 
 	if (GLOBALID_TO_TID(thread_map[idx]->t_globalid)
-			!= GLOBALID_TO_TID(globalid))
+	    != GLOBALID_TO_TID(globalid))
 		return NULL;
 	return thread_map[idx];
 }
@@ -392,8 +386,8 @@ void thread_switch(tcb_t *thr)
 	current_utcb = thr->utcb;
 	if (current->as)
 		as_setup_mpu(current->as, current->ctx.sp,
-			((uint32_t*)current->ctx.sp)[REG_PC],
-			current->stack_base, current->stack_size);
+		             ((uint32_t*)current->ctx.sp)[REG_PC],
+		             current->stack_base, current->stack_size);
 }
 
 /* Select normal thread to run
@@ -466,12 +460,12 @@ void kdb_dump_threads(void)
 	char *state[] = { "FREE", "RUN", "SVC", "RECV", "SEND" };
 
 	dbg_printf(DL_KDB, "%5s %8s %8s %6s %s\n",
-		"type", "global", "local", "state", "parent");
+	           "type", "global", "local", "state", "parent");
 
 	for_each_in_ktable(thr, idx, (&thread_table)) {
 		dbg_printf(DL_KDB, "%5s %t %t %6s %t\n", kdb_get_thread_type(thr),
-			thr->t_globalid, thr->t_localid, state[thr->state],
-			(thr->t_parent) ? thr->t_parent->t_globalid : 0);
+		           thr->t_globalid, thr->t_localid, state[thr->state],
+		           (thr->t_parent) ? thr->t_parent->t_globalid : 0);
 	}
 }
 

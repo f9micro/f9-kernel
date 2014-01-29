@@ -26,7 +26,7 @@
 #include <init_hook.h>
 #include <lib/stdio.h>
 
-static char banner[] = 
+static char banner[] =
 	"\n"
 	"====================================================\n"
 	"      Copyright(C) 2013 The F9 Microkernel Project  \n"
@@ -90,14 +90,14 @@ void __l4_start(void)
 #ifndef CONFIG_LOADER
 	/* Copy data segments */
 	init_copy_seg(&kernel_text_end,
-			&kernel_data_start, &kernel_data_end);
-			/* DATA (ROM) -> DATA (RAM) */
+	              &kernel_data_start, &kernel_data_end);
+	/* DATA (ROM) -> DATA (RAM) */
 	init_copy_seg(&user_text_flash_start,
-			&user_text_start, &user_text_end);
-			/* USER TEXT (ROM) -> USER TEXT (RAM) */
+	              &user_text_start, &user_text_end);
+	/* USER TEXT (ROM) -> USER TEXT (RAM) */
 	init_copy_seg(&user_text_flash_end,
-			&user_data_start, &user_data_end);
-			/* USER DATA (ROM) -> USER DATA (RAM) */
+	              &user_data_start, &user_data_end);
+	/* USER DATA (ROM) -> USER DATA (RAM) */
 #endif
 
 	/* Fill bss with zeroes */

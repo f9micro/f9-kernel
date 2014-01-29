@@ -29,8 +29,7 @@ void __uart_irq_handler(void)
 	if (usart_interrupt_status(&console_uart, USART_IT_TXE)) {
 		/* USART TX */
 		dbg_uart_send(1);
-	}
-	else if (usart_interrupt_status(&console_uart, USART_IT_RXNE)) {
+	} else if (usart_interrupt_status(&console_uart, USART_IT_RXNE)) {
 		/* USART RX */
 		dbg_uart_recv();
 	}
@@ -61,8 +60,7 @@ static void dbg_uart_send(int avail)
 			usart_putc(&console_uart, chr);
 			dbg_uart.ready = 0;
 			usart_config_interrupt(&console_uart, USART_IT_TXE, 1);
-		}
-		else {
+		} else {
 			dbg_uart.ready = 1;
 			usart_config_interrupt(&console_uart, USART_IT_TXE, 0);
 		}
@@ -77,8 +75,7 @@ static void dbg_async_putchar(char chr)
 	if (!dbg_uart.ready) {
 		while (queue_push(&(dbg_uart.tx), chr) != QUEUE_OK)
 			/* wait */ ;
-	}
-	else {
+	} else {
 		usart_putc(&console_uart, chr);
 		dbg_uart.ready = 0;
 		usart_config_interrupt(&console_uart, USART_IT_TXE, 1);

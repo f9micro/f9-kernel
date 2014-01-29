@@ -28,13 +28,13 @@ void kdb_dump_ktable(void)
 	for (; i < kdb_ktable_cnt; ++i) {
 		kt = kdb_ktables[i];
 		dbg_printf(DL_KDB, "\nKT: %s\nbitmap:%p, data:%p, num: %d size: %d\n",
-			kt->tname, kt->bitmap, kt->data, kt->num, kt->size);
+		           kt->tname, kt->bitmap, kt->data, kt->num, kt->size);
 		/* Dump bitmap */
 		for (j = 0; j < kt->num; ++j) {
 			if (j % 64 == 0)
 				dbg_printf(DL_KDB, "%5d: ", j);
 
-			dbg_putchar((bitmap_get_bit(bitmap_cursor(kt->bitmap, j)))? 'X': '-');
+			dbg_putchar((bitmap_get_bit(bitmap_cursor(kt->bitmap, j))) ? 'X' : '-');
 
 			if ((j + 1) % 64 == 0)
 				dbg_puts("\n");
@@ -100,8 +100,8 @@ void *ktable_alloc_id(ktable_t *kt, int i)
 
 	if (bitmap_test_and_set_bit(cursor)) {
 		dbg_printf(DL_KTABLE,
-			"KT: %s allocated %d [%p]\n", kt->tname, i,
-			kt->data + (i * kt->size));
+		           "KT: %s allocated %d [%p]\n", kt->tname, i,
+		           kt->data + (i * kt->size));
 
 		return (void *) kt->data + (i * kt->size);
 	}
@@ -130,8 +130,8 @@ void *ktable_alloc(ktable_t *kt)
 			i = bitmap_cursor_id(cursor);
 
 			dbg_printf(DL_KTABLE,
-				"KT: %s allocated %d [%p]\n", kt->tname, i,
-				kt->data + (i * kt->size));
+			           "KT: %s allocated %d [%p]\n", kt->tname, i,
+			           kt->data + (i * kt->size));
 
 			return (void *) kt->data + (i * kt->size);
 		}
@@ -178,7 +178,7 @@ void ktable_free(ktable_t *kt, void *element)
 		bitmap_cursor_t	cursor = bitmap_cursor(kt->bitmap, i);
 
 		dbg_printf(DL_KTABLE,
-			"KT: %s free %d [%p]\n", kt->tname, i, element);
+		           "KT: %s free %d [%p]\n", kt->tname, i, element);
 
 		bitmap_clear_bit(cursor);
 	}

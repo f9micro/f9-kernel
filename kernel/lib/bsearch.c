@@ -26,7 +26,7 @@
  * look at item 3.
  */
 void *bsearch(const void *key, const void *base0, size_t nmemb, size_t size,
-		int (*compar)(const void *, const void *))
+              int (*compar)(const void *, const void *))
 {
 	const char *base = base0;
 	size_t lim;

@@ -59,8 +59,7 @@ void sys_clock_init(void)
 
 	if ((*RCC_CR & RCC_CR_HSERDY) != 0) {
 		HSE_status = (uint32_t) 0x01;
-	}
-	else {
+	} else {
 		HSE_status = (uint32_t) 0x00;
 	}
 
@@ -82,8 +81,8 @@ void sys_clock_init(void)
 		/* Configure the main PLL */
 		/* PLL Options - See RM0090 Reference Manual pg. 95 */
 		*RCC_PLLCFGR = PLL_M | (PLL_N << 6) |
-				(((PLL_P >> 1) -1) << 16) |
-				(RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24);
+		               (((PLL_P >> 1) - 1) << 16) |
+		               (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24);
 
 		/* Enable the main PLL */
 
@@ -110,8 +109,7 @@ void sys_clock_init(void)
 		while ((*RCC_CFGR & (uint32_t) RCC_CFGR_SWS_M) !=
 		       RCC_CFGR_SWS_PLL)
 			/* wait */ ;
-	}
-	else {
+	} else {
 		/* If HSE fails to start-up, the application will have
 		 * wrong clock configuration.
 		 */

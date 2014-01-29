@@ -24,7 +24,7 @@ void softirq_schedule(softirq_type_t type)
 	set_kernel_state(T_RUNNABLE);
 }
 
-static char *softirq_names[NR_SOFTIRQ] __attribute__ ((used)) = {
+static char *softirq_names[NR_SOFTIRQ] __attribute__((used)) = {
 	"Kernel timer events",
 	"Asynchronous events",
 	"System calls",
@@ -48,7 +48,7 @@ retry:
 			atomic_set(&(softirq[i].schedule), 0);
 
 			dbg_printf(DL_SOFTIRQ,
-				"SOFTIRQ: executing %s\n", softirq_names[i]);
+			           "SOFTIRQ: executing %s\n", softirq_names[i]);
 		}
 	}
 
@@ -60,7 +60,7 @@ retry:
 		softirq_schedule |= softirq[i].schedule;
 	}
 
-	set_kernel_state((softirq_schedule)? T_RUNNABLE : T_INACTIVE);
+	set_kernel_state((softirq_schedule) ? T_RUNNABLE : T_INACTIVE);
 	irq_enable();
 
 	if (softirq_schedule)
@@ -76,8 +76,8 @@ void kdb_dump_softirq(void)
 
 	for (i = 0; i < NR_SOFTIRQ; ++i) {
 		dbg_printf(DL_KDB, "%32s %s\n", softirq_names[i],
-			atomic_get(&(softirq[i].schedule)) ?
-				"scheduled" : "not scheduled");
+		           atomic_get(&(softirq[i].schedule)) ?
+		           "scheduled" : "not scheduled");
 	}
 }
 #endif

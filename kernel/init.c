@@ -77,7 +77,7 @@ void (* const g_pfnVectors[])(void) = {
 
 	/* Chip Level: vendor specific */
 	/* FIXME: use better IRQ vector generator */
-	#include INC_PLAT(nvic_table.h)
+#include INC_PLAT(nvic_table.h)
 };
 
 #define MAX(a, b) \
@@ -92,9 +92,9 @@ int run_init_hook(unsigned int level)
 	unsigned int max_called_level = last_level;
 
 	for (const init_struct *ptr = init_hook_start;
-			ptr != init_hook_end; ++ptr)
+	     ptr != init_hook_end; ++ptr)
 		if ((ptr->level > last_level) &&
-				(ptr->level <= level)) {
+		    (ptr->level <= level)) {
 			max_called_level = MAX(max_called_level, ptr->level);
 			ptr->hook();
 		}

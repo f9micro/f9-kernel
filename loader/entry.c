@@ -47,24 +47,24 @@ __ISR_VECTOR
 void (* const g_pfnVectors[])(void) = {
 	/* Core Level - ARM Cortex-M */
 	(void *) &stack_end,	/* initial stack pointer */
-	__loader_start,			/* reset handler */
-	nointerrupt,			/* NMI handler */
+	__loader_start,		/* reset handler */
+	nointerrupt,		/* NMI handler */
 	nointerrupt,		/* hard fault handler */
 	nointerrupt,		/* MPU fault handler */
-	nointerrupt,			/* bus fault handler */
-	nointerrupt,			/* usage fault handler */
-	0,				/* Reserved */
-	0,				/* Reserved */
-	0,				/* Reserved */
-	0,				/* Reserved */
-	nointerrupt,			/* SVCall handler */
-	nointerrupt,			/* Debug monitor handler */
-	0,				/* Reserved */
-	dummy_handler,			/* PendSV handler */
+	nointerrupt,		/* bus fault handler */
+	nointerrupt,		/* usage fault handler */
+	0,			/* Reserved */
+	0,			/* Reserved */
+	0,			/* Reserved */
+	0,			/* Reserved */
+	nointerrupt,		/* SVCall handler */
+	nointerrupt,		/* Debug monitor handler */
+	0,			/* Reserved */
+	dummy_handler,		/* PendSV handler */
 	dummy_handler, 		/* SysTick handler */
 	/* Chip Level: vendor specific */
 	/* FIXME: use better IRQ vector generator */
-	#include INC_PLAT(nvic_table.h)
+#include INC_PLAT(nvic_table.h)
 };
 
 int main(void)
@@ -81,7 +81,7 @@ int main(void)
 	dbg_printf(DL_BASIC, "loading kernel ...\n");
 
 	dbg_printf(DL_BASIC, "ELF check result = %d\n",
-			elf_checkFile((void *) 0x800c000));
+	           elf_checkFile((void *) 0x800c000));
 
 	kernel_entry = (void (*)(void))(elf_loadFile((void *) 0x800c000));
 	irq_disable();
@@ -112,7 +112,7 @@ void __loader_start(void)
 {
 	/* Copy data segments */
 	init_copy_seg(&kernel_flash_start + (&kernel_end - &kernel_start),
-		&data_start, &data_end);
+	              &data_start, &data_end);
 	/* DATA (ROM) -> DATA (RAM) */
 
 	/* Fill bss with zeroes */

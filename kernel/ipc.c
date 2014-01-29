@@ -69,15 +69,14 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 			/* If typed_item_idx == -1 - read ti's tag */
 			typed_item.raw = ipc_read_mr(from, typed_idx);
 			++typed_item_idx;
-		}
-		else if (typed_item.s.header & IPC_TI_MAP_GRANT) {
+		} else if (typed_item.s.header & IPC_TI_MAP_GRANT) {
 			/* MapItem / GrantItem have 1xxx in header */
 			typed_data = ipc_read_mr(from, typed_idx);
 
 			map_area(from->as, to->as,
 			         typed_item.raw & 0xFFFFFFC0,
 			         typed_data & 0xFFFFFFC0,
-			         (typed_item.s.header & IPC_TI_GRANT)? GRANT : MAP,
+			         (typed_item.s.header & IPC_TI_GRANT) ? GRANT : MAP,
 			         thread_ispriviliged(from));
 			typed_item_idx = -1;
 		}
@@ -95,8 +94,7 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 	from_recv_tid = ((uint32_t*)from->ctx.sp)[REG_R1];
 	if (from_recv_tid == L4_NILTHREAD) {
 		from->state = T_RUNNABLE;
-	}
-	else {
+	} else {
 		from->state = T_RECV_BLOCKED;
 		from->ipc_from = from_recv_tid;
 
@@ -108,7 +106,7 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 	sched_slot_dispatch(SSI_IPC_THREAD, to);
 
 	dbg_printf(DL_IPC,
-		"IPC: %t to %t\n", caller->t_globalid, to->t_globalid);
+	           "IPC: %t to %t\n", caller->t_globalid, to->t_globalid);
 }
 
 void sys_ipc(uint32_t *param1)
@@ -123,14 +121,12 @@ void sys_ipc(uint32_t *param1)
 		if (to_tid == TID_TO_GLOBALID(THREAD_LOG)) {
 			user_log(caller);
 			caller->state = T_RUNNABLE;
-		}
-		else if ((to_thr && to_thr->state == T_RECV_BLOCKED)
-				|| to_tid == caller->t_globalid ) {
+		} else if ((to_thr && to_thr->state == T_RECV_BLOCKED)
+		           || to_tid == caller->t_globalid) {
 			/* To thread who is waiting for us or sends to myself */
 			do_ipc(caller, to_thr);
-		}
-		else if (to_thr && to_thr->state == T_INACTIVE &&
-			GLOBALID_TO_TID(to_thr->utcb->t_pager) == GLOBALID_TO_TID(caller->t_globalid)) {
+		} else if (to_thr && to_thr->state == T_INACTIVE &&
+		           GLOBALID_TO_TID(to_thr->utcb->t_pager) == GLOBALID_TO_TID(caller->t_globalid)) {
 			if (ipc_read_mr(caller, 0) == 0x00000003) {
 				/* thread start protocol */
 
@@ -147,13 +143,11 @@ void sys_ipc(uint32_t *param1)
 
 				/* Start thread */
 				to_thr->state = T_RUNNABLE;
-			}
-			else {
+			} else {
 				do_ipc(caller, to_thr);
 				to_thr->state = T_INACTIVE;
 			}
-		}
-		else  {
+		} else  {
 			/* No waiting, block myself */
 			caller->state = T_SEND_BLOCKED;
 			caller->utcb->intended_receiver = to_tid;
@@ -182,7 +176,7 @@ uint32_t ipc_deliver(void *data)
 		thr = thread_map[i];
 
 		if (thr->state == T_RECV_BLOCKED && thr->ipc_from != L4_NILTHREAD &&
-				thr->ipc_from != L4_ANYTHREAD) {
+		    thr->ipc_from != L4_ANYTHREAD) {
 			from_thr = thread_by_globalid(thr->ipc_from);
 
 			do_ipc(from_thr, thr);

@@ -30,13 +30,12 @@ int kprobe_arch_add(struct kprobe *kp)
 
 	if (found == NULL) {
 		b = breakpoint_install((uint32_t) kp->addr);
-		if (b != NULL){
+		if (b != NULL) {
 			kp->bkpt = b;
 			enable_breakpoint(b);
-		}else
+		} else
 			goto arch_add_error;
-	}
-	else {
+	} else {
 		kp->bkpt = found->bkpt;
 	}
 
@@ -69,8 +68,7 @@ void arch_kprobe_handler(uint32_t *stack, uint32_t *kp_regs)
 
 	if ((*SCB_DFSR & SCB_DFSR_DWTTRAP)) {
 		panic("DWT Watchpoint hit\n");
-	}
-	else if ((*SCB_DFSR & SCB_DFSR_BKPT)) {
+	} else if ((*SCB_DFSR & SCB_DFSR_BKPT)) {
 
 		kprobe_prebreak(stack, kp_regs);
 
@@ -79,8 +77,7 @@ void arch_kprobe_handler(uint32_t *stack, uint32_t *kp_regs)
 
 		cpu_enable_single_step();
 		kprobe_breakpoint_disable(stack);
-	}
-	else if (*SCB_DFSR & SCB_DFSR_HALTED) {
+	} else if (*SCB_DFSR & SCB_DFSR_HALTED) {
 		kprobe_postbreak(stack, kp_regs);
 
 		/* Clear HALTED status bit */
@@ -88,8 +85,7 @@ void arch_kprobe_handler(uint32_t *stack, uint32_t *kp_regs)
 
 		cpu_disable_single_step();
 		kprobe_breakpoint_enable(stack);
-	}
-	else {
+	} else {
 		/*
 		 * sometimes DWT generates faults
 		 * without setting SCB_DFSR_DWTTRAP

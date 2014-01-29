@@ -55,7 +55,7 @@ void kplist_del(struct kprobe *kp)
 int kprobe_register(struct kprobe *kp)
 {
 	int ret;
-	kp->addr = (void *) ((uint32_t) kp->addr & ~(1UL));
+	kp->addr = (void *)((uint32_t) kp->addr & ~(1UL));
 	if (is_thumb32(*(uint16_t *) kp->addr))
 		kp->step_addr = kp->addr + 4;
 	else
@@ -77,7 +77,7 @@ int kprobe_unregister(struct kprobe *kp)
 }
 
 static int __kretprobe_post_handler(struct kprobe *kp, uint32_t *stack,
-			   uint32_t *kp_regs)
+                                    uint32_t *kp_regs)
 {
 	struct kretprobe * rp = (struct kretprobe *) kp;
 
@@ -90,7 +90,7 @@ static int __kretprobe_post_handler(struct kprobe *kp, uint32_t *stack,
 }
 
 static int __kretprobe_pre_handler(struct kprobe *kp, uint32_t *stack,
-			   uint32_t *kp_regs)
+                                   uint32_t *kp_regs)
 {
 	struct kretprobe * rp = (struct kretprobe *) kp;
 
@@ -150,7 +150,7 @@ void kprobe_breakpoint_enable(uint32_t *stack)
 void kprobe_breakpoint_disable(uint32_t *stack)
 {
 	struct kprobe *kp = kp_list;
-	while(kp != NULL) {
+	while (kp != NULL) {
 		if ((uint32_t) kp->addr == stack[REG_PC])
 			disable_breakpoint(kp->bkpt);
 		kp = kp->next;

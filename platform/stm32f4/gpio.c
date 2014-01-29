@@ -55,8 +55,7 @@ inline static void gpio_afr(uint8_t port, uint8_t pin, uint8_t func)
 		reg &= ~(GPIO_AFRL_M(pin));
 		reg |= (func << GPIO_AFRL_PIN(pin));
 		*GPIO_AFRL(port) = reg;
-	}
-	else {
+	} else {
 		reg = *GPIO_AFRH(port);
 		reg &= ~(GPIO_AFRH_M(pin));
 		reg |= (func << GPIO_AFRH_PIN(pin));

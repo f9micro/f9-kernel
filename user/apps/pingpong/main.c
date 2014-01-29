@@ -40,7 +40,7 @@ void __USER_TEXT pong_thread(void)
 }
 
 static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
-		L4_Word_t sp, L4_Word_t stack_size)
+                                     L4_Word_t sp, L4_Word_t stack_size)
 {
 	L4_Msg_t msg;
 

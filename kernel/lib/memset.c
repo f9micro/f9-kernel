@@ -48,7 +48,7 @@ void *memset(void *dest, int c, size_t n)
 	n &= -4;
 
 #ifdef __GNUC__
-	c32 = ((u32) -1) / 255 * (unsigned char) c;
+	c32 = ((u32) - 1) / 255 * (unsigned char) c;
 	/* In preparation to copy 32 bytes at a time, aligned on
 	 * an 8-byte bounary, fill head/tail up to 28 bytes each.
 	 * As in the initial byte-based head/tail fill, each

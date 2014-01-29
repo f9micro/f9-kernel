@@ -25,12 +25,10 @@ static void hard_breakpoint_release(struct breakpoint *b);
 static int get_avail_hard_breakpoint(void)
 {
 	int i;
-
 	for (i = 0 ; i < FPB_MAX_COMP ; i++) {
 		if (hard_breakpoints[i] == -1)
 			return i;
 	}
-
 	return -1;
 }
 
@@ -63,7 +61,7 @@ struct breakpoint *hard_breakpoint_config(uint32_t addr, struct breakpoint *b)
 	if (breakpoint_type_by_addr(addr) == BKPT_HARD) {
 		int _hard_breakpoint_id = get_avail_hard_breakpoint();
 		int breakpoint_id = get_breakpoint_id(b);
-	
+
 		if (breakpoint_id >= 0 && _hard_breakpoint_id >= 0) {
 			hard_breakpoints[_hard_breakpoint_id] = breakpoint_id;
 			b->type = BKPT_HARD;
@@ -72,11 +70,10 @@ struct breakpoint *hard_breakpoint_config(uint32_t addr, struct breakpoint *b)
 			b->enable = hard_breakpoint_enable;
 			b->disable = hard_breakpoint_disable;
 			b->release = hard_breakpoint_release;
-
 			return b;
 		}
 	}
-	
+
 	return NULL;
 }
 
@@ -85,10 +82,12 @@ static void hard_breakpoint_enable(struct breakpoint *b)
 	uint32_t addr = b->addr;
 
 	if (IS_UPPER_HALFWORLD(addr)) {
-		*(FPB_COMP + b->hard_breakpoint_id) = FPB_COMP_REPLACE_UPPER |
-			(addr & FPB_COMP_ADDR_MASK) | FPB_COMP_ENABLE;
+		*(FPB_COMP + b->hard_breakpoint_id) =
+			FPB_COMP_REPLACE_UPPER |
+		        (addr & FPB_COMP_ADDR_MASK) | FPB_COMP_ENABLE;
 	} else {
-		*(FPB_COMP + b->hard_breakpoint_id) = FPB_COMP_REPLACE_LOWER |
+		*(FPB_COMP + b->hard_breakpoint_id) =
+			FPB_COMP_REPLACE_LOWER |
 			(addr & FPB_COMP_ADDR_MASK) | FPB_COMP_ENABLE;
 	}
 }

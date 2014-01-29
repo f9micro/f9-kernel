@@ -14,7 +14,7 @@ __USER_TEXT void
 __assert(const char *msg, const char *file, int line)
 {
 	printf("\n\nassertion failed: %s, line %d in %s\n\n",
-			msg,  (int) line, file);
+	       msg, (int) line, file);
 
 	L4_KDB_Enter("assertion failed");
 }

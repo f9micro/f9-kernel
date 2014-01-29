@@ -91,7 +91,7 @@ create_thread(void (*func)(void), bool new_space, int cpu, L4_Word_t spacectrl)
 
 		mylocalid = L4_MyLocalId();
 		utcb_base = *(L4_Word_t *) &mylocalid;
-		utcb_base &= ~(L4_UtcbAreaSize (kip) - 1);
+		utcb_base &= ~(L4_UtcbAreaSize(kip) - 1);
 
 		/* Make room for at least 1000 threads in the UTCB area */
 		utcb_area = L4_Fpage(utcb_base, L4_UtcbSize(kip) * 1000);
@@ -108,12 +108,12 @@ create_thread(void (*func)(void), bool new_space, int cpu, L4_Word_t spacectrl)
 		L4_Word_t control;
 
 		/* Create inactive thread */
-		int res = L4_ThreadControl(tid, tid, me, L4_nilthread, (void *) -1);
+		int res = L4_ThreadControl(tid, tid, me, L4_nilthread, (void *) - 1);
 		if (res != 1)
 			printf("ERROR: ThreadControl returned %d (ERR=%d)\n", res, L4_ErrorCode());
 
 		res = L4_SpaceControl(tid, spacectrl, kip_area, utcb_area,
-				L4_nilthread, &control);
+		                      L4_nilthread, &control);
 		if (res != 1)
 			printf("ERROR: SpaceControl returned %d (ERR=%d)\n", res, L4_ErrorCode());
 
@@ -123,8 +123,7 @@ create_thread(void (*func)(void), bool new_space, int cpu, L4_Word_t spacectrl)
 			printf("ERROR: ThreadControl returned %d (ERR=%d)\n", res, L4_ErrorCode());
 
 		map_user_sections(tid);
-	}
-	else {
+	} else {
 		/* Create active thread */
 		int res = L4_ThreadControl(tid, me, me, me, (void *) utcb_location);
 		if (res != 1)
@@ -144,8 +143,8 @@ L4_Word_t __USER_TEXT
 kill_thread(L4_ThreadId_t tid)
 {
 	return L4_ThreadControl(
-			tid, L4_nilthread, L4_nilthread,
-			L4_nilthread, (void *) -1);
+	           tid, L4_nilthread, L4_nilthread,
+	           L4_nilthread, (void *) - 1);
 }
 
 void __USER_TEXT

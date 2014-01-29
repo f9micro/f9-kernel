@@ -1,4 +1,5 @@
-/* Copyright (c) 2004 University of New South Wales. All rights reserved.
+/* Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
+ * Copyright (c) 2004 University of New South Wales. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -9,7 +10,7 @@ void *str;
 
 /*
  * Checks that elfFile points to a valid elf file. Returns 0 if the elf
- * file is valid, < 0 if invalid. 
+ * file is valid, < 0 if invalid.
  */
 
 int
@@ -128,9 +129,9 @@ elf_getSectionNamed(void *elfFile, char *_str)
 }
 
 void
-elf_getProgramHeaderInfo(void *elfFile, uint16_t ph, uint32_t *p_vaddr, 
-			 uint32_t *p_paddr, uint32_t *p_filesz, uint32_t *p_offset, 
-			 uint32_t *p_memsz)
+elf_getProgramHeaderInfo(void *elfFile, uint16_t ph, uint32_t *p_vaddr,
+                         uint32_t *p_paddr, uint32_t *p_filesz, uint32_t *p_offset,
+                         uint32_t *p_memsz)
 {
 	*p_vaddr = elf_getProgramHeaderVaddr(elfFile, ph);
 	*p_paddr = elf_getProgramHeaderPaddr(elfFile, ph);
@@ -166,8 +167,7 @@ elf_getMemoryBounds(void *elfFile, bool phys, uint32_t *min, uint32_t *max)
 
 		if (phys) {
 			sect_min = elf_getProgramHeaderPaddr(elfFile, i);
-		}
-		else {
+		} else {
 			sect_min = elf_getProgramHeaderVaddr(elfFile, i);
 		}
 
@@ -193,8 +193,7 @@ elf_vaddrInProgramHeader(void *elfFile, uint16_t ph, uint32_t vaddr)
 	uint32_t max = min + elf_getProgramHeaderMemorySize(elfFile, ph);
 	if (vaddr >= min && vaddr < max) {
 		return true;
-	}
-	else {
+	} else {
 		return false;
 	}
 }
@@ -230,14 +229,14 @@ uint32_t elf_loadFile(void *elfFile)
 		dest = elf_getProgramHeaderPaddr(elfFile, i);
 		dbg_printf(DL_BASIC, "Elf file pheader physical: 0x%x\n", (unsigned int)dest);
 		dbg_printf(DL_BASIC, "Elf file pheader virtual: 0x%x\n",
-			       (unsigned int)elf_getProgramHeaderVaddr(elfFile,i));
+		           (unsigned int)elf_getProgramHeaderVaddr(elfFile, i));
 		len = elf_getProgramHeaderFileSize(elfFile, i);
 		dbg_printf(DL_BASIC, "This section's size in file: %p\n", len);
-		src = (uint32_t) (uintptr_t) elfFile + elf_getProgramHeaderOffset(elfFile, i);
+		src = (uint32_t)(uintptr_t) elfFile + elf_getProgramHeaderOffset(elfFile, i);
 		dbg_printf(DL_BASIC, "Elf program header offset: %p\n", src);
-		dbg_printf(DL_BASIC, "Copying to range from 0x%x to 0x%x of size: 0x%x\n", 
-			(unsigned int)dest, (unsigned int)dest + (unsigned int)len, (unsigned int)len);
-		memcpy((void*) (uintptr_t) dest, (void*) (uintptr_t) src, len);
+		dbg_printf(DL_BASIC, "Copying to range from 0x%x to 0x%x of size: 0x%x\n",
+		           (unsigned int)dest, (unsigned int)dest + (unsigned int)len, (unsigned int)len);
+		memcpy((void*)(uintptr_t) dest, (void*)(uintptr_t) src, len);
 		dest += len;
 	}
 	dbg_printf(DL_BASIC, "\n");

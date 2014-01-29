@@ -51,7 +51,7 @@ static mempool_t memmap[] = {
 		MP_UR | MP_UX | MP_MEMPOOL | MP_MAP_ALWAYS, MPT_USER_TEXT),
 	DECLARE_MEMPOOL_2("KIP", kip,
 		MP_KR | MP_KW | MP_UR | MP_SRAM, MPT_KERNEL_DATA),
-	DECLARE_MEMPOOL  ("KDATA", &kip_end, &kernel_data_end,
+	DECLARE_MEMPOOL("KDATA", &kip_end, &kernel_data_end,
 		MP_KR | MP_KW | MP_NO_FPAGE, MPT_KERNEL_DATA),
 	DECLARE_MEMPOOL_2("KBSS",  kernel_bss,
 		MP_KR | MP_KW | MP_NO_FPAGE, MPT_KERNEL_DATA),
@@ -59,30 +59,30 @@ static mempool_t memmap[] = {
 		MP_UR | MP_UW | MP_MEMPOOL | MP_MAP_ALWAYS, MPT_USER_DATA),
 	DECLARE_MEMPOOL_2("UBSS",  user_bss,
 		MP_UR | MP_UW | MP_MEMPOOL  | MP_MAP_ALWAYS, MPT_USER_DATA),
-	DECLARE_MEMPOOL  ("MEM0",  &user_bss_end, 0x2001c000,
+	DECLARE_MEMPOOL("MEM0",  &user_bss_end, 0x2001c000,
 		MP_UR | MP_UW | MP_SRAM, MPT_AVAILABLE),
 #ifdef CONFIG_BITMAP_BITBAND
-	DECLARE_MEMPOOL  ("KBITMAP",  &bitmap_bitband_start, &bitmap_bitband_end,
+	DECLARE_MEMPOOL("KBITMAP",  &bitmap_bitband_start, &bitmap_bitband_end,
 		MP_KR | MP_KW | MP_NO_FPAGE, MPT_KERNEL_DATA),
 #else
-	DECLARE_MEMPOOL  ("KBITMAP",  &bitmap_start, &bitmap_end,
+	DECLARE_MEMPOOL("KBITMAP",  &bitmap_start, &bitmap_end,
 		MP_KR | MP_KW | MP_NO_FPAGE, MPT_KERNEL_DATA),
 #endif
-	DECLARE_MEMPOOL  ("MEM1",   &kernel_ahb_end, 0x10010000,
+	DECLARE_MEMPOOL("MEM1",   &kernel_ahb_end, 0x10010000,
 		MP_UR | MP_UW | MP_AHB_RAM, MPT_AVAILABLE),
-	DECLARE_MEMPOOL  ("APB1DEV", 0x40000000, 0x40007800,
+	DECLARE_MEMPOOL("APB1DEV", 0x40000000, 0x40007800,
 		MP_UR | MP_UW | MP_DEVICES, MPT_DEVICES),
-	DECLARE_MEMPOOL  ("APB2_1DEV", 0x40010000, 0x40013400,
+	DECLARE_MEMPOOL("APB2_1DEV", 0x40010000, 0x40013400,
 		MP_UR | MP_UW | MP_DEVICES, MPT_DEVICES),
-	DECLARE_MEMPOOL  ("APB2_2DEV", 0x40014000, 0x40014c00,
+	DECLARE_MEMPOOL("APB2_2DEV", 0x40014000, 0x40014c00,
 		MP_UR | MP_UW | MP_DEVICES, MPT_DEVICES),
-	DECLARE_MEMPOOL  ("AHB1_1DEV", 0x40020000, 0x40022400,
+	DECLARE_MEMPOOL("AHB1_1DEV", 0x40020000, 0x40022400,
 		MP_UR | MP_UW | MP_DEVICES, MPT_DEVICES),
-	DECLARE_MEMPOOL  ("AHB1_2DEV", 0x40023c00, 0x40040000,
+	DECLARE_MEMPOOL("AHB1_2DEV", 0x40023c00, 0x40040000,
 		MP_UR | MP_UW | MP_DEVICES, MPT_DEVICES),
-	DECLARE_MEMPOOL  ("AHB2DEV", 0x50000000, 0x50061000,
+	DECLARE_MEMPOOL("AHB2DEV", 0x50000000, 0x50061000,
 		MP_UR | MP_UW | MP_DEVICES, MPT_DEVICES),
-	DECLARE_MEMPOOL  ("AHB3DEV", 0x60000000, 0xA0001000,
+	DECLARE_MEMPOOL("AHB3DEV", 0x60000000, 0xA0001000,
 		MP_UR | MP_UW | MP_DEVICES, MPT_DEVICES),
 };
 
@@ -122,7 +122,7 @@ int mempool_search(memptr_t base, size_t size)
 
 	for (i = 0; i < sizeof(memmap) / sizeof(mempool_t); ++i) {
 		if ((memmap[i].start <= base) &&
-				(memmap[i].end >= (base + size))) {
+		    (memmap[i].end >= (base + size))) {
 			return i;
 		}
 	}
@@ -150,23 +150,24 @@ void memory_init()
 
 	/* Initialize mempool table in KIP */
 	for (i = 0; i < sizeof(memmap) / sizeof(mempool_t); ++i) {
-		switch(memmap[i].tag) {
+		switch (memmap[i].tag) {
 		case MPT_USER_DATA:
 		case MPT_USER_TEXT:
 		case MPT_DEVICES:
 		case MPT_AVAILABLE:
-			mem_desc[j].base = addr_align((memmap[i].start),
-					CONFIG_SMALLEST_FPAGE_SIZE) | i;
+			mem_desc[j].base = addr_align(
+					(memmap[i].start),
+			                CONFIG_SMALLEST_FPAGE_SIZE) | i;
 			mem_desc[j].size = addr_align(
-				(memmap[i].end - memmap[i].start),
-				CONFIG_SMALLEST_FPAGE_SIZE) | memmap[i].tag;
+					(memmap[i].end - memmap[i].start),
+					CONFIG_SMALLEST_FPAGE_SIZE) | memmap[i].tag;
 			j++;
 			break;
 		}
 	}
 
 	kip.memory_info.s.memory_desc_ptr =
-			((void *) mem_desc) - ((void *) &kip);
+	    ((void *) mem_desc) - ((void *) &kip);
 	kip.memory_info.s.n = j;
 
 	*shcsr |= 1 << 16;	/* Enable memfault */
@@ -179,7 +180,7 @@ INIT_HOOK(memory_init, INIT_LEVEL_KERNEL_EARLY);
  */
 
 void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc,
-		memptr_t stack_base, size_t stack_size)
+                  memptr_t stack_base, size_t stack_size)
 {
 	fpage_t *mpu[8] = {NULL};
 	fpage_t *fp;
@@ -224,16 +225,14 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc,
 
 			if (addr_in_fpage(pc, fp, 0)) {
 				priv = 0;
-			}
-			else if (fp->fpage.flags & FPAGE_ALWAYS) {
+			} else if (fp->fpage.flags & FPAGE_ALWAYS) {
 				priv = 1;
 			}
 
 			if (mpu_first[priv] == NULL) {
 				mpu_first[priv] = fp;
 				mpu_fp[priv] = fp;
-			}
-			else {
+			} else {
 				mpu_fp[priv]->mpu_next = fp;
 				mpu_fp[priv] = fp;
 			}
@@ -243,14 +242,12 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc,
 
 		if (mpu_first[1]) {
 			mpu_fp[1]->mpu_next = mpu_first[2];
-		}
-		else {
+		} else {
 			mpu_first[1] = mpu_first[2];
 		}
 		if (mpu_first[0]) {
 			mpu_fp[0]->mpu_next = mpu_first[1];
-		}
-		else {
+		} else {
 			mpu_first[0] = mpu_first[1];
 		}
 		as->mpu_first = mpu_first[0];
@@ -258,7 +255,7 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc,
 
 	/* Prevent link to stack pages */
 	for (fp = as->mpu_first; i < 8 && fp != NULL; fp = fp->mpu_next) {
-		for(j = 0; j < mpu_first_i; j++) {
+		for (j = 0; j < mpu_first_i; j++) {
 			if (fp == mpu[j]) {
 				break;
 			}
@@ -286,7 +283,7 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc,
 		mpu_setup_region(j, mpu[j]);
 
 		if (j < i - 1)
-			mpu[j]->mpu_next = mpu[j+1];
+			mpu[j]->mpu_next = mpu[j + 1];
 	}
 
 	/* Clean unused MPU regions */
@@ -300,12 +297,12 @@ void as_map_user(as_t *as)
 	int i;
 
 	for (i = 0; i < sizeof(memmap) / sizeof(mempool_t); ++i) {
-		switch(memmap[i].tag) {
+		switch (memmap[i].tag) {
 		case MPT_USER_DATA:
 		case MPT_USER_TEXT:
 			/* Create fpages only for user text and user data */
 			assign_fpages(as, memmap[i].start,
-				(memmap[i].end - memmap[i].start));
+			              (memmap[i].end - memmap[i].start));
 		}
 	}
 }
@@ -317,7 +314,7 @@ void as_map_ktext(as_t *as)
 	for (i = 0; i < sizeof(memmap) / sizeof(mempool_t); ++i) {
 		if (memmap[i].tag == MPT_KERNEL_TEXT) {
 			assign_fpages(as, memmap[i].start,
-				(memmap[i].end - memmap[i].start));
+			              (memmap[i].end - memmap[i].start));
 		}
 	}
 }
@@ -362,7 +359,7 @@ void as_destroy(as_t *as)
 }
 
 int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
-		map_action_t action, int is_priviliged)
+             map_action_t action, int is_priviliged)
 {
 	/* Most complicated part of mapping subsystem */
 	memptr_t end = base + size, probe = base;
@@ -386,8 +383,7 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 			/* Maps to itself, ignore other actions */
 			return 0;
 		}
-	}
-	else {
+	} else {
 		if (src == dst) {
 			/* Maps to itself, ignore other actions */
 			return 0;
@@ -479,19 +475,19 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 static char *kdb_mempool_prop(mempool_t *mp)
 {
 	static char mempool[10] = "--- --- -";
-	mempool[0] = (mp->flags & MP_KR)? 'r' : '-';
-	mempool[1] = (mp->flags & MP_KW)? 'w' : '-';
-	mempool[2] = (mp->flags & MP_KX)? 'x' : '-';
+	mempool[0] = (mp->flags & MP_KR) ? 'r' : '-';
+	mempool[1] = (mp->flags & MP_KW) ? 'w' : '-';
+	mempool[2] = (mp->flags & MP_KX) ? 'x' : '-';
 
-	mempool[4] = (mp->flags & MP_UR)? 'r' : '-';
-	mempool[5] = (mp->flags & MP_UW)? 'w' : '-';
-	mempool[6] = (mp->flags & MP_UX)? 'x' : '-';
+	mempool[4] = (mp->flags & MP_UR) ? 'r' : '-';
+	mempool[5] = (mp->flags & MP_UW) ? 'w' : '-';
+	mempool[6] = (mp->flags & MP_UX) ? 'x' : '-';
 
 	mempool[8] = (mp->flags & MP_DEVICES) ?
 	             'D' : (mp->flags & MP_MEMPOOL) ?
-	                   'M' : (mp->flags & MP_AHB_RAM) ?
-	                         'A' : (mp->flags & MP_SRAM) ?
-	                               'S' : 'N';
+	             'M' : (mp->flags & MP_AHB_RAM) ?
+	             'A' : (mp->flags & MP_SRAM) ?
+	             'S' : 'N';
 	return mempool;
 }
 
@@ -500,21 +496,24 @@ void kdb_dump_mempool(void)
 	int i = 0;
 
 	dbg_printf(DL_KDB,
-		"%10s %10s [%8s:%8s] %10s\n",
-		"NAME", "SIZE", "START", "END", "FLAGS");
+	           "%10s %10s [%8s:%8s] %10s\n",
+	           "NAME", "SIZE", "START", "END", "FLAGS");
 
 	for (i = 0; i < sizeof(memmap) / sizeof(mempool_t); ++i) {
 		dbg_printf(DL_KDB,
-			"%10s %10d [%p:%p] %10s\n",
-			memmap[i].name, (memmap[i].end - memmap[i].start),
-			memmap[i].start, memmap[i].end,
-			kdb_mempool_prop(&(memmap[i])));
+		           "%10s %10d [%p:%p] %10s\n",
+		           memmap[i].name, (memmap[i].end - memmap[i].start),
+		           memmap[i].start, memmap[i].end,
+		           kdb_mempool_prop(&(memmap[i])));
 	}
 }
 
 void kdb_dump_as(void)
 {
-	extern enum { DBG_ASYNC, DBG_PANIC } dbg_state;
+	extern enum {
+		DBG_ASYNC, DBG_PANIC
+	}
+	dbg_state;
 	int idx = 0, nl = 0, i;
 	as_t *as = NULL;
 	fpage_t *fpage = NULL;
@@ -547,10 +546,10 @@ void kdb_dump_as(void)
 		fpage = as->first;
 		while (fpage) {
 			dbg_printf(DL_KDB,
-				"MEM: %c fpage %5s [b:%p, sz:2**%d]\n",
-				fpage->used ? 'o' : ' ',
-				memmap[fpage->fpage.mpid].name,
-				fpage->fpage.base, fpage->fpage.shift);
+			           "MEM: %c fpage %5s [b:%p, sz:2**%d]\n",
+			           fpage->used ? 'o' : ' ',
+			           memmap[fpage->fpage.mpid].name,
+			           fpage->fpage.base, fpage->fpage.shift);
 			fpage = fpage->as_next;
 			++nl;
 

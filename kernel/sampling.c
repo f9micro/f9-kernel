@@ -61,7 +61,7 @@ static int cmp_symhit(const void *p1, const void *p2)
 
 void sampling_stats(int **hitcountp, int **symid_list)
 {
-	int i,symid;
+	int i, symid;
 
 	/* init data */
 	sort(sampled_pc, MAX_SAMPLING_COUNT, sizeof(sampled_pc[0]), cmp_addr);
@@ -81,7 +81,7 @@ void sampling_stats(int **hitcountp, int **symid_list)
 
 	/* create a list from highest hit to lowest hit */
 	sort(ksymid_sortedlist, ksym_total(),
-			sizeof(ksymid_sortedlist[0]), cmp_symhit);
+	     sizeof(ksymid_sortedlist[0]), cmp_symhit);
 
 	/* output the result */
 	*hitcountp = ksym_hitcount;
