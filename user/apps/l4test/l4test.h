@@ -1,6 +1,5 @@
-/* Copyright (C) 1999-2010 Karlsruhe University
- * Copyright (C) 2008-2009 Volkmar Uhlig, IBM Corporation
- * All rights reserved.
+/* Copyright (C) 1999-2010 Karlsruhe University. All rights reserved.
+ * Copyright (C) 2008-2009 Volkmar Uhlig, IBM Corporation. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

@@ -27,7 +27,7 @@ cmd_elf_to_symmap = $(NM) $< | sort | cut -d' ' -f1,3 | \
 		printf "%s", STRNAME; \
 		print "};" \
 	}' > $(out)/$*_symmap.c && \
-	$(CC) -c $(out)/$*_symmap.c -o $(out)/$*.symmap.o
+	$(CC) $(CFLAGS) -c $(out)/$*_symmap.c -o $(out)/$*.symmap.o
 
 $(out)/%.symmap.o: $(out)/f9_nosym.elf
 	$(call quiet,elf_to_symmap,NM     )

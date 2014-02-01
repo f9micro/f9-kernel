@@ -16,12 +16,12 @@ static inline void insert_bkpt(struct breakpoint *b)
 {
 	uint16_t breakpoint_instr = 0xbe11;		/* ARM BKPT instruction */
 
-	*(volatile uint16_t *)b->addr = breakpoint_instr;
+	*(volatile uint16_t *) b->addr = breakpoint_instr;
 }
 
 static inline void delete_bkpt(struct breakpoint *b)
 {
-	*(volatile uint16_t *)b->addr = b->back_instr;
+	*(volatile uint16_t *) b->addr = b->back_instr;
 }
 
 static void soft_breakpoint_enable(struct breakpoint *b);
@@ -39,14 +39,13 @@ struct breakpoint *soft_breakpoint_config(uint32_t addr, struct breakpoint *b)
 	if (breakpoint_type_by_addr(addr) == BKPT_SOFT) {
 		b->type = BKPT_SOFT;
 		b->addr = addr;
-		b->back_instr = *(uint16_t *)addr;
+		b->back_instr = *(uint16_t *) addr;
 		b->enable = soft_breakpoint_enable;
 		b->disable = soft_breakpoint_disable;
 		b->release = soft_breakpoint_release;
-		
+
 		return b;
 	}
-	
 	return NULL;
 }
 

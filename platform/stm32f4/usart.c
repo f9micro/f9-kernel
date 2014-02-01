@@ -30,37 +30,37 @@ static int16_t usart_baud(uint32_t baud)
 	uint16_t mantissa;
 	uint16_t fraction;
 
-	 mantissa = (42000000) / (16 *  baud);
-	 fraction = (42000000 / baud) % 16;
+	mantissa = (42000000) / (16 *  baud);
+	fraction = (42000000 / baud) % 16;
 
 	return (mantissa << 4) | fraction;
 }
 
 void usart_config_interrupt(struct usart_dev *usart, uint16_t it,
-		uint8_t state)
+                            uint8_t state)
 {
 	uint32_t it_reg, it_bit;
 
 	if (it == USART_IT_CTS && (usart->u_num == 4 || usart->u_num == 5))
 		return;
 
-	it_reg = usart->base + USART_IT_ENB_REG_OFFSET(it);	
+	it_reg = usart->base + USART_IT_ENB_REG_OFFSET(it);
 	it_bit = (0x1 << USART_IT_POSITION(it));
 
 	if (state)
 		*(volatile uint32_t *) it_reg |= it_bit;
-	else			
+	else
 		*(volatile uint32_t *) it_reg &= ~it_bit;
 }
 
 int usart_interrupt_status(struct usart_dev *usart, uint16_t it)
-{	
+{
 	uint32_t it_reg, it_bit;
 
 	if (it == USART_IT_CTS && (usart->u_num == 4 || usart->u_num == 5))
 		return 0;
 
-	it_reg = usart->base + USART_IT_ENB_REG_OFFSET(it);	
+	it_reg = usart->base + USART_IT_ENB_REG_OFFSET(it);
 	it_bit = (0x1 << USART_IT_POSITION(it));
 
 	return (*(volatile uint32_t *) it_reg & it_bit);
@@ -103,13 +103,13 @@ void usart_init(struct usart_dev *usart)
 
 	uregs->CR1 |= USART_CR1_UE;
 
-	/* FIXME: Hardcode 8-bit */	
+	/* FIXME: Hardcode 8-bit */
 	uregs->CR1 &= ~(USART_CR1_M9);
 
 	/* FIXME: Hardcode 1 stop bit */
-	uregs->CR2 &= ~(3 << 12);	
+	uregs->CR2 &= ~(3 << 12);
 
-	/* Set baud rate */	
+	/* Set baud rate */
 	uregs->BRR = usart_baud(usart->baud);
 
 	/* Enable reciever and transmitter */

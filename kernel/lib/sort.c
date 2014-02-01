@@ -51,7 +51,7 @@ static inline void swapfunc(char *a, char *b, int n, int swaptype)
  * less suitable for kernel use.
  */
 void sort(void *base, size_t num, size_t size,
-		int (*cmp_func)(const void *, const void *))
+          int (*cmp_func)(const void *, const void *))
 {
 	int i = (num / 2 - 1) * size;
 	int n = num * size;
@@ -62,11 +62,11 @@ void sort(void *base, size_t num, size_t size,
 	SWAPINIT(base, size);
 
 	/* perform a heapsort on the given array */
-	for ( ; i >= 0; i -= size) {
+	for (; i >= 0; i -= size) {
 		for (r = i; r * 2 + size < n; r  = c) {
 			c = r * 2 + size;
 			if (c < n - size &&
-					cmp_func(base + c, base + c + size) < 0)
+			    cmp_func(base + c, base + c + size) < 0)
 				c += size;
 			if (cmp_func(base + r, base + c) >= 0)
 				break;
@@ -80,7 +80,7 @@ void sort(void *base, size_t num, size_t size,
 		for (r = 0; r * 2 + size < i; r = c) {
 			c = r * 2 + size;
 			if (c < i - size &&
-					cmp_func(base + c, base + c + size) < 0)
+			    cmp_func(base + c, base + c + size) < 0)
 				c += size;
 			if (cmp_func(base + r, base + c) >= 0)
 				break;

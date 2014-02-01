@@ -8,10 +8,10 @@
 #include <l4/utcb.h>
 #include <l4/ipc.h>
 #include <types.h>
-#include <app.h>
+#include <user_runtime.h>
 
-extern app_struct user_app_start[];
-extern app_struct user_app_end[];
+extern user_struct user_runtime_start[];
+extern user_struct user_runtime_end[];
 
 int __USER_TEXT L4_Map(L4_ThreadId_t where, memptr_t base, size_t size)
 {
@@ -31,7 +31,7 @@ int __USER_TEXT L4_Map(L4_ThreadId_t where, memptr_t base, size_t size)
 memptr_t __USER_TEXT get_free_base(kip_t *kip_ptr)
 {
 	kip_mem_desc_t *desc = ((void *) kip_ptr) +
-			kip_ptr->memory_info.s.memory_desc_ptr;
+	                       kip_ptr->memory_info.s.memory_desc_ptr;
 	int n = kip_ptr->memory_info.s.n;
 	int i = 0;
 
@@ -46,7 +46,7 @@ memptr_t __USER_TEXT get_free_base(kip_t *kip_ptr)
 void __USER_TEXT map_user_sections(kip_t *kip_ptr, L4_ThreadId_t tid)
 {
 	kip_mem_desc_t *desc = ((void *) kip_ptr) +
-			kip_ptr->memory_info.s.memory_desc_ptr;
+	                       kip_ptr->memory_info.s.memory_desc_ptr;
 	int n = kip_ptr->memory_info.s.n;
 	int i = 0;
 
@@ -59,7 +59,7 @@ void __USER_TEXT map_user_sections(kip_t *kip_ptr, L4_ThreadId_t tid)
 }
 
 static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
-		L4_Word_t sp, L4_Word_t stack_size)
+                                     L4_Word_t sp, L4_Word_t stack_size)
 {
 	L4_Msg_t msg;
 
@@ -79,10 +79,10 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 	L4_ThreadId_t myself = {.raw = utcb_ptr->t_globalid};
 	char *free_mem = (char *) get_free_base(kip_ptr);
 
-	for (app_struct *ptr = user_app_start; ptr != user_app_end; ++ptr) {
+	for (user_struct *ptr = user_runtime_start; ptr != user_runtime_end; ++ptr) {
 		L4_ThreadId_t tid;
 		L4_Word_t stack;
-		app_fpage_t *fpage = ptr->fpages;
+		user_fpage_t *fpage = ptr->fpages;
 
 		tid = L4_GlobalId(ptr->tid + kip_ptr->thread_info.s.user_base, 2);
 
@@ -102,8 +102,7 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 		while (fpage->base || fpage->size) {
 			if (fpage->base) {
 				L4_Map(tid, fpage->base, fpage->size);
-			}
-			else {
+			} else {
 				L4_Map(tid, (L4_Word_t)free_mem, fpage->size);
 				fpage->base = (L4_Word_t)free_mem;
 			}

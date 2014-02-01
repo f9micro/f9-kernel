@@ -72,8 +72,7 @@ static void insert_fpage_chain_to_as(as_t *as, fpage_t *first, fpage_t *last)
 		/* Add chain into beginning */
 		last->as_next = as->first;
 		as->first = first;
-	}
-	else {
+	} else {
 		/* Search for chain in the middle */
 		while (fp->as_next != NULL) {
 			if (FPAGE_BASE(last) < FPAGE_BASE(fp->as_next)) {
@@ -165,8 +164,7 @@ static void create_fpage_chain(memptr_t base, size_t size, int mpid,
 			fpage = create_fpage(base, shift, mpid);
 			*pfirst = fpage;
 			*plast = fpage;
-		}
-		else {
+		} else {
 			/* Build chain */
 			fpage->as_next = create_fpage(base, shift, mpid);
 			fpage = fpage->as_next;
@@ -181,7 +179,7 @@ static void create_fpage_chain(memptr_t base, size_t size, int mpid,
 fpage_t *split_fpage(as_t *as, fpage_t *fpage, memptr_t split, int rl)
 {
 	memptr_t base = fpage->fpage.base,
-			 end = fpage->fpage.base + (1 << fpage->fpage.shift);
+	         end = fpage->fpage.base + (1 << fpage->fpage.shift);
 	fpage_t *lfirst = NULL, *llast = NULL, *rfirst = NULL, *rlast = NULL;
 	split = mempool_align(fpage->fpage.mpid, split);
 
@@ -201,9 +199,9 @@ fpage_t *split_fpage(as_t *as, fpage_t *fpage, memptr_t split, int rl)
 
 	/* Split fpage into two chains of fpages */
 	create_fpage_chain(base, (split - base),
-			fpage->fpage.mpid, &lfirst, &llast);
+	                   fpage->fpage.mpid, &lfirst, &llast);
 	create_fpage_chain(split, (end - split),
-			fpage->fpage.mpid, &rfirst, &rlast);
+	                   fpage->fpage.mpid, &rfirst, &rlast);
 
 	remove_fpage_from_as(as, fpage);
 	ktable_free(&fpage_table, fpage);
@@ -245,8 +243,8 @@ int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
 				size = (end < FPAGE_BASE(*fp) ? end : FPAGE_BASE(*fp)) - base;
 
 				dbg_printf(DL_MEMORY,
-					"MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
-					mempool_getbyid(mpid)->name, base, size, as);
+				           "MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
+				           mempool_getbyid(mpid)->name, base, size, as);
 
 				create_fpage_chain(mempool_align(mpid, base),
 				                   mempool_align(mpid, size),
@@ -261,8 +259,7 @@ int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
 				*plast = last;
 
 				base = FPAGE_END(*fp);
-			}
-			else if (base < FPAGE_END(*fp)) {
+			} else if (base < FPAGE_END(*fp)) {
 				if (!*pfirst)
 					*pfirst = *fp;
 				*plast = *fp;
@@ -278,8 +275,8 @@ int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
 			size = end - base;
 
 			dbg_printf(DL_MEMORY,
-				"MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
-				mempool_getbyid(mpid)->name, base, size, as);
+			           "MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
+			           mempool_getbyid(mpid)->name, base, size, as);
 
 			create_fpage_chain(mempool_align(mpid, base),
 			                   mempool_align(mpid, size),
@@ -291,11 +288,10 @@ int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
 				*pfirst = first;
 			*plast = last;
 		}
-	}
-	else {
+	} else {
 		dbg_printf(DL_MEMORY,
-			"MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
-			mempool_getbyid(mpid)->name, base, size, as);
+		           "MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
+		           mempool_getbyid(mpid)->name, base, size, as);
 
 		create_fpage_chain(mempool_align(mpid, base),
 		                   mempool_align(mpid, size),

@@ -16,5 +16,5 @@ void hwtimer_init()
 
 uint32_t hwtimer_now()
 {
-    return *TIM2_CNT;
+	return *TIM2_CNT;
 }

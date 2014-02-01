@@ -1,0 +1,86 @@
+ktimer: Timer management for F9 Microkernel
+
+CONTENTS:
+
+1. Ktimer Introduction
+2. How Does Ktimer Work
+3. How Tick is Implemented
+4. Tickless
+
+1. Ktimer Introduction
+
+Conceptually speaking, L4 microkernel delivers a hardware interrupt as
+a synchronous IPC message to a user-level thread which registered with
+the kernel as the handler thread for that interrupt. The interrupt messages
+appear to be sent by special in-kernel interrupt threads set up by L4 at
+registration time, one per interrupt. Each interrupt message is delivered
+to exactly one handler, however a thread can be registered to handle 
+different interrupts.
+
+The timer tick interrupt is the only one managed internally by L4 while F9
+microkernel follows the same manner as other L4 implementations do. Ktimer
+is the kernel handler managing timer tick interrupt for F9.
+
+
+2. How Does Ktimer Work?
+
+The scheduler starts at the highest priority and checks if there is a thread
+ready to run. In this case, the thread is selected for dispatch. If no thread
+is ready to run, a special idle thread is dispatched. While the current
+thread blocks, yields, or exhausts its timeslice, the next thread in that
+priority class is dispatched and given a new timeslice.
+
+However, timeslice accounting is slightly inaccurate as it happens in the
+handler of the periodic timer interrupt by subtracting the length of the timer
+period from the remaining timeslice length. If the remaining timeslice becomes
+zero or negative, it is said to be exhausted, causing an immediate scheduling
+process. If the thread blocks in between two timer ticks, the next thread will
+start with only half a timer period till the next timer tick.
+
+Threads that are blocked during IPC can be unblocked either by completing
+their IPC or aborting it due to a timeout. With many blocked threads in a
+system, it would be infeasible to check all blocked threads' timeouts on each
+timer tick interrupt. Instead, F9 maintains a list of timeouts, with the one
+closest to its expiry at the head of the list. This only requires to check a
+single timeout at each tick (and would even allow tickless implementations,
+setting the timer to min[timeslice length, earliest timeout] on each kernel
+exit), but requires a clever data structure to keep track of the timeouts.
+
+Kernel configurations:
+- CONFIG_KTIMER_HEARTBEAT
+  hardware cycles per ktimer tick
+
+- CONFIG_KTIMER_MINTICKS
+  minimum ktimer ticks unit for time event
+
+- CONFIG_KTIMER_TICKLESS
+  enable tickless
+
+
+3. How Tick is Implemented
+
+Hardware timer device issues interrupts within a programmable interval,
+handling ticks in timeout ISR. For ARM implementations, there are two kinds
+of timer:
+
+- Incremental timer
+  Example: Cortex-A9 MP Global Timer
+
+- Counting down timer
+  Example: Cortex-M4 SysTick
+
+Also, there is prescaler tweaking hardware tick period. Once timeout ISR is
+triggered, system ticks increase and handler of timeout event is executed. In
+addition, operating system would re-schedule if required.
+
+
+4. Tickless
+
+When tickless is enabled, kernel enters tickless right before going to CPU
+idle state. And then, it sets the interval of next timer interrupt as delta
+of next event (or KTIMER_MAXTICKS). Finally, system time is adjusted after
+kernel wakes up.
+
+Tickless increases the number of instructions executed on the path to and from
+the idle loop. Also, the systems with aggressive real-time response constraints
+often run periodic tick.

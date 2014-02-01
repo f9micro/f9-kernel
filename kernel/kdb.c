@@ -28,8 +28,7 @@ extern void kdb_dump_as(void);
 extern void kdb_show_sampling(void);
 extern void kdb_show_tickless_verify(void);
 
-struct kdb_t kdb_functions[] =
-{
+struct kdb_t kdb_functions[] = {
 	{
 		.option = 'K',
 		.name = "KTABLES",
@@ -98,7 +97,7 @@ static void kdb_print_menu(void)
 	dbg_printf(DL_KDB, "commands: \n");
 	for (i = 0; i < (sizeof(kdb_functions) / sizeof(struct kdb_t)); ++i) {
 		dbg_printf(DL_KDB, "%c: %s\n",
-			kdb_functions[i].option, kdb_functions[i].menuentry);
+		           kdb_functions[i].option, kdb_functions[i].menuentry);
 	}
 }
 

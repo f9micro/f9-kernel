@@ -41,7 +41,7 @@ static int __l4_put_hex(const uint32_t val, int width, const char pad)
 	int nwidth = 0;
 
 	/* Find width of hexnumber */
-	while ((val >> (4 * nwidth)) && ((unsigned) nwidth <  2 * sizeof (val)))
+	while ((val >> (4 * nwidth)) && ((unsigned) nwidth <  2 * sizeof(val)))
 		nwidth++;
 	if (nwidth == 0)
 		nwidth = 1;
@@ -52,9 +52,9 @@ static int __l4_put_hex(const uint32_t val, int width, const char pad)
 
 	/* Print number with padding */
 	for (i = width - nwidth; i > 0; i--, n++)
-		__l4_putchar (pad);
+		__l4_putchar(pad);
 	for (i = 4 * (nwidth - 1); i >= 0; i -= 4, n++)
-		__l4_putchar(hexchars ((val >> i) & 0xF));
+		__l4_putchar(hexchars((val >> i) & 0xF));
 
 	return n;
 }
@@ -65,11 +65,11 @@ static void __l4_put_dec(const uint32_t val, const int width, const char pad)
 	int digits;
 
 	/* estimate number of spaces and digits */
-	for (divisor = 1, digits = 1; val/divisor >= 10; divisor *= 10, digits++)
+	for (divisor = 1, digits = 1; val / divisor >= 10; divisor *= 10, digits++)
 		/* */ ;
 
 	/* print spaces */
-	for ( ; digits < width; digits++ )
+	for (; digits < width; digits++)
 		__l4_putchar(pad);
 
 	/* print digits */
@@ -109,8 +109,7 @@ void __l4_vprintf(char *fmt, va_list va)
 			if (*fmt == '\n')
 				__l4_putchar('\r');
 			__l4_putchar(*fmt);
-		}
-		else {
+		} else {
 			switch (*fmt) {
 			case 'c':
 				__l4_putchar(va_arg(va, uint32_t));
@@ -127,8 +126,8 @@ void __l4_vprintf(char *fmt, va_list va)
 			case 'd':
 			case 'D':
 				__l4_put_dec((size == 32) ?
-				              va_arg(va, uint32_t) :
-				              va_arg(va, uint64_t),
+				             va_arg(va, uint32_t) :
+				             va_arg(va, uint64_t),
 				             width, pad);
 				mode = 0;
 				break;
@@ -142,7 +141,7 @@ void __l4_vprintf(char *fmt, va_list va)
 				__l4_put_hex((size == 32) ?
 				             va_arg(va, uint32_t) :
 				             va_arg(va, uint64_t),
-				            width, pad);
+				             width, pad);
 				mode = 0;
 				break;
 			case '%':

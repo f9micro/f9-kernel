@@ -22,7 +22,7 @@ static struct breakpoint *breakpoint_config(int id, uint32_t addr)
 	} else if (t == BKPT_SOFT) {
 		return soft_breakpoint_config(addr, &breakpoints[id]);
 	}
-	
+
 	return NULL;
 }
 
@@ -43,9 +43,9 @@ int get_breakpoint_id(struct breakpoint *b)
 	uint32_t head_addr = (uint32_t)breakpoints;
 
 	if ((addr >= head_addr) &&
-		(addr <= (uint32_t)&breakpoints[BKPT_MAX_NUM]))
+	    (addr <= (uint32_t)&breakpoints[BKPT_MAX_NUM]))
 		return (addr - head_addr) / sizeof(struct breakpoint);
-	
+
 	return -1;
 }
 

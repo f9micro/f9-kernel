@@ -24,41 +24,55 @@ __USER_BSS bool ipc_ok;
 __USER_BSS L4_Word_t ipc_pf_block_address = 0;
 __USER_BSS L4_Word_t ipc_pf_abort_address = 0;
 
-__USER_TEXT L4_Word_t Word(L4_ThreadId_t t) { return t.raw; }
+__USER_TEXT
+L4_Word_t Word(L4_ThreadId_t t)
+{
+	return t.raw;
+}
 
-__USER_TEXT const char *ipc_errorcode(L4_Word_t errcode)
+__USER_TEXT
+const char *ipc_errorcode(L4_Word_t errcode)
 {
 	switch ((errcode >> 1) & 0x7) {
-	case 0: return "ok (0)";
-	case 1: return "timeout";
-	case 2: return "non-existing partner";
-	case 3: return "cancelled";
-	case 4: return "message overflow";
-	case 5: return "xfer timeout (current)";
-	case 6: return "xfer timeout (partner)";
-	case 7: return "aborted";
+	case 0:
+		return "ok (0)";
+	case 1:
+		return "timeout";
+	case 2:
+		return "non-existing partner";
+	case 3:
+		return "cancelled";
+	case 4:
+		return "message overflow";
+	case 5:
+		return "xfer timeout (current)";
+	case 6:
+		return "xfer timeout (partner)";
+	case 7:
+		return "aborted";
 	}
 	return "unknown";
 }
 
-__USER_TEXT const char *ipc_errorphase(L4_Word_t errcode)
+__USER_TEXT
+const char *ipc_errorphase(L4_Word_t errcode)
 {
 	return errcode & 0x1 ? "receive-phase" : "send-phase";
 }
 
 
-__USER_TEXT void setup_ipc_threads(void (*f1)(void), void (*f2)(void),
-		bool rcv_same_space, bool snd_same_space,
-		bool xcpu)
+__USER_TEXT
+void setup_ipc_threads(void (*f1)(void), void (*f2)(void),
+                       bool rcv_same_space, bool snd_same_space,
+                       bool xcpu)
 {
 	int threads_to_kill;
 
 	ipc_pf_block_address = 0;
 
-	ipc_t1 = create_thread (NULL, !rcv_same_space, -1, 0);
-	ipc_t2 = create_thread (NULL, !snd_same_space,
-			xcpu ? ((L4_ProcessorNo () + 1) % 2) : (L4_Word_t) -1, 0);
-
+	ipc_t1 = create_thread(NULL, !rcv_same_space, -1, 0);
+	ipc_t2 = create_thread(NULL, !snd_same_space,
+	                       xcpu ? ((L4_ProcessorNo() + 1) % 2) : (L4_Word_t) - 1, 0);
 
 	/* Do not start threads unless both threads have been created */
 	start_thread(ipc_t1, f1);
@@ -77,7 +91,7 @@ __USER_TEXT void setup_ipc_threads(void (*f1)(void), void (*f2)(void),
 			L4_MsgStore(tag, &msg);
 
 			if (L4_UntypedWords(tag) != 2 || L4_TypedWords(tag) != 0 ||
-					!L4_IpcSucceeded (tag)) {
+			    !L4_IpcSucceeded(tag)) {
 				kill_thread(tid);
 				if (--threads_to_kill == 0)
 					return;
@@ -92,7 +106,7 @@ __USER_TEXT void setup_ipc_threads(void (*f1)(void), void (*f2)(void),
 				L4_Word_t dw;
 				L4_ThreadId_t dt;
 				L4_ExchangeRegisters(tid, (3 << 1), 0, 0, 0, 0, L4_nilthread,
-						&dw, &dw, &dw, &dw, &dw, &dt);
+				                     &dw, &dw, &dw, &dw, &dw, &dt);
 				ipc_pf_abort_address = 0;
 				break;
 			}
@@ -116,16 +130,16 @@ __USER_TEXT void setup_ipc_threads(void (*f1)(void), void (*f2)(void),
 			{
 				// Touch memory
 				volatile L4_Word_t * mem = (L4_Word_t *)
-					(L4_MsgWord (&msg, 0) & ~(sizeof (L4_Word_t) - 1));
+				                           (L4_MsgWord(&msg, 0) & ~(sizeof(L4_Word_t) - 1));
 				*mem = *mem;
 
 				fp = L4_FpageAddRights(
-					L4_FpageLog2(L4_MsgWord(&msg, 0), PAGE_BITS),
-					L4_FullyAccessible);
+				         L4_FpageLog2(L4_MsgWord(&msg, 0), PAGE_BITS),
+				         L4_FullyAccessible);
 			}
 
 			if ((tid.raw == ipc_t1.raw && !rcv_same_space) ||
-					(tid.raw == ipc_t2.raw && !snd_same_space))
+			    (tid.raw == ipc_t2.raw && !snd_same_space))
 				L4_MsgAppendMapItem(&msg, L4_MapItem(fp, L4_MsgWord(&msg, 0)));
 			L4_MsgLoad(&msg);
 			tag = L4_ReplyWait(tid, &tid);
@@ -136,7 +150,8 @@ __USER_TEXT void setup_ipc_threads(void (*f1)(void), void (*f2)(void),
 /*
  ** IPC test with only untyped words
  */
-__USER_TEXT static void simple_ipc_t1_l(void)
+__USER_TEXT
+static void simple_ipc_t1_l(void)
 {
 	L4_Msg_t msg;
 	L4_MsgTag_t tag;
@@ -157,10 +172,10 @@ __USER_TEXT static void simple_ipc_t1_l(void)
 			L4_LoadMR(k, 0);
 		tag = L4_Receive(ipc_t2);
 		if (!L4_IpcSucceeded(tag)) {
-			printf ("Xfer %d words -- IPC failed %s %s\n",
-					(int) n,
-					ipc_errorcode(L4_ErrorCode()),
-					ipc_errorphase(L4_ErrorCode()));
+			printf("Xfer %d words -- IPC failed %s %s\n",
+			       (int) n,
+			       ipc_errorcode(L4_ErrorCode()),
+			       ipc_errorphase(L4_ErrorCode()));
 			ipc_ok = false;
 			break;
 		}
@@ -168,7 +183,7 @@ __USER_TEXT static void simple_ipc_t1_l(void)
 		L4_MsgStore(tag, &msg);
 		if (L4_Label(tag) != 0xf00f) {
 			printf("Xfer %d words -- wrong label: 0x%lx != 0xf00f\n",
-					(int) n, (long) L4_Label (tag));
+			       (int) n, (long) L4_Label(tag));
 			ipc_ok = false;
 			break;
 		}
@@ -177,8 +192,8 @@ __USER_TEXT static void simple_ipc_t1_l(void)
 			L4_Word_t val = L4_MsgWord(&msg, i - 1);
 			if (val != i) {
 				printf("Xfer %d words -- wrong value in MR[%d]: "
-						"0x%lx != 0x%lx\n",
-						(int) n, (int) i, (long) val, (long) i);
+				       "0x%lx != 0x%lx\n",
+				       (int) n, (int) i, (long) val, (long) i);
 				ipc_ok = false;
 			}
 			if (!ipc_ok)
@@ -199,7 +214,7 @@ __USER_TEXT static void simple_ipc_t1_l(void)
 		if (L4_Label(tag) != 0xf00d) {
 			L4_KDB_Enter("2 label");
 			printf("Xfer %d words -- wrong label: 0x%lx != 0xf00d\n",
-					(int) n, (long) L4_Label(tag));
+			       (int) n, (long) L4_Label(tag));
 			ipc_ok = false;
 			break;
 		}
@@ -207,12 +222,12 @@ __USER_TEXT static void simple_ipc_t1_l(void)
 			L4_Word_t val = L4_MsgWord(&msg, i - 1);
 			if (val != i) {
 				printf("Xfer %d words -- wrong value in MR[%d]: "
-						"0x%lx != 0x%lx\n",
-						(int) n, (int) i, (long) val, (long) i);
+				       "0x%lx != 0x%lx\n",
+				       (int) n, (int) i, (long) val, (long) i);
 				ipc_ok = false;
 				break;
 			}
-			if (!ipc_ok) 
+			if (!ipc_ok)
 				break;
 
 		}
@@ -226,9 +241,9 @@ __USER_TEXT static void simple_ipc_t1_l(void)
 
 		if (!L4_IpcSucceeded(tag)) {
 			printf("Xfer %d words -- IPC failed %s %s\n",
-					(int) n,
-					ipc_errorcode(L4_ErrorCode()),
-					ipc_errorphase(L4_ErrorCode()));
+			       (int) n,
+			       ipc_errorcode(L4_ErrorCode()),
+			       ipc_errorphase(L4_ErrorCode()));
 			ipc_ok = false;
 			break;
 		}
@@ -238,126 +253,108 @@ __USER_TEXT static void simple_ipc_t1_l(void)
 
 #if 0	/* UNIMPLEMENTED */
 	// Send timeout
-	L4_Set_MsgTag (L4_Niltag);
-	tag = L4_Send_Timeout (ipc_t2, L4_TimePeriod (1000*1000));
+	L4_Set_MsgTag(L4_Niltag);
+	tag = L4_Send_Timeout(ipc_t2, L4_TimePeriod(1000 * 1000));
 	ipc_ok = true;
-	if (L4_IpcSucceeded (tag))
-	{
-		printf ("SND: IPC send incorrectly succeeded\n");
+	if (L4_IpcSucceeded(tag)) {
+		printf("SND: IPC send incorrectly succeeded\n");
 		ipc_ok = false;
-	}
-	else
-	{
-		if ((L4_ErrorCode () & 0x1) || ((L4_ErrorCode () >> 1) & 0x7) != 1)
-		{
-			printf ("SND: Incorrect error code: %s %s\n",
-					ipc_errorcode (L4_ErrorCode ()),
-					ipc_errorphase (L4_ErrorCode ()));
+	} else {
+		if ((L4_ErrorCode() & 0x1) || ((L4_ErrorCode() >> 1) & 0x7) != 1) {
+			printf("SND: Incorrect error code: %s %s\n",
+			       ipc_errorcode(L4_ErrorCode()),
+			       ipc_errorphase(L4_ErrorCode()));
 			ipc_ok = false;
 		}
 	}
-	print_result ("Send timeout", ipc_ok);
-	L4_Receive (ipc_t2);
+	print_result("Send timeout", ipc_ok);
+	L4_Receive(ipc_t2);
 
 	// Receive timeout
-	tag = L4_Receive_Timeout (ipc_t2, L4_TimePeriod (1000*1000));
+	tag = L4_Receive_Timeout(ipc_t2, L4_TimePeriod(1000 * 1000));
 	ipc_ok = true;
-	if (L4_IpcSucceeded (tag))
-	{
-		printf ("RCV: IPC receive incorrectly succeeded\n");
+	if (L4_IpcSucceeded(tag)) {
+		printf("RCV: IPC receive incorrectly succeeded\n");
 		ipc_ok = false;
-	}
-	else
-	{
-		if ((L4_ErrorCode () & 0x1) == 0 ||
-				((L4_ErrorCode () >> 1) & 0x7) != 1)
-		{
-			printf ("RCV: Incorrect error code: %s %s\n",
-					ipc_errorcode (L4_ErrorCode ()),
-					ipc_errorphase (L4_ErrorCode ()));
+	} else {
+		if ((L4_ErrorCode() & 0x1) == 0 ||
+		    ((L4_ErrorCode() >> 1) & 0x7) != 1) {
+			printf("RCV: Incorrect error code: %s %s\n",
+			       ipc_errorcode(L4_ErrorCode()),
+			       ipc_errorphase(L4_ErrorCode()));
 			ipc_ok = false;
 		}
 	}
-	print_result ("Receive timeout", ipc_ok);
-	L4_Set_MsgTag (L4_Niltag);
-	L4_Send (ipc_t2);
+	print_result("Receive timeout", ipc_ok);
+	L4_Set_MsgTag(L4_Niltag);
+	L4_Send(ipc_t2);
 
 	// Local destintation Id
-	tag = L4_Receive_Timeout (ipc_t2, L4_TimePeriod (5*1000*1000));
-	print_result ("Local destination Id", L4_IpcSucceeded (tag));
-	L4_Set_MsgTag (L4_Niltag);
-	tag = L4_Send (ipc_t2);
+	tag = L4_Receive_Timeout(ipc_t2, L4_TimePeriod(5 * 1000 * 1000));
+	print_result("Local destination Id", L4_IpcSucceeded(tag));
+	L4_Set_MsgTag(L4_Niltag);
+	tag = L4_Send(ipc_t2);
 
 	// Send cancel
-	L4_Set_MsgTag (L4_Niltag);
-	tag = L4_Send (ipc_t2);
+	L4_Set_MsgTag(L4_Niltag);
+	tag = L4_Send(ipc_t2);
 	ipc_ok = true;
-	if (L4_IpcSucceeded (tag))
-	{
-		printf ("SND: IPC send incorrectly succeeded\n");
+	if (L4_IpcSucceeded(tag)) {
+		printf("SND: IPC send incorrectly succeeded\n");
 		ipc_ok = false;
-	}
-	else
-	{
-		if ((L4_ErrorCode () & 0x1) || ((L4_ErrorCode () >> 1) & 0x7) != 3)
-		{
-			printf ("SND: Incorrect error code: %s %s\n",
-					ipc_errorcode (L4_ErrorCode ()),
-					ipc_errorphase (L4_ErrorCode ()));
+	} else {
+		if ((L4_ErrorCode() & 0x1) || ((L4_ErrorCode() >> 1) & 0x7) != 3) {
+			printf("SND: Incorrect error code: %s %s\n",
+			       ipc_errorcode(L4_ErrorCode()),
+			       ipc_errorphase(L4_ErrorCode()));
 			ipc_ok = false;
 		}
 	}
-	print_result ("Send cancelled", ipc_ok);
-	L4_Receive (ipc_t2);
+	print_result("Send cancelled", ipc_ok);
+	L4_Receive(ipc_t2);
 
 	// Receive cancel
 	tag = L4_Call(ipc_t2);
 	ipc_ok = true;
-	if (L4_IpcSucceeded (tag))
-	{
-		printf ("RCV: IPC receive incorrectly succeeded\n");
+	if (L4_IpcSucceeded(tag)) {
+		printf("RCV: IPC receive incorrectly succeeded\n");
 		ipc_ok = false;
-	}
-	else
-	{
-		if ((L4_ErrorCode () & 0x1) == 0 ||
-				((L4_ErrorCode () >> 1) & 0x7) != 3)
-		{
-			printf ("RCV: Incorrect error code: %s %s\n",
-					ipc_errorcode (L4_ErrorCode ()),
-					ipc_errorphase (L4_ErrorCode ()));
+	} else {
+		if ((L4_ErrorCode() & 0x1) == 0 ||
+		    ((L4_ErrorCode() >> 1) & 0x7) != 3) {
+			printf("RCV: Incorrect error code: %s %s\n",
+			       ipc_errorcode(L4_ErrorCode()),
+			       ipc_errorphase(L4_ErrorCode()));
 			ipc_ok = false;
 		}
 	}
-	print_result ("Receive cancelled", ipc_ok);
-	L4_Set_MsgTag (L4_Niltag);
-	L4_Send (ipc_t2);
+	print_result("Receive cancelled", ipc_ok);
+	L4_Set_MsgTag(L4_Niltag);
+	L4_Send(ipc_t2);
 
 	// Cancel pagefault
-	buf = (unsigned char *) get_pages (1, false);
-	fp = L4_FpageAddRights(L4_Fpage ((L4_Word_t) buf, PAGE_SIZE),
-			L4_FullyAccessible);
-	L4_Flush (fp);
+	buf = (unsigned char *) get_pages(1, false);
+	fp = L4_FpageAddRights(L4_Fpage((L4_Word_t) buf, PAGE_SIZE),
+	                       L4_FullyAccessible);
+	L4_Flush(fp);
 	ipc_pf_abort_address = (L4_Word_t) buf;
 
 	for (i = 0; i < L4_NumMRs(); i++)
-		L4_LoadMR (i, i+1);
+		L4_LoadMR(i, i + 1);
 
 	*buf = 0xff;
 
 	ipc_ok = true;
-	for (i = 0; i < L4_NumMRs(); i++)
-	{
-		L4_StoreMR (i, &w);
-		if (w != i + 1)
-		{
-			printf ("Wrong value in MR[%d]: 0x%lx != 0x%lx\n", (int) i,
-					(long) w, (long) i+1);
+	for (i = 0; i < L4_NumMRs(); i++) {
+		L4_StoreMR(i, &w);
+		if (w != i + 1) {
+			printf("Wrong value in MR[%d]: 0x%lx != 0x%lx\n", (int) i,
+			       (long) w, (long) i + 1);
 			ipc_ok = false;
 			break;
 		}
 	}
-	print_result ("Pagefault cancelled", ipc_ok);
+	print_result("Pagefault cancelled", ipc_ok);
 #endif
 
 	/* From parameter (local) */
@@ -365,7 +362,7 @@ __USER_TEXT static void simple_ipc_t1_l(void)
 	ipc_ok = true;
 	if (from.raw != L4_LocalIdOf(ipc_t2).raw) {
 		printf("Returned Id %lx != %lx (local) [%lx (global)]\n",
-				Word(from), Word(L4_LocalIdOf(ipc_t2)), Word(ipc_t2));
+		       Word(from), Word(L4_LocalIdOf(ipc_t2)), Word(ipc_t2));
 		ipc_ok = false;
 	}
 	print_result("From parameter (local)", ipc_ok);
@@ -378,25 +375,25 @@ __USER_TEXT static void simple_ipc_t1_l(void)
 }
 
 #if 0	/* UNIMPLEMENTED */
-__USER_TEXT static void simple_ipc_t1_g (void)
+__USER_TEXT static void simple_ipc_t1_g(void)
 {
 	// From parameter (global)
 	L4_ThreadId_t from;
 	ipc_ok = true;
-	if (from.raw != ipc_t2.raw)
-	{
-		printf ("Returned Id %lx != %lx\n", Word (from), Word (ipc_t2));
+	if (from.raw != ipc_t2.raw) {
+		printf("Returned Id %lx != %lx\n", Word(from), Word(ipc_t2));
 		ipc_ok = false;
 	}
-	print_result ("From parameter (global)", ipc_ok);
+	print_result("From parameter (global)", ipc_ok);
 
 	// Get oneself killed
-	L4_Set_MsgTag (L4_Niltag);
-	L4_Call (L4_Pager ());
+	L4_Set_MsgTag(L4_Niltag);
+	L4_Call(L4_Pager());
 }
 #endif
 
-__USER_TEXT static void simple_ipc_t2_l(void)
+__USER_TEXT
+static void simple_ipc_t2_l(void)
 {
 	L4_Msg_t msg;
 #if 0
@@ -404,7 +401,6 @@ __USER_TEXT static void simple_ipc_t2_l(void)
 #endif
 	L4_ThreadId_t dt;
 	L4_MsgTag_t tag;
-
 
 	/* Message contents */
 	for (L4_Word_t n = 0; n < L4_NumMRs(); n++) {
@@ -415,14 +411,13 @@ __USER_TEXT static void simple_ipc_t2_l(void)
 		L4_MsgLoad(&msg);
 		tag = L4_Send(ipc_t1);
 		if (!L4_IpcSucceeded(tag)) {
-			printf ("Xfer %d words -- IPC failed %s %s\n",
-					(int) n,
-					ipc_errorcode(L4_ErrorCode()),
-					ipc_errorphase(L4_ErrorCode()));
+			printf("Xfer %d words -- IPC failed %s %s\n",
+			       (int) n,
+			       ipc_errorcode(L4_ErrorCode()),
+			       ipc_errorphase(L4_ErrorCode()));
 			ipc_ok = false;
 			break;
 		}
-
 	}
 
 	L4_Receive(ipc_t1);
@@ -440,9 +435,9 @@ __USER_TEXT static void simple_ipc_t2_l(void)
 			tag = L4_ReplyWait(ipc_t1, &dt);
 
 		if (!L4_IpcSucceeded(tag)) {
-			printf ("Xfer %d words -- IPC failed %s %s\n", (int) n,
-					ipc_errorcode(L4_ErrorCode()),
-					ipc_errorphase(L4_ErrorCode()));
+			printf("Xfer %d words -- IPC failed %s %s\n", (int) n,
+			       ipc_errorcode(L4_ErrorCode()),
+			       ipc_errorphase(L4_ErrorCode()));
 			ipc_ok = false;
 			break;
 		}
@@ -451,32 +446,32 @@ __USER_TEXT static void simple_ipc_t2_l(void)
 
 #if 0	/* UNIMPLEMENTED */
 	// Send timeout
-	L4_Set_MsgTag (L4_Niltag);
-	L4_Send (ipc_t1);
+	L4_Set_MsgTag(L4_Niltag);
+	L4_Send(ipc_t1);
 
 	// Receive timeout
-	L4_Receive (ipc_t1);
+	L4_Receive(ipc_t1);
 
 	// Local destination Id
-	L4_Set_MsgTag (L4_Niltag);
-	L4_Send (L4_LocalIdOf (ipc_t1));
-	L4_Receive (ipc_t1);
+	L4_Set_MsgTag(L4_Niltag);
+	L4_Send(L4_LocalIdOf(ipc_t1));
+	L4_Receive(ipc_t1);
 
 	// Send cancel
-	L4_Sleep (L4_TimePeriod (1000*1000));
-	L4_ExchangeRegisters (ipc_t1, 0x6,
-			0, 0, 0, 0, L4_nilthread,
-			&dw, &dw, &dw, &dw, &dw, &dt);
-	L4_Set_MsgTag (L4_Niltag);
-	L4_Send (ipc_t1);
+	L4_Sleep(L4_TimePeriod(1000 * 1000));
+	L4_ExchangeRegisters(ipc_t1, 0x6,
+	                     0, 0, 0, 0, L4_nilthread,
+	                     &dw, &dw, &dw, &dw, &dw, &dt);
+	L4_Set_MsgTag(L4_Niltag);
+	L4_Send(ipc_t1);
 
 	// Receive cancel
 	L4_Receive(ipc_t1);
-	L4_Sleep (L4_TimePeriod (1000*1000));
-	L4_ExchangeRegisters (ipc_t1, 0x6,
-			0, 0, 0, 0, L4_nilthread,
-			&dw, &dw, &dw, &dw, &dw, &dt);
-	L4_Receive (ipc_t1);
+	L4_Sleep(L4_TimePeriod(1000 * 1000));
+	L4_ExchangeRegisters(ipc_t1, 0x6,
+	                     0, 0, 0, 0, L4_nilthread,
+	                     &dw, &dw, &dw, &dw, &dw, &dt);
+	L4_Receive(ipc_t1);
 #endif
 
 	// From parameter (local)
@@ -490,20 +485,21 @@ __USER_TEXT static void simple_ipc_t2_l(void)
 }
 
 #if 0	/* UNIMPLEMENTED */
-__USER_TEXT static void simple_ipc_t2_g (void)
+__USER_TEXT static void simple_ipc_t2_g(void)
 {
 	// From parameter (global)
-	L4_Set_MsgTag (L4_Niltag);
-	L4_Send (ipc_t1);
+	L4_Set_MsgTag(L4_Niltag);
+	L4_Send(ipc_t1);
 
 	// Get oneself killed
-	L4_Set_MsgTag (L4_Niltag);
-	L4_Call (L4_Pager ());
+	L4_Set_MsgTag(L4_Niltag);
+	L4_Call(L4_Pager());
 }
 #endif
 
 
-__USER_TEXT static void simple_ipc(void)
+__USER_TEXT
+static void simple_ipc(void)
 {
 	printf("\nSimple IPC test (inter-as, only untyped words)\n");
 #if 0
@@ -520,7 +516,8 @@ void string_ipc_pf(void);
 void simple_smpipc(void);
 void string_smpipc_pf(void);
 
-__USER_TEXT void all_ipc_tests(void)
+__USER_TEXT
+void all_ipc_tests(void)
 {
 	simple_ipc();
 	//string_ipc ();
@@ -529,28 +526,40 @@ __USER_TEXT void all_ipc_tests(void)
 	//string_smpipc_pf ();
 }
 
-static struct menuitem menu_items[] = 
-{
-	{ NULL,
-	  "return" },
-	{ simple_ipc,
-	  "Simple IPC" },
-	{ string_ipc,
-	  "String copy IPC, inter address space (no pagefaults)"},
-	{ string_ipc_pf,
-	  "String copy IPC, intra address space (with pagefaults)" },
-	{ simple_smpipc,
-	  "Simple SMP IPC" },
-	{ string_smpipc_pf,
-	  "String copy SMP IPC, inter address space (with pagefaults)" },
-	{ all_ipc_tests,
-	  "All IPC tests" },
+static struct menuitem menu_items[] = {
+	{
+		NULL,
+		"return"
+	},
+	{
+		simple_ipc,
+		"Simple IPC"
+	},
+	{
+		string_ipc,
+		"String copy IPC, inter address space (no pagefaults)"
+	},
+	{
+		string_ipc_pf,
+		"String copy IPC, intra address space (with pagefaults)"
+	},
+	{
+		simple_smpipc,
+		"Simple SMP IPC"
+	},
+	{
+		string_smpipc_pf,
+		"String copy SMP IPC, inter address space (with pagefaults)"
+	},
+	{
+		all_ipc_tests,
+		"All IPC tests"
+	},
 };
 
-static struct menu menu = 
-{
+static struct menu menu = {
 	"IPC Menu",
-	0, 
+	0,
 	NUM_ITEMS(menu_items),
 	menu_items
 };
@@ -563,4 +572,3 @@ void ipc_test(void)
 {
 	menu_input(&menu);
 }
-

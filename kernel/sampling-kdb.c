@@ -18,7 +18,7 @@
 
 #ifdef CONFIG_KDB
 static int sampling_handler(struct kprobe *kp, uint32_t *stack,
-		uint32_t *kp_regs)
+                            uint32_t *kp_regs)
 {
 	uint32_t *target_stack;
 
@@ -61,8 +61,8 @@ void kdb_show_sampling(void)
 		symid = symid_list[i];
 		if (hitcount[symid] == 0)
 			break;
-		dbg_printf(DL_KDB, "%5d [ %24s ]\n", hitcount[symid], 
-				ksym_id2name(symid));
+		dbg_printf(DL_KDB, "%5d [ %24s ]\n", hitcount[symid],
+		           ksym_id2name(symid));
 	}
 
 	sampling_enable();

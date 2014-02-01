@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include <app.h>
+#include <user_runtime.h>
 #include <l4/kip.h>
 #include <l4/thread.h>
 #include <l4/ipc.h>
@@ -25,7 +25,7 @@
 __USER_BSS static char *free_page;
 
 /* colours */
-static void 
+static void
 set_colour(const char *col)
 {
 #ifdef USE_ANSI
@@ -33,7 +33,7 @@ set_colour(const char *col)
 #endif
 }
 
-void 
+void
 print_uline(const char *msg, char c)
 {
 	int i, len = strlen(msg);
@@ -45,7 +45,7 @@ print_uline(const char *msg, char c)
 	putc('\n');
 }
 
-void 
+void
 print_h1(const char *msg)
 {
 	set_colour(LIGHT_BLUE);
@@ -53,7 +53,7 @@ print_h1(const char *msg)
 	set_colour(BLACK);
 }
 
-void 
+void
 print_h2(const char *msg)
 {
 	set_colour(LIGHT_RED);
@@ -66,8 +66,8 @@ print_result(const char *str, bool test)
 {
 	printf("  %s: ", str);
 #if 0
-	for (int __i = 60 - strlen (str); __i > 0; __i--)
-		putc (' ');
+	for (int __i = 60 - strlen(str); __i > 0; __i--)
+		putc(' ');
 #endif
 	printf("  %s\n", (test) ? STR_OK : STR_FAILED);
 	if (! test)
@@ -93,7 +93,7 @@ get_pages(L4_Word_t count, int touch)
 	void *ret = free_page;
 
 	free_page += count * PAGE_SIZE;
-	
+
 	/* should we fault the pages in? */
 	if (touch != 0) {
 		char *addr = (char *) ret;
@@ -103,7 +103,7 @@ get_pages(L4_Word_t count, int touch)
 		for (i = 0; i < count; i++) {
 			safe_mem_touch((void *) addr);
 			for (int j = 0; j < PAGE_SIZE; j++)
-			    addr[j] = 0;
+				addr[j] = 0;
 			addr += PAGE_SIZE;
 		}
 	}
@@ -118,17 +118,17 @@ get_new_page(void)
 }
 
 __USER_TEXT void
-get_startup_values (void (*func)(void),
-		L4_Word_t *ip, L4_Word_t *sp,
-		L4_Word_t *stack_size)
+get_startup_values(void (*func)(void),
+                   L4_Word_t *ip, L4_Word_t *sp,
+                   L4_Word_t *stack_size)
 {
-    /* Calculate intial SP */
-    L4_Word_t stack = (L4_Word_t) get_pages(STACK_PAGES, 1);
-    stack += STACK_PAGES * PAGE_SIZE;
+	/* Calculate intial SP */
+	L4_Word_t stack = (L4_Word_t) get_pages(STACK_PAGES, 1);
+	stack += STACK_PAGES * PAGE_SIZE;
 
-    *ip = (L4_Word_t) func;
-    *sp = stack;
-    *stack_size = STACK_PAGES * PAGE_SIZE;
+	*ip = (L4_Word_t) func;
+	*sp = stack;
+	*stack_size = STACK_PAGES * PAGE_SIZE;
 }
 
 void
@@ -175,18 +175,15 @@ __USER_TEXT void all_tests(void)
 #endif
 }
 
-static void main(app_struct *app)
+static void main(user_struct *user)
 {
 	printf("\nL4/Pistachio test suite starts\n");
-
-	free_page = (void *) app->fpages[0].base;
-
+	free_page = (void *) user->fpages[0].base;
 	all_tests();
-
 	return;
 }
 
-DECLARE_APP(
+DECLARE_USER(
 	256,
 	l4test,
 	main,

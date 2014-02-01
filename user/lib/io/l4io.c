@@ -20,7 +20,9 @@ int __USER_TEXT printf(const char *format, ...)
 	L4_MsgAppendWord(&msg, (L4_Word_t)&va);
 
 	L4_MsgLoad(&msg);
-	L4_Send((L4_ThreadId_t){.raw = TID_TO_GLOBALID(THREAD_LOG)});
+	L4_Send((L4_ThreadId_t) {
+		.raw = TID_TO_GLOBALID(THREAD_LOG)
+	});
 
 	va_end(va);
 

@@ -18,13 +18,12 @@ void mpu_setup_region(int n, fpage_t *fp)
 	if (fp) {
 		*mpu_base = (FPAGE_BASE(fp) & MPU_REGION_MASK) | 0x10 | (n & 0xF);
 		*mpu_attr = ((mempool_getbyid(fp->fpage.mpid)->flags & MP_UX) ?
-				0 :
-				(1 << 28)) |	/* XN bit */
-				(0x3 << 24) /* Full access */ |
-				((fp->fpage.shift - 1) << 1) /* Region */ |
-				1 /* Enable */;
-	}
-	else {
+		             0 :
+		             (1 << 28)) |	/* XN bit */
+		            (0x3 << 24) /* Full access */ |
+		            ((fp->fpage.shift - 1) << 1) /* Region */ |
+		            1 /* Enable */;
+	} else {
 		/* Clean MPU region */
 		*mpu_base = 0x10 | (n & 0xF);
 		*mpu_attr = 0;
@@ -113,8 +112,8 @@ void mpu_dump(void)
 		*mpu_rnr = i;
 		if (*mpu_attr & 0x1) {
 			dbg_printf(DL_EMERG,
-				"b:%p, sz:2**%d, attr:%04x\n", *mpu_base & MPU_REGION_MASK,
-				((*mpu_attr & 0x3E) >> 1) + 1, *mpu_attr >> 16);
+			           "b:%p, sz:2**%d, attr:%04x\n", *mpu_base & MPU_REGION_MASK,
+			           ((*mpu_attr & 0x3E) >> 1) + 1, *mpu_attr >> 16);
 		}
 	}
 }
@@ -128,7 +127,7 @@ void __memmanage_handler(void)
 	/* stack errors */
 	if (mmsr & MPU_MSTKERR) {
 		panic("Corrupted Stack, current = %t, psp = %p\n",
-			current->t_globalid, PSP());
+		      current->t_globalid, PSP());
 	}
 
 	if (mmsr & MPU_MEM_FAULT) {
@@ -156,8 +155,8 @@ void __memmanage_handler(void)
 
 	mpu_dump();
 	panic("Memory fault mmsr:%p, mmar:%p,\n"
-		"             current:%t, psp:%p, pc:%p\n",
-		mmsr, mmar, current->t_globalid, PSP(), PSP()[REG_PC]);
+	      "             current:%t, psp:%p, pc:%p\n",
+	      mmsr, mmar, current->t_globalid, PSP(), PSP()[REG_PC]);
 
 ok:
 	/* Clean status register */

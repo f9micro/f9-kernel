@@ -21,9 +21,8 @@ void ksym_init()
 		__ksym_count = *((int *) ksym_addr + 1);
 		__ksym_tbl = (void *) ksym_addr + 8;
 		__ksym_strings = (void *) __ksym_tbl +
-			__ksym_count * sizeof(ksym_t);
-	}
-	else {
+		                 __ksym_count * sizeof(ksym_t);
+	} else {
 		static ksym_t _sym_tbl[] = { { 0, 0 } };
 		static char _sym_strings [] = "No symbol\0";
 		__ksym_count = 1;
@@ -42,13 +41,11 @@ int ksym_total()
 static int cmp_key(const void *addr, const void *p1)
 {
 	ksym_t * sym = (ksym_t *)p1;
-	if (sym == (__ksym_tbl+ksym_total()-1)) {
+	if (sym == (__ksym_tbl + ksym_total() - 1)) {
 		return 0;
-	}
-	else if ((addr >= sym->addr) && (addr < (sym+1)->addr)) {
+	} else if ((addr >= sym->addr) && (addr < (sym + 1)->addr)) {
 		return 0;
-	}
-	else {
+	} else {
 		return addr - ((ksym_t *) sym)->addr;
 	}
 }
@@ -60,18 +57,16 @@ int ksym_lookup(void *addr)
 
 	if (__ksym_tbl[prev_index].addr < addr) {
 		found = (ksym_t *) bsearch(addr, __ksym_tbl + prev_index,
-				__ksym_count - prev_index,
-				sizeof(__ksym_tbl[0]), cmp_key);
-	}
-	else {
+		                           __ksym_count - prev_index,
+		                           sizeof(__ksym_tbl[0]), cmp_key);
+	} else {
 		found = (ksym_t *) bsearch(addr, __ksym_tbl, __ksym_count,
-				sizeof(__ksym_tbl[0]), cmp_key);
+		                           sizeof(__ksym_tbl[0]), cmp_key);
 	}
 
-        if (found == NULL) {
+	if (found == NULL) {
 		return -1;
-	}
-	else {
+	} else {
 		return prev_index = (found - __ksym_tbl);
 	}
 }

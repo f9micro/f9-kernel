@@ -90,7 +90,7 @@ void kdb_show_ktimer(void)
 
 	if (ktimer_enabled) {
 		dbg_printf(DL_KDB,
-			"Ktimer T=%d D=%d\n", ktimer_time, ktimer_delta);
+		           "Ktimer T=%d D=%d\n", ktimer_time, ktimer_delta);
 	}
 }
 
@@ -105,8 +105,7 @@ void kdb_show_tickless_verify(void)
 		dbg_printf(DL_KDB, "Init tickless verification...\n");
 		tickless_verify_init();
 		init++;
-	}
-	else {
+	} else {
 		avg = tickless_verify_stat(&times);
 		dbg_printf(DL_KDB, "Times: %d\nAverage: %d\n", times, avg);
 	}
@@ -118,8 +117,8 @@ static void ktimer_event_recalc(ktimer_event_t* event, uint32_t new_delta)
 {
 	while (event) {
 		dbg_printf(DL_KTIMER,
-			"KTE: Recalculated event %p D=%d -> %d\n",
-			event, event->delta, event->delta - new_delta);
+		           "KTE: Recalculated event %p D=%d -> %d\n",
+		           event, event->delta, event->delta - new_delta);
 		event->delta -= new_delta;
 		event = event->next;
 	}
@@ -140,15 +139,14 @@ int ktimer_event_schedule(uint32_t ticks, ktimer_event_t *kte)
 		 * and enable timer
 		 */
 		dbg_printf(DL_KTIMER,
-			"KTE: Scheduled dummy event %p on %d\n",
-			kte, ticks);
+		           "KTE: Scheduled dummy event %p on %d\n",
+		           kte, ticks);
 
 		kte->delta = ticks;
 		event_queue = kte;
 
 		ktimer_enable(ticks);
-	}
-	else {
+	} else {
 		/* etime is total delta for event from now (-ktimer_value())
 		 * on each iteration we add delta between events.
 		 *
@@ -177,21 +175,20 @@ int ktimer_event_schedule(uint32_t ticks, ktimer_event_t *kte)
 				delta = ticks - etime;
 				next_event = event->next;
 			} while (next_event &&
-					ticks > (etime + next_event->delta));
+			         ticks > (etime + next_event->delta));
 
 			dbg_printf(DL_KTIMER,
-				"KTE: Scheduled event %p [%p:%p] with "
-				"D=%d and T=%d\n",
-				kte, event, next_event, delta, ticks);
+			           "KTE: Scheduled event %p [%p:%p] with "
+			           "D=%d and T=%d\n",
+			           kte, event, next_event, delta, ticks);
 
 			/* Insert into chain and recalculate */
 			event->next = kte;
-		}
-		else {
+		} else {
 			/* Event should be scheduled before earlier event */
 			dbg_printf(DL_KTIMER,
-				"KTE: Scheduled early event %p with T=%d\n",
-				kte, ticks);
+			           "KTE: Scheduled early event %p with T=%d\n",
+			           kte, ticks);
 
 			event_queue = kte;
 			delta = ticks;
@@ -266,14 +263,13 @@ void ktimer_event_handler()
 
 		if (h_retvalue != 0x0) {
 			dbg_printf(DL_KTIMER,
-				"KTE: Handled and rescheduled event %p @%ld\n",
-				event, ktimer_now);
+			           "KTE: Handled and rescheduled event %p @%ld\n",
+			           event, ktimer_now);
 			ktimer_event_schedule(h_retvalue, event);
-		}
-		else {
+		} else {
 			dbg_printf(DL_KTIMER,
-				"KTE: Handled event %p @%ld\n",
-				event, ktimer_now);
+			           "KTE: Handled event %p @%ld\n",
+			           event, ktimer_now);
 			ktable_free(&ktimer_event_table, event);
 		}
 
@@ -328,8 +324,7 @@ void ktimer_enter_tickless()
 
 	if (ktimer_enabled && ktimer_delta <= KTIMER_MAXTICKS) {
 		tickless_delta = ktimer_delta;
-	}
-	else {
+	} else {
 		tickless_delta = KTIMER_MAXTICKS;
 	}
 

@@ -149,8 +149,8 @@ INIT_HOOK(dbg_device_init_hook, INIT_LEVEL_PLATFORM);
 
 #ifdef CONFIG_STDIO_USE_DBGPORT
 uint8_t __l4_getchar(void)
-        __attribute__ ((weak, alias ("dbg_getchar")));
+	__attribute__((weak, alias("dbg_getchar")));
 
 void __l4_putchar(uint8_t chr)
-        __attribute__ ((weak, alias ("dbg_putchar")));
+	__attribute__((weak, alias("dbg_putchar")));
 #endif

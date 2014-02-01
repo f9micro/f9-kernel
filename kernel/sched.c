@@ -41,8 +41,7 @@ tcb_t *schedule_select()
 		if (scheduled && thread_isrunnable(scheduled)) {
 			/* Found thread, try to dispatch it */
 			return scheduled;
-		}
-		else if (slots[slot_id].ss_handler) {
+		} else if (slots[slot_id].ss_handler) {
 			/* No appropriate thread found (i.e. timeslice
 			 * exhausted, no softirqs in kernel),
 			 * try to redispatch another thread
