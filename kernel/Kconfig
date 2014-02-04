@@ -73,7 +73,7 @@ config INTR_THREAD_MAX
 	default 256
 endmenu
 
-menu "KIP theaks"
+menu "KIP tweaks"
 config KIP_EXTRA_SIZE
 	int "Size of extra information on KIP"
 	default 128
