@@ -85,12 +85,12 @@ The current hardware board F9 Microkernel supports is [STM32F4DISCOVERY](http://
 based on ARM Cortex-M4F core, but F9 should work well on any STM32F40x
 microcontroller.
 
-Building F9 Microkernel requires an arm-none-eabi- toolchain with Cortex-M4
-hardfloat support. The known working toolchains are as following
+Building F9 Microkernel requires an arm-none-eabi- toolchain with Cortex-M4F support. The known working toolchains are as following
 * [Sourcery CodeBench](http://www.mentor.com/embedded-software/sourcery-tools/sourcery-codebench/editions/lite-edition/)
   - ARM Processors: EABI Release
   - Verified versions: arm-2012.03, arm-2013.05, arm-2013.11
 * [GNU Tools for ARM Embedded Processors](https://launchpad.net/gcc-arm-embedded)
+  - Verified versions: 4.8-2013-q4-major
 
 Other build dependency includes: (for Debian/Ubuntu)
 * libncurses5-dev
