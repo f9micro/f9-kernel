@@ -27,4 +27,17 @@ config STDIO_USE_DBGPORT
 
 endchoice
 
+choice
+
+	prompt "Debug serial IO uses"
+	default DBGPORT_USE_USART4
+	depends on STDIO_USE_DBGPORT
+
+config DBGPORT_USE_USART2
+	bool "USART2"
+config DBGPORT_USE_USART4
+	bool "USART4"
+
+endchoice
+
 endmenu

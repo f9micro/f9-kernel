@@ -96,7 +96,7 @@ Other build dependency includes: (for Debian/Ubuntu)
 * libncurses5-dev
 
 Configuration is the initial step in the build of F9 Microkernel for your
-target, and you can use 'make config' to specify the options from which to
+target, and you can use `make config` to specify the options from which to
 choose. Regardless of the configuration method you use or the actual
 configuration options you choose, the build system will generate a `.config`
 file at the end of the configuration and will generate a configuration header
@@ -121,12 +121,15 @@ run at boot by default, and here are the supported commands:
 * e: dump ktimer events
 * K: print kernel tables
 
-Through USART, KDB can be operated interactively on PA0 (TX) and PA1 (RX) of
-STM32F4DISCOVERY. You can established USART serial connection with the board
-using a serial to USB converter:
+Through USART, KDB can be operated interactively on USART4 (default) or USART2
+of STM32F4DISCOVERY depending on the selected option when you execute `make config`:
+* USART4: PA0 (TX), PA1 (RX)
+* USART2: PA2 (TX), PA3 (RX)
 
-* USB2TTL RX ---> PA0
-* USB2TTL TX ---> PA1
+You can established serial connection with the board using a serial to USB
+converter:
+* USB2TTL RX ---> PA0 / PA2
+* USB2TTL TX ---> PA1 / PA3
 
 Select the appropriate terminal emulator and configure it for 115200 baud,
 8 data bits, no parity, one stop bit. For GNU/Linux, program `screen` can be
