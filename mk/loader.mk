@@ -14,8 +14,10 @@ KLDFLAGS = \
 	-r \
 	-b binary
 
+cmd_remove_arm_attributes = $(OBJCOPY) -R '.ARM.attributes' $@ $@
 cmd_kernel_to_o = $(LD) -L loader -T $(KERNEL_OBJ_LDS) $(KLDFLAGS) $< -o $@
-cmd_c_to_o_loader = $(CC) $(CFLAGS_INCLUDE_LOADER) -DLOADER $(CFLAGS) -MMD -MF $@.d -c $< -o $@
+cmd_c_to_o_loader = $(CC) $(CFLAGS_INCLUDE_LOADER) -DLOADER $(CFLAGS) -MMD -MF $@.d -c $< -o $@ && \
+		$(cmd_remove_arm_attributes)
 cmd_loader_elf = $(LD) --oformat $(EXEC_FORMAT) $(loader-objs) $(kernel-obj) -o $@ -L loader -T loader.ld $(LIBGCC)
 
 .PHONY: loader
