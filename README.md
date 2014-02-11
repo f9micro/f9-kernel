@@ -121,15 +121,17 @@ run at boot by default, and here are the supported commands:
 * e: dump ktimer events
 * K: print kernel tables
 
-Through USART, KDB can be operated interactively on USART4 (default) or USART2
-of STM32F4DISCOVERY depending on the selected option when you execute `make config`:
-* USART4: PA0 (TX), PA1 (RX)
-* USART2: PA2 (TX), PA3 (RX)
+Through USART, KDB can be operated interactively on USART4 (default), USART2,
+or USART1 of STM32F4DISCOVERY depending on the selected option when you execute
+`make config`:
+* USART4: PA0 (TX), PA1  (RX)
+* USART2: PA2 (TX), PA3  (RX)
+* USART1: PA9 (TX), PX10 (RX)
 
 You can established serial connection with the board using a serial to USB
 converter:
-* USB2TTL RX ---> PA0 / PA2
-* USB2TTL TX ---> PA1 / PA3
+* USB2TTL RX ---> PA0 / PA2 / PA9
+* USB2TTL TX ---> PA1 / PA3 / PA10
 
 Select the appropriate terminal emulator and configure it for 115200 baud,
 8 data bits, no parity, one stop bit. For GNU/Linux, program `screen` can be
