@@ -25,13 +25,18 @@ struct usart_regs {
 
 /* Calculates the value for the USART_BRR */
 /* TODO: Need more precise algorithm */
-static int16_t usart_baud(uint32_t baud)
+static int16_t usart_baud(uint32_t base, uint32_t baud)
 {
 	uint16_t mantissa;
 	uint16_t fraction;
 
-	mantissa = (42000000) / (16 *  baud);
-	fraction = (42000000 / baud) % 16;
+	if ((base == USART1_BASE) || (base == USART2_BASE)) {
+		mantissa = (84000000) / (16 *  baud);
+		fraction = (84000000 / baud) % 16;
+	} else {
+		mantissa = (42000000) / (16 *  baud);
+		fraction = (42000000 / baud) % 16;
+	}
 
 	return (mantissa << 4) | fraction;
 }
@@ -110,7 +115,7 @@ void usart_init(struct usart_dev *usart)
 	uregs->CR2 &= ~(3 << 12);
 
 	/* Set baud rate */
-	uregs->BRR = usart_baud(usart->baud);
+	uregs->BRR = usart_baud(usart->base, usart->baud);
 
 	/* Enable reciever and transmitter */
 	uregs->CR1 |= (USART_CR1_RE | USART_CR1_TE);
