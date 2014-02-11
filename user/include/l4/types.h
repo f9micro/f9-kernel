@@ -36,7 +36,7 @@ typedef L4_Word_t		L4_Bool_t;
 # define __14		32
 # define __18		32
 #else
-# define __PLUS32	+ 0	
+# define __PLUS32	+ 0
 # define __14		14
 # define __18		18
 #endif
@@ -95,7 +95,7 @@ typedef L4_Word_t		L4_Bool_t;
 typedef union {
 	L4_Word_t raw;
 	struct {
-		L4_BITFIELD4(L4_Word_t, 
+		L4_BITFIELD4(L4_Word_t,
 				rwx : 3,
 				extended : 1,
 				s : 6,

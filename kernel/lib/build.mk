@@ -21,4 +21,3 @@ loader-kernel-lib-y += \
 	strcmp.loader.o \
 	memcpy.loader.o \
 	memset.loader.o
-	

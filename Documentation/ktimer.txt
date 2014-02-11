@@ -14,7 +14,7 @@ a synchronous IPC message to a user-level thread which registered with
 the kernel as the handler thread for that interrupt. The interrupt messages
 appear to be sent by special in-kernel interrupt threads set up by L4 at
 registration time, one per interrupt. Each interrupt message is delivered
-to exactly one handler, however a thread can be registered to handle 
+to exactly one handler, however a thread can be registered to handle
 different interrupts.
 
 The timer tick interrupt is the only one managed internally by L4 while F9

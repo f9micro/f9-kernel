@@ -1,10 +1,10 @@
 /*********************************************************************
- *                
+ *
  * Copyright (C) 2003, 2007, 2010,  Karlsruhe University
- *                
+ *
  * File path:     l4test/kip.cc
  * Description:   Various KIP tests
- *                
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,9 +25,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *                
+ *
  * $Id: kip.cc,v 1.7 2003/09/24 19:05:54 skoglund Exp $
- *                
+ *
  ********************************************************************/
 #include <l4/kip.h>
 #include <l4io.h>
@@ -43,7 +43,7 @@
 
 bool check_kipptr(L4_KernelInterfacePage_t *kip, void * ptr)
 {
-    if (((L4_Word_t)kip + (1 << kip->KipAreaInfo.X.s) >= (L4_Word_t)ptr) 
+    if (((L4_Word_t)kip + (1 << kip->KipAreaInfo.X.s) >= (L4_Word_t)ptr)
 	&& (ptr >= kip))
 	return true;
     printf("ERROR: kip-ptr (%p) not within KIP area\n", ptr);
@@ -53,7 +53,7 @@ bool check_kipptr(L4_KernelInterfacePage_t *kip, void * ptr)
 
 /* list of kernel ids, subids and what they are */
 typedef struct kid_list_t { L4_Word_t id; L4_Word_t subid; const char *kernel; const char * supplier; };
-kid_list_t kid_list[] = 
+kid_list_t kid_list[] =
 {
 	{ 0, 1, "L4/486", "GMD" },
 	{ 0, 2, "L4/Pentium", "IBM" },
@@ -70,7 +70,7 @@ kid_list_t kid_list[] =
 /* list of API versions */
 #define NO_SUBVERSION (L4_Word_t)-1ULL
 typedef struct api_list_t { L4_Word_t version; L4_Word_t subversion; const char *api; };
-api_list_t api_list[] = 
+api_list_t api_list[] =
 {
 	{ L4_APIVERSION_2,  NO_SUBVERSION, "Version 2" },
 	{ L4_APIVERSION_X0, L4_APISUBVERSION_X0, "Experimental Version X.0" },
@@ -115,7 +115,7 @@ print_kernelid( L4_Word_t kid_w )
 		supplier = "unknown supplier";
 	}
 
-	printf( "KernelID reports 0x%lx.0x%lx: %s from %s\n", 
+	printf( "KernelID reports 0x%lx.0x%lx: %s from %s\n",
 		(long) kid.x.id, (long) kid.x.subid,
 		kernel, supplier );
 }
@@ -140,7 +140,7 @@ print_version( L4_Word_t apiv )
 	else
 		version = "unknown api";
 
-	printf( "APIVersion reports %d.%d: %s\n", 
+	printf( "APIVersion reports %d.%d: %s\n",
 		(int) api.x.version, (int) api.x.subversion,
 		version );
 }
@@ -160,25 +160,25 @@ void
 print_alignment( void *kip )
 {
     L4_Word_t kipw = (L4_Word_t) kip;
-    printf( "KIP alignment %s OK\n", 
+    printf( "KIP alignment %s OK\n",
 	    (kipw == (kipw & PAGE_MASK)) ? "is" : "IS NOT");
 }
 
-void 
+void
 print_l4tag( L4_KernelInterfacePage_t *kip )
 {
 	char *tag = (char*) kip;
-	printf( "L4tag is: %c%c%c%c\n", 
+	printf( "L4tag is: %c%c%c%c\n",
 		tag[TAG0], tag[TAG1], tag[TAG2], tag[TAG3] );
 
-	printf( "L4tag %s valid\n", 
-		((*(L4_Word32_t*)tag) & 0xffffffff) == L4_MAGIC ? 
-		"is" : "IS NOT" ); 
+	printf( "L4tag %s valid\n",
+		((*(L4_Word32_t*)tag) & 0xffffffff) == L4_MAGIC ?
+		"is" : "IS NOT" );
 }
 
 void print_infos( L4_KernelInterfacePage_t * kip )
 {
-    printf("Threads: IRQs=%ld, sys=%ld, valid TID bits=%ld\n", 
+    printf("Threads: IRQs=%ld, sys=%ld, valid TID bits=%ld\n",
 	   L4_ThreadIdSystemBase (kip),
 	   L4_ThreadIdUserBase (kip) - L4_ThreadIdSystemBase (kip),
 	   L4_ThreadIdBits (kip));
@@ -201,7 +201,7 @@ void print_kerndesc( L4_KernelInterfacePage_t * kip )
     L4_Word_t year, month, day;
     L4_KernelGenDate (kip, &year, &month, &day);
     print_kernelid(desc->KernelId.raw);
-    printf("Kernel generation date: %ld/%ld/%ld\n", day, month, year); 
+    printf("Kernel generation date: %ld/%ld/%ld\n", day, month, year);
     printf("Kernel Version: %ld.%ld.%ld\n", desc->KernelVer.X.ver,
 	   desc->KernelVer.X.subver, desc->KernelVer.X.subsubver);
     char * sup = (char*)&desc->Supplier;
@@ -258,7 +258,7 @@ print_kip(void)
 	print_kernelid( kid );
 	print_version( apiv );
 	print_apiflags( apif );
-	
+
 	printf( "Address of KIP is %p\n", kip );
 	print_alignment( kip );
 
@@ -297,7 +297,7 @@ void all_kip_tests(void)
 }
 
 /* the menu */
-static struct menuitem menu_items[] = 
+static struct menuitem menu_items[] =
 {
 	{ NULL, "return" },
 	{ print_kip,  "Print KIP" },
@@ -305,19 +305,18 @@ static struct menuitem menu_items[] =
         { all_kip_tests, "All KIP tests" },
 };
 
-static struct menu menu = 
+static struct menu menu =
 {
 	"KIP Menu",
-	0, 
+	0,
 	NUM_ITEMS(menu_items),
 	menu_items
 };
 
 
 /* entry point */
-void 
+void
 kip_test(void)
 {
 	menu_input( &menu );
 }
-

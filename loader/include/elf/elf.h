@@ -27,14 +27,14 @@ ELF file into memory.
 #include <types.h>
 
 /*
- * constants for Elf32_Phdr.p_flags 
+ * constants for Elf32_Phdr.p_flags
  */
 #define PF_X		1	/* readable segment */
 #define PF_W		2	/* writeable segment */
 #define PF_R		4	/* executable segment */
 
 /*
- * constants for indexing into Elf64_Header_t.e_ident 
+ * constants for indexing into Elf64_Header_t.e_ident
  */
 #define EI_MAG0		0
 #define EI_MAG1		1
@@ -78,7 +78,7 @@ ELF file into memory.
 #define ELF_PRINT_ALL (ELF_PRINT_PROGRAM_HEADERS | ELF_PRINT_SECTIONS)
 
 /**
- * Checks that elfFile points to a valid elf file. 
+ * Checks that elfFile points to a valid elf file.
  *
  * @param elfFile Potential ELF file to check
  *
@@ -184,7 +184,7 @@ uint32_t elf_vtopProgramHeader(void *elfFile, uint16_t ph, uint32_t vaddr);
 
 
 /**
- * 
+ *
  * \return true if the address in in this program header
  */
 bool elf_vaddrInProgramHeader(void *elfFile, uint16_t ph, uint32_t vaddr);
@@ -198,7 +198,7 @@ bool elf_vaddrInProgramHeader(void *elfFile, uint16_t ph, uint32_t vaddr);
  * @param min Pointer to return value of the minimum
  * @param max Pointer to return value of the maximum
  *
- * \return true on success. false on failure, if for example, it is an invalid ELF file 
+ * \return true on success. false on failure, if for example, it is an invalid ELF file
  */
 bool elf_getMemoryBounds(void *elfFile, bool phys, uint32_t *min, uint32_t *max);
 
@@ -258,8 +258,8 @@ uint32_t elf_getSectionFlags(void *elfFile, int i);
 uint32_t elf_getSectionType(void *elfFile, int i);
 
 void *elf_getSection(void *elfFile, int i);
-void elf_getProgramHeaderInfo(void *elfFile, uint16_t ph, uint32_t *p_vaddr, 
-			      uint32_t *p_paddr, uint32_t *p_filesz, 
+void elf_getProgramHeaderInfo(void *elfFile, uint16_t ph, uint32_t *p_vaddr,
+			      uint32_t *p_paddr, uint32_t *p_filesz,
 			      uint32_t *p_offset, uint32_t *p_memsz);
 
 
@@ -272,7 +272,7 @@ void elf_fprintf(void *elfFile, int size, const char *name, int flags);
 /*
  * Returns a pointer to the program segment table, which is an array of
  * ELF64_Phdr_t structs.  The size of the array can be found by calling
- * getNumProgramSegments. 
+ * getNumProgramSegments.
  */
 struct Elf32_Phdr *elf_getProgramSegmentTable(void *elfFile);
 #endif
@@ -280,7 +280,7 @@ struct Elf32_Phdr *elf_getProgramSegmentTable(void *elfFile);
 /**
  * Returns a pointer to the program segment table, which is an array of
  * ELF64_Phdr_t structs.  The size of the array can be found by calling
- * getNumProgramSegments. 
+ * getNumProgramSegments.
  */
 struct Elf32_Shdr *elf_getSectionTable(void *elfFile);
 #endif

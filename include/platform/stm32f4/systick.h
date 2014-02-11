@@ -11,4 +11,3 @@ uint32_t systick_now(void);
 uint32_t systick_flag_count(void);
 
 #endif
-

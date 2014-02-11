@@ -1,10 +1,10 @@
 /*********************************************************************
- *                
+ *
  * Copyright (C) 2003,  Karlsruhe University
- *                
+ *
  * File path:     l4test/menu.cc
  * Description:   Menu interface for test suite
- *                
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,9 +25,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *                
+ *
  * $Id: menu.cc,v 1.4 2003/09/24 19:05:54 skoglund Exp $
- *                
+ *
  ********************************************************************/
 #include <l4/kdebug.h>
 #include <l4io.h>
@@ -59,7 +59,7 @@ print_menu( struct menu *menu )
 		clear_screen();
 	else
 		printf( HOME );
-#else       
+#else
 	printf( "\n\n\n" );
 #endif
 
@@ -86,7 +86,7 @@ get_item( struct menu *menu )
 	while(1)
 	{
 		print_menu( menu );
-	
+
 		ch = L4_KDB_ReadChar_Blocked();
 
 		if( ch == KDEBUG_CHAR )
@@ -123,15 +123,15 @@ get_item( struct menu *menu )
 #endif
 
 		func();
-		
+
 	}
 }
 
 /* prompt user for a menu item */
-void 
+void
 menu_input( struct menu *menu )
 {
 	assert( menu != NULL );
-	
+
 	get_item( menu );
 }

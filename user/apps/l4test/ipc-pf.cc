@@ -1,10 +1,10 @@
 /*********************************************************************
- *                
+ *
  * Copyright (C) 2002, 2003, 2007,  Karlsruhe University
- *                
+ *
  * File path:     l4test/ipc-pf.cc
  * Description:   String IPC test with pagefaults
- *                
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,9 +25,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *                
+ *
  * $Id: ipc-pf.cc,v 1.7 2003/09/24 19:05:54 skoglund Exp $
- *                
+ *
  ********************************************************************/
 #include <l4/space.h>
 #include <l4/ipc.h>
@@ -84,7 +84,7 @@ static bool snd_string_checks (L4_MsgTag_t tag,
 			       fault_e fault = nofault) NOINLINE;
 
 static void string_ipc_pf_t1_1 (void)
-{ 
+{
     L4_MsgBuffer_t msgbuf;
     L4_MsgTag_t tag;
     L4_Msg_t msg;
@@ -223,7 +223,7 @@ static void string_ipc_pf_t1_1 (void)
 }
 
 static void string_ipc_pf_t1_2 (void)
-{ 
+{
     L4_MsgBuffer_t msgbuf;
     L4_MsgTag_t tag;
     L4_Msg_t msg;
@@ -433,9 +433,9 @@ static bool rcv_string_checks (L4_MsgTag_t tag,
 
     str = (L4_StringItem_t *) &msg->msg[1];
     if (! L4_StringItem (str) && ! L4_Substrings (str) != 1)
-	printf ("RCV: Did not receive simple string item\n"), 
+	printf ("RCV: Did not receive simple string item\n"),
 	    r = false;
-    
+
     for (unsigned int i = 0; i < PAGE_SIZE*2; i++)
     {
 	unsigned int j = (i >= cutpoint) ? 0xff : i;

@@ -46,7 +46,7 @@ The build entry point is Makefile at $topdir. This file does
 4. Configuration
 make config run sequence are
     - $topdir/Makefile:
-        + Assign configuration menus from $(KCONFIG_FILES) 
+        + Assign configuration menus from $(KCONFIG_FILES)
     - $topdir/mk/generic.mk
         + config.mk
             = Merge configuration menus to $topdir/build/host/Config.in
@@ -54,7 +54,7 @@ make config run sequence are
         + Run mconf $topdir/build/host/Config.in to generate $topdir/.config
 
 5. mk directory
-Makefile at $topdir heavily leverages files in $topdir/mk directory 
+Makefile at $topdir heavily leverages files in $topdir/mk directory
 during building process.
 
 Here is mk directory tree view
@@ -92,7 +92,7 @@ The brief explaination of each file is listed in the following.
         + Special rules for F9 Microkernel. $topdir/Makefile will include
           every files in this directory.
         + symmap.mk
-            = Generate code for show sampling command in kdb if 
+            = Generate code for show sampling command in kdb if
               CONFIG_SYMMAP is enabled.
 
 6. Adjustment

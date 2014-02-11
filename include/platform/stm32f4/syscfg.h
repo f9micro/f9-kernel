@@ -26,4 +26,3 @@ static inline void memory_remap_sram(void)
 
 #endif
 
-

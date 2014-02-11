@@ -1,10 +1,10 @@
 /*********************************************************************
- *                
+ *
  * Copyright (C) 2003, 2007-2008, 2010,  Karlsruhe University
- *                
+ *
  * File path:     l4test/exreg.cc
  * Description:   Various ExchangeRegisers() tests
- *                
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,9 +25,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *                
+ *
  * $Id: exreg.cc,v 1.7 2006/10/05 13:28:47 reichelt Exp $
- *                
+ *
  ********************************************************************/
 #include <l4/thread.h>
 #include <l4/ipc.h>
@@ -63,7 +63,7 @@ printy_thread(void)
 }
 
 /* just exreg it for no particular reason. eg. enquire about its
- * existence. The thread shouldn't exist before you call this! 
+ * existence. The thread shouldn't exist before you call this!
  */
 L4_ThreadId_t
 dumb_exreg_thread( L4_ThreadId_t tid )
@@ -76,8 +76,8 @@ dumb_exreg_thread( L4_ThreadId_t tid )
 	/* Make an invalid exreg on it */
 	control = EX_RECV | EX_SEND | EX_SP | EX_IP | EX_PAGR;
 
-	ret = L4_ExchangeRegisters( tid, control, NULL, NULL, 0, 0, pager, 
-				    &control, &sp, &pc, &flags, &user, 
+	ret = L4_ExchangeRegisters( tid, control, NULL, NULL, 0, 0, pager,
+				    &control, &sp, &pc, &flags, &user,
 				    &pager );
 
 	/* jsXXX: this is an obnoxious cast to make GCC-4.3.1 happy */
@@ -85,7 +85,7 @@ dumb_exreg_thread( L4_ThreadId_t tid )
 }
 
 L4_ThreadId_t
-do_exreg_thread_pager( L4_ThreadId_t pager, L4_ThreadId_t tid, 
+do_exreg_thread_pager( L4_ThreadId_t pager, L4_ThreadId_t tid,
 		       L4_Word_t ip, L4_Word_t sp )
 {
 	L4_ThreadId_t ret;
@@ -94,8 +94,8 @@ do_exreg_thread_pager( L4_ThreadId_t pager, L4_ThreadId_t tid,
 	/* Make an invalid exreg on it */
 	control = EX_RECV | EX_SEND | EX_SP | EX_IP | EX_PAGR;
 
-	ret = L4_ExchangeRegisters( tid, control, sp, ip, 0, 0, pager, 
-				    &control, &sp, &ip, &flags, &user, 
+	ret = L4_ExchangeRegisters( tid, control, sp, ip, 0, 0, pager,
+				    &control, &sp, &ip, &flags, &user,
 				    &pager );
 
 	return ret;
@@ -143,10 +143,10 @@ exreg_to_null(void)
 
 	/* kill it :) */
 	kill_thread( tid );
-        
+
         print_result ("ExReg thread with no pager", true);
 
-        
+
 }
 
 
@@ -211,7 +211,7 @@ ex_thrash(void)
 	/* wait a bit */
 	msec_sleep( 5000 );
 
-	/* FIXME: do a recv() here to see if it page-faulted?? 
+	/* FIXME: do a recv() here to see if it page-faulted??
 	 * ... and barf if it has? just in case?
 	 */
 
@@ -231,7 +231,7 @@ ex_thrash(void)
 
 	/* kill it :) */
 	kill_thread( tid );
-        
+
         print_result ("ExReg thrash (wait)", true);
 }
 
@@ -266,7 +266,7 @@ ex_thrash2(void)
 
 	/* kill it :) */
 	kill_thread( tid );
-        
+
         print_result ("ExReg thrash (nowait)", true);
 
 }
@@ -280,13 +280,13 @@ ex_tc(void)
         static L4_Word_t utcb_base;
         static void * kip;
 	kip = L4_GetKernelInterface ();
-	
+
         utcb_base = *(L4_Word_t *) &mylocalid;
 	utcb_base &= ~(L4_UtcbAreaSize (kip) - 1);
 
 	/* create us a thread ID */
 	tid = get_new_tid();
-        
+
         L4_Word_t utcb_location =
             utcb_base + L4_UtcbSize (kip) * L4_ThreadNo (tid);
 
@@ -297,14 +297,14 @@ ex_tc(void)
 	/* now create it */
 	//printf( "ThreadControl\n" );
 	res = L4_ThreadControl( tid, L4_Myself(), L4_Myself(), L4_Myself(), (void *) utcb_location);
-        
+
         print_result ("ExReg then ThreadControl", res == 1);
-	
-	/* I wonder if that killed it? 
-	 * kill it now 
+
+	/* I wonder if that killed it?
+	 * kill it now
 	 */
 	kill_thread( tid );
-        
+
 }
 
 
@@ -363,11 +363,11 @@ void all_exreg_tests(void)
     ex_tc();
     exreg_inactive_thread();
     exreg_to_null();
-       
+
 }
 
 /* the menu */
-static struct menuitem menu_items[] = 
+static struct menuitem menu_items[] =
 {
 	{ NULL, "return" },
 	{ exreg_ret,  "Test return value" },
@@ -382,19 +382,18 @@ static struct menuitem menu_items[] =
 
 };
 
-static struct menu menu = 
+static struct menu menu =
 {
 	"Exreg Menu",
-	0, 
+	0,
 	NUM_ITEMS(menu_items),
 	menu_items
 };
 
 
 /* entry point */
-void 
+void
 exreg_test(void)
 {
 	menu_input( &menu );
 }
-

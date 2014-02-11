@@ -5,5 +5,5 @@
 
 L4_ThreadId_t do_exreg_thread(L4_ThreadId_t tid, L4_Word_t ip, L4_Word_t sp);
 L4_ThreadId_t do_exreg_thread_pager(
-		L4_ThreadId_t pager, L4_ThreadId_t tid, 
+		L4_ThreadId_t pager, L4_ThreadId_t tid,
 		L4_Word_t ip, L4_Word_t sp);

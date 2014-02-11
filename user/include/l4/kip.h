@@ -153,7 +153,7 @@ typedef struct {
 					page_size_mask:22 __PLUS32
 				    );
 		} X;
-	} PageInfo;		
+	} PageInfo;
 
 	union {
 		L4_Word_t raw;
@@ -606,7 +606,7 @@ L4_INLINE L4_ProcDesc_t *L4_ProcDesc (void *KernelInterface, L4_Word_t cpu)
 		return (L4_ProcDesc_t *) 0;
 
 	return (L4_ProcDesc_t *)
-		((L4_Word_t)kip + kip->ProcDescPtr + 
+		((L4_Word_t)kip + kip->ProcDescPtr +
 		 ((1 << kip->ProcessorInfo.X.s) * cpu));
 }
 

@@ -1,10 +1,10 @@
 /*********************************************************************
- *                
+ *
  * Copyright (C) 2004, 2010,  University of New South Wales
- *                
+ *
  * File path:     l4test/schedule.cc
  * Description:   Various thread control tests
- *                
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,9 +25,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *                
+ *
  * $Id: schedule.cc,v 1.2 2006/10/05 13:28:58 reichelt Exp $
- *                
+ *
  ********************************************************************/
 
 #include <l4/types.h>
@@ -56,12 +56,12 @@ test_irq_priority_unassociated(void)
 	irq_thrd.global.X.thread_no = IRQ_NUMBER;
 	irq_thrd.global.X.version = 1;
 
-	//printf("Changing priority of irq thread %lx\n", 
+	//printf("Changing priority of irq thread %lx\n",
         //     irq_thrd.global.X.thread_no);
 	ret  = L4_Set_Priority(irq_thrd, 12);
-        
+
          print_result ("Change priority unassociated (ok=change failed)", ret == 0);
-	
+
 }
 
 static void
@@ -91,29 +91,28 @@ void all_schedule_tests(void)
 }
 
 /* the menu */
-static struct menuitem menu_items[] = 
+static struct menuitem menu_items[] =
 {
 	{ NULL, "return" },
-	{ test_irq_priority_unassociated,  
+	{ test_irq_priority_unassociated,
 	  "Change irq thread priority of an unassociated thread" },
-	{ test_irq_priority_associated,  
+	{ test_irq_priority_associated,
 	  "Change irq thread priority of an associated thread" },
         { all_schedule_tests, "All schedule tests" },
 };
 
-static struct menu menu = 
+static struct menu menu =
 {
 	"Schedule Menu",
-	0, 
+	0,
 	NUM_ITEMS(menu_items),
 	menu_items
 };
 
 
 /* entry point */
-void 
+void
 schedule_test(void)
 {
 	menu_input( &menu );
 }
-

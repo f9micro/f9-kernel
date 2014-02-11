@@ -24,7 +24,7 @@ SECTIONS {
 		init_hook_end = .;
 		text_end = .;
 	} > MFlash
-	
+
 	kernel_flash_start = ADDR(.text) + 0xc000;
 
 	.kernel :

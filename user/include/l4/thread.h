@@ -128,9 +128,9 @@ L4_INLINE L4_Word_t L4_ErrorCode(void)
 L4_INLINE const char *L4_ErrorCode_String(L4_Word_t err)
 {
 	switch (err) {
-	case L4_ERROR_OK:			
+	case L4_ERROR_OK:
 		return "l4_error_ok";
-	case L4_ERROR_NO_PRIVILEGE:	
+	case L4_ERROR_NO_PRIVILEGE:
 		return "l4_error_no_privilege";
 	case L4_ERROR_INVALID_THREAD:
 		return "l4_error_invalid_thread";
@@ -476,7 +476,7 @@ L4_INLINE L4_ThreadState_t L4_AbortIpc_and_stop_SpIpFlags(
 	return state;
 }
 
-#define L4_EXREGS_CTRLXFER_CONF_FLAG    	(1UL <<  9)  
+#define L4_EXREGS_CTRLXFER_CONF_FLAG    	(1UL <<  9)
 #define L4_EXREGS_CTRLXFER_READ_FLAG    	(1UL << 10)
 #define L4_EXREGS_CTRLXFER_WRITE_FLAG    	(1UL << 11)
 #define L4_EXREGS_EXCHANDLER_FLAG		(1UL << 12)
@@ -500,7 +500,7 @@ L4_INLINE L4_Word_t L4_DeassociateInterrupt(
 }
 
 L4_INLINE L4_Word_t L4_ConfCtrlXferItems(L4_ThreadId_t dest)
-{    
+{
 	L4_Word_t dummy, old_control;
 	L4_ThreadId_t dummy_tid;
 	L4_ExchangeRegisters(

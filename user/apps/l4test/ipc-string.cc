@@ -1,10 +1,10 @@
 /*********************************************************************
- *                
+ *
  * Copyright (C) 2002, 2003,  Karlsruhe University
- *                
+ *
  * File path:     l4test/ipc-string.cc
  * Description:   String IPC test without pagefaults
- *                
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,9 +25,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *                
+ *
  * $Id: ipc-string.cc,v 1.7 2003/09/24 19:05:54 skoglund Exp $
- *                
+ *
  ********************************************************************/
 #include <l4/ipc.h>
 #include <l4io.h>
@@ -498,9 +498,9 @@ static bool rcv_string_checks (L4_MsgTag_t tag, L4_Msg_t * msg,
 
     L4_Get (msg, 0, &str);
     if (! L4_StringItem (&str))
-	printf ("RCV: Did not receive simple string item\n"), 
+	printf ("RCV: Did not receive simple string item\n"),
 	    r = false;
-    
+
     if (! check_strbufs (cutpoint))
 	r = false;
 

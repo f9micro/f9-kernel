@@ -1,10 +1,10 @@
 /*********************************************************************
- *                
+ *
  * Copyright (C) 2003, 2010,  Karlsruhe University
- *                
+ *
  * File path:     l4test/tcontrol.cc
  * Description:   Various thread control tests
- *                
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,9 +25,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *                
+ *
  * $Id: tcontrol.cc,v 1.6 2004/03/17 02:37:27 benno Exp $
- *                
+ *
  ********************************************************************/
 #include <l4/types.h>
 #include <l4/thread.h>
@@ -87,7 +87,7 @@ run_a_thread(void)
 	/* wait a bit */
 	msec_sleep( 5000 );
 
-	/* FIXME: do a recv() here to see if it page-faulted?? 
+	/* FIXME: do a recv() here to see if it page-faulted??
 	 * ... and barf if it has? just in case?
 	 */
 
@@ -95,7 +95,7 @@ run_a_thread(void)
 
 	/* kill it :) */
 	kill_thread( tid );
-        
+
         print_result ("Run a thread", true);
 
 }
@@ -127,7 +127,7 @@ tc_then_exreg(void)
 
 	/* check if it flagged as OK */
         print_result ("ThreadControl+ExReg", ok_thread_worked != 0);
-        
+
 
 	/* kill it :) */
 	kill_thread( tid );
@@ -150,7 +150,7 @@ void all_tc_tests(void)
 }
 
 /* the menu */
-static struct menuitem menu_items[] = 
+static struct menuitem menu_items[] =
 {
 	{ NULL, "return" },
 	{ run_a_thread,  "Run a thread" },
@@ -159,19 +159,18 @@ static struct menuitem menu_items[] =
 	{ all_tc_tests, "All ThreadControl tests" },
 };
 
-static struct menu menu = 
+static struct menu menu =
 {
 	"Thread Control Menu",
-	0, 
+	0,
 	NUM_ITEMS(menu_items),
 	menu_items
 };
 
 
 /* entry point */
-void 
+void
 tcontrol_test(void)
 {
 	menu_input( &menu );
 }
-

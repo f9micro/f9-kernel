@@ -118,7 +118,7 @@ typedef union {
 #endif
 		L4_Fpage_t	snd_fpage;
 	} X;
-} L4_MapItem_t;	
+} L4_MapItem_t;
 
 L4_INLINE L4_MapItem_t L4_MapItem(L4_Fpage_t f, L4_Word_t SndBase)
 {
@@ -164,7 +164,7 @@ typedef union {
 #endif
 		L4_Fpage_t	snd_fpage;
 	} X;
-} L4_GrantItem_t;	
+} L4_GrantItem_t;
 
 L4_INLINE L4_Bool_t L4_IsGrantItem(L4_GrantItem_t g)
 {
@@ -325,7 +325,7 @@ typedef union {
 			L4_Word_t	mask:20 __PLUS32;
 #endif
 	} X;
-} L4_CtrlXferItem_t;	
+} L4_CtrlXferItem_t;
 
 
 L4_INLINE L4_Bool_t L4_IsCtrlXferItem(L4_CtrlXferItem_t *s)
@@ -515,7 +515,7 @@ L4_INLINE void L4_MsgAppendStringItem(
 }
 
 L4_INLINE void L4_MsgAppendCtrlXferItem(L4_Msg_t *msg, L4_CtrlXferItem_t *c)
-{ 
+{
 	L4_Word_t reg=0, num=0, mask = c->X.mask;
 	/* Add regs according to mask */
 	for (reg += __L4_Lsb(mask); mask != 0;
@@ -535,24 +535,24 @@ L4_INLINE void L4_AppendFaultConfCtrlXferItems(
 		L4_Word_t fault_mask,
 		L4_Word_t C)
 {
-	L4_CtrlXferItem_t item; 
+	L4_CtrlXferItem_t item;
 	L4_Word_t fault_id = 0;
 	L4_Word_t fault_id_mask_low = fault_id_mask;
 	L4_Word_t fault_id_mask_high = (fault_id_mask >> 32);
 
-	for (fault_id += __L4_Lsb(fault_id_mask_low); fault_id_mask_low != 0;  
+	for (fault_id += __L4_Lsb(fault_id_mask_low); fault_id_mask_low != 0;
 			fault_id_mask_low >>= __L4_Lsb(fault_id_mask_low) + 1,
 			fault_id += __L4_Lsb(fault_id_mask_low) + 1) {
-		L4_FaultConfCtrlXferItemInit(&item, fault_id, fault_mask); 
+		L4_FaultConfCtrlXferItemInit(&item, fault_id, fault_mask);
 		item.X.C = 1;
 		L4_MsgAppendWord(msg, item.raw[0]);
 	}
 
 	fault_id = 32;
-	for (fault_id += __L4_Lsb(fault_id_mask_high); fault_id_mask_high != 0;  
+	for (fault_id += __L4_Lsb(fault_id_mask_high); fault_id_mask_high != 0;
 			fault_id_mask_high >>= __L4_Lsb(fault_id_mask_high) + 1,
 			fault_id += __L4_Lsb(fault_id_mask_high) + 1) {
-		L4_FaultConfCtrlXferItemInit(&item, fault_id, fault_mask); 
+		L4_FaultConfCtrlXferItemInit(&item, fault_id, fault_mask);
 		item.X.C = 1;
 		L4_MsgAppendWord(msg, item.raw[0]);
 	}
@@ -599,11 +599,11 @@ L4_INLINE void L4_MsgPutStringItem(
 }
 
 L4_INLINE void L4_MsgPutCtrlXferItem(L4_Msg_t *msg, L4_Word_t t, L4_CtrlXferItem_t *c)
-{ 
+{
 	L4_Word_t reg = 0, num = 0, mask = c->X.mask;
 
 	/* Put regs according to mask */
-	for (reg += __L4_Lsb(mask); mask != 0; 
+	for (reg += __L4_Lsb(mask); mask != 0;
 			mask >>= __L4_Lsb(mask) + 1,
 			reg += __L4_Lsb(mask) +1, num++)
 		msg->msg[msg->tag.X.u + t + 2 + num] = c->raw[reg + 1];
