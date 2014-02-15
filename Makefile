@@ -92,5 +92,4 @@ dir-rules := mk/rules
 $(foreach rule, $(shell ls $(dir-rules)), \
 	$(eval include $(dir-rules)/$(rule)))
 
-include mk/target.mk
 include mk/generic.mk
