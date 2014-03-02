@@ -7,6 +7,7 @@
 
 #include <platform/link.h>
 #include <l4/types.h>
+#include <syscall.h>
 #include __L4_INC_ARCH(syscalls.h)
 
 __USER_TEXT
@@ -47,10 +48,10 @@ L4_Word_t L4_ThreadControl(L4_ThreadId_t dest,
 
 	__asm__ __volatile__(
 	    "ldr r4, %1\n"
-	    "svc #2\n"
+	    "svc %[syscall_num]\n"
 	    "str r0, %[output]\n"
 	    : [output] "=m"(result)
-	    : "m"(UtcbLocation));
+	    : "m"(UtcbLocation), [syscall_num] "i"(SYS_THREAD_CONTROL));
 
 	return result;
 }
@@ -89,9 +90,10 @@ L4_MsgTag_t L4_Ipc(L4_ThreadId_t to,
 	L4_ThreadId_t from_ret;
 
 	__asm__ __volatile__(
-	    "svc #6\n"
+	    "svc %[syscall_num]\n"
 	    "str r0, %[from]\n"
-	    : [from] "=m"(from_ret));
+	    : [from] "=m"(from_ret)
+        : [syscall_num] "i"(SYS_IPC));
 
 	result.raw = __L4_MR0;
 
