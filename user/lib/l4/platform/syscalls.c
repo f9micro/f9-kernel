@@ -51,7 +51,7 @@ L4_Word_t L4_ThreadControl(L4_ThreadId_t dest,
 	    "svc %[syscall_num]\n"
 	    "str r0, %[output]\n"
 	    : [output] "=m"(result)
-	    : "m"(UtcbLocation), [syscall_num]"i"(SYS_THREAD_CONTROL));
+	    : "m"(UtcbLocation), [syscall_num] "i"(SYS_THREAD_CONTROL));
 
 	return result;
 }
@@ -93,7 +93,7 @@ L4_MsgTag_t L4_Ipc(L4_ThreadId_t to,
 	    "svc %[syscall_num]\n"
 	    "str r0, %[from]\n"
 	    : [from] "=m"(from_ret)
-        : [syscall_num]"i"(SYS_IPC));
+        : [syscall_num] "i"(SYS_IPC));
 
 	result.raw = __L4_MR0;
 
