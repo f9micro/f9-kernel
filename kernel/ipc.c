@@ -184,7 +184,8 @@ uint32_t ipc_deliver(void *data)
 		    thr->ipc_from != L4_ANYTHREAD) {
 			from_thr = thread_by_globalid(thr->ipc_from);
 
-			do_ipc(from_thr, thr);
+			if (from_thr->state == T_SEND_BLOCKED)
+				do_ipc(from_thr, thr);
 		}
 	}
 
