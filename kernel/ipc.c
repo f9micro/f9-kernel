@@ -65,13 +65,18 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 	/* Copy typed words
 	 * FSM: j - number of byte */
 	for (typed_idx = untyped_idx; typed_idx < typed_last; ++typed_idx) {
+		uint32_t mr_data = ipc_read_mr(from, typed_idx);
+
+		/* Write typed mr data to 'to' thread */
+		ipc_write_mr(to, typed_idx, mr_data);
+
 		if (typed_item_idx == -1) {
 			/* If typed_item_idx == -1 - read ti's tag */
-			typed_item.raw = ipc_read_mr(from, typed_idx);
+			typed_item.raw = mr_data;
 			++typed_item_idx;
 		} else if (typed_item.s.header & IPC_TI_MAP_GRANT) {
 			/* MapItem / GrantItem have 1xxx in header */
-			typed_data = ipc_read_mr(from, typed_idx);
+			typed_data = mr_data;
 
 			map_area(from->as, to->as,
 			         typed_item.raw & 0xFFFFFFC0,
