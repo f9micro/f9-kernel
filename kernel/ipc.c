@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
+/* Copyright (c) 2013, 2014 The F9 Microkernel Project. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -187,7 +187,7 @@ uint32_t ipc_deliver(void *data)
 				from_thr = thread_by_globalid(thr->ipc_from);
 				if (from_thr->state == T_SEND_BLOCKED)
 					do_ipc(from_thr, thr);
-				}
+			}
 			break;
 		case T_SEND_BLOCKED:
 			receiver = thr->utcb->intended_receiver;
