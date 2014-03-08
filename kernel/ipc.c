@@ -65,13 +65,18 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 	/* Copy typed words
 	 * FSM: j - number of byte */
 	for (typed_idx = untyped_idx; typed_idx < typed_last; ++typed_idx) {
+		uint32_t mr_data = ipc_read_mr(from, typed_idx);
+
+		/* Write typed mr data to 'to' thread */
+		ipc_write_mr(to, typed_idx, mr_data);
+
 		if (typed_item_idx == -1) {
 			/* If typed_item_idx == -1 - read ti's tag */
-			typed_item.raw = ipc_read_mr(from, typed_idx);
+			typed_item.raw = mr_data;
 			++typed_item_idx;
 		} else if (typed_item.s.header & IPC_TI_MAP_GRANT) {
 			/* MapItem / GrantItem have 1xxx in header */
-			typed_data = ipc_read_mr(from, typed_idx);
+			typed_data = mr_data;
 
 			map_area(from->as, to->as,
 			         typed_item.raw & 0xFFFFFFC0,
@@ -169,17 +174,31 @@ void sys_ipc(uint32_t *param1)
 
 uint32_t ipc_deliver(void *data)
 {
-	tcb_t *thr = NULL, *from_thr = NULL;
+	tcb_t *thr = NULL, *from_thr = NULL, *to_thr = NULL;
+	l4_thread_t receiver;
 	int i;
 
 	for (i = 1; i < thread_count; ++i) {
 		thr = thread_map[i];
-
-		if (thr->state == T_RECV_BLOCKED && thr->ipc_from != L4_NILTHREAD &&
-		    thr->ipc_from != L4_ANYTHREAD) {
-			from_thr = thread_by_globalid(thr->ipc_from);
-
-			do_ipc(from_thr, thr);
+		switch (thr->state) {
+		case T_RECV_BLOCKED:
+			if (thr->ipc_from != L4_NILTHREAD &&
+				thr->ipc_from != L4_ANYTHREAD) {
+				from_thr = thread_by_globalid(thr->ipc_from);
+				if (from_thr->state == T_SEND_BLOCKED)
+					do_ipc(from_thr, thr);
+				}
+			break;
+		case T_SEND_BLOCKED:
+			receiver = thr->utcb->intended_receiver;
+			if (receiver != L4_NILTHREAD && receiver != L4_ANYTHREAD) {
+				to_thr = thread_by_globalid(receiver);
+				if (to_thr->state == T_RECV_BLOCKED)
+					do_ipc(thr, to_thr);
+			}
+			break;
+		default:
+			break;
 		}
 	}
 
