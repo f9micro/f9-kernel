@@ -3,6 +3,8 @@
  * found in the LICENSE file.
  */
 
+#include INC_PLAT(systick.h)
+
 #include <platform/armv7m.h>
 #include <debug.h>
 #include <error.h>
@@ -12,6 +14,7 @@
 #include <ipc.h>
 #include <sched.h>
 #include <user-log.h>
+#include <ktimer.h>
 
 extern tcb_t *caller;
 
@@ -71,7 +74,7 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 		ipc_write_mr(to, typed_idx, mr_data);
 
 		if (typed_item_idx == -1) {
-			/* If typed_item_idx == -1 - read ti's tag */
+			/* If typed_item_idx == -1 - read typed item's tag */
 			typed_item.raw = mr_data;
 			++typed_item_idx;
 		} else if (typed_item.s.header & IPC_TI_MAP_GRANT) {
@@ -114,11 +117,30 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 	           "IPC: %t to %t\n", caller->t_globalid, to->t_globalid);
 }
 
+uint32_t ipc_timeout(void *data)
+{
+	ktimer_event_t *event = (ktimer_event_t *) data;
+	tcb_t* from_thr = (tcb_t*) event->data;
+	from_thr->state = T_RUNNABLE;
+	sched_slot_dispatch(SSI_NORMAL_THREAD, from_thr);
+	return 0;
+}
+
 void sys_ipc(uint32_t *param1)
 {
 	/* TODO: Checking of recv-mask */
 	tcb_t *to_thr = NULL;
 	l4_thread_t to_tid = param1[REG_R0], from_tid = param1[REG_R1];
+	uint32_t timeout = param1[REG_R2];
+
+	if (to_tid == L4_NILTHREAD && timeout) { /* Timeout/Sleep */
+		ipc_time_t t = { .raw = timeout };
+		caller->state = T_INACTIVE;
+		ktimer_event_create((t.period.m << t.period.e) /
+					((1000000)/(CORE_CLOCK/CONFIG_KTIMER_HEARTBEAT)), /* millisec to ticks */
+					ipc_timeout, caller);
+		return;
+	}
 
 	if (to_tid != L4_NILTHREAD) {
 		to_thr = thread_by_globalid(to_tid);
@@ -126,10 +148,12 @@ void sys_ipc(uint32_t *param1)
 		if (to_tid == TID_TO_GLOBALID(THREAD_LOG)) {
 			user_log(caller);
 			caller->state = T_RUNNABLE;
+			return;
 		} else if ((to_thr && to_thr->state == T_RECV_BLOCKED)
 		           || to_tid == caller->t_globalid) {
 			/* To thread who is waiting for us or sends to myself */
 			do_ipc(caller, to_thr);
+			return;
 		} else if (to_thr && to_thr->state == T_INACTIVE &&
 		           GLOBALID_TO_TID(to_thr->utcb->t_pager) == GLOBALID_TO_TID(caller->t_globalid)) {
 			if (ipc_read_mr(caller, 0) == 0x00000003) {
@@ -148,9 +172,13 @@ void sys_ipc(uint32_t *param1)
 
 				/* Start thread */
 				to_thr->state = T_RUNNABLE;
+
+				return;
 			} else {
 				do_ipc(caller, to_thr);
 				to_thr->state = T_INACTIVE;
+
+				return;
 			}
 		} else  {
 			/* No waiting, block myself */
@@ -169,7 +197,11 @@ void sys_ipc(uint32_t *param1)
 		caller->ipc_from = from_tid;
 
 		dbg_printf(DL_IPC, "IPC: %t receiving\n", caller->t_globalid);
+
+		return;
 	}
+
+	caller->state = T_SEND_BLOCKED;
 }
 
 uint32_t ipc_deliver(void *data)
