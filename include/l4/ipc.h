@@ -36,4 +36,19 @@ typedef union {
 	uint32_t raw;
 } ipc_typed_item;
 
+typedef union {
+	uint16_t raw;
+	struct {
+		uint32_t	m : 10;
+		uint32_t	e : 5;
+		uint32_t	a : 1;
+	} period;
+	struct {
+		uint32_t	m : 10;
+		uint32_t	c : 1;
+		uint32_t	e : 4;
+		uint32_t	a : 1;
+	} point;
+} ipc_time_t;
+
 #endif	/* L4_IPC_H_ */
