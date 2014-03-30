@@ -11,6 +11,8 @@ before_install:
 
 script:
   - cp -f board/$BOARD/defconfig .config
-  - cp -f board/$BOARD/autoconf.h include/autoconf.h
+  - make build/host/Config.in
+  - make --no-print-directory -C external/kconfig -f Makefile.f9 conf obj=`pwd`/build/host CC=gcc HOSTCC=gcc
+  - build/host/conf --silentoldconfig build/host/Config.in
   - make
   - arm-none-eabi-size build/$BOARD/f9.elf
