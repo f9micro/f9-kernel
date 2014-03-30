@@ -1,0 +1,15 @@
+language: c
+
+compiler: gcc
+env: BOARD=discoveryf4
+
+install:
+  - sudo apt-get install build-essential gcc-arm-none-eabi
+
+script:
+  - cp -f board/$BOARD/defconfig .config
+  - make
+  - arm-none-eabi-size build/$BOARD/f9.elf
+
+before_install:
+  - sudo apt-get install build-essential gcc-arm-none-eabi
