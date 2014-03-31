@@ -23,13 +23,13 @@ silent = $(if $(V),,1>/dev/null)
 cmd_obj_to_bin = $(OBJCOPY) -O binary $< $@
 cmd_elf_to_list = $(OBJDUMP) -S $< > $@
 cmd_elf = $(LD) $(LDFLAGS) $(objs) -o $@ \
-	-L platform -T $(F9_LD_FILE) $(LIBGCC)
+	-L platform -T $(CHIP)/$(F9_LD_FILE) $(LIBGCC)
 cmd_strip = $(STRIP) $< -o $@
 cmd_elf_relink = $(LD) $(LDFLAGS) $(objs) $(symmap_obj-list) -o $@ \
-	-L platform -T $(F9_LD_FILE) $(LIBGCC) \
+	-L platform -T $(CHIP)/$(F9_LD_FILE) $(LIBGCC) \
 	-Map $(out)/$*.map
 cmd_c_to_o = $(CC) $(CFLAGS) -MMD -MF $@.d -c $< -o $@
-cmd_c_to_o_user = $(CC) $(CFLAGS_INCLUDE_USER) $(CFLAGS) $(CFLAGS) -MMD -MF $@.d -c $< -o $@
+cmd_c_to_o_user = $(CC) $(CFLAGS_INCLUDE_USER) $(CFLAGS) $(CFLAGS_USER) -MMD -MF $@.d -c $< -o $@
 cmd_c_to_build = $(BUILDCC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) \
 	         -MMD -MF $@.d $< -o $@
 cmd_bin = cat $^ > $@

@@ -2,7 +2,7 @@
  * memory area definitions
  */
 
-INCLUDE "f9_mem.ld"
+INCLUDE "stm32f4/f9_mem.ld"
 
 ENTRY (__l4_start)
 
@@ -46,7 +46,7 @@ KERNEL_STACK_SIZE	= 0x00000300;
 ROOT_THREAD_STACK_SIZE	= 0x00000200;
 
 SECTIONS {
-	.text :
+	.text 0x08000000:
 	{
 		KEEP(*(.isr_vector))
 		. = KERNEL_BASE;
@@ -57,24 +57,7 @@ SECTIONS {
 		KEEP(*(.init_hook))
 		init_hook_end = .;
 		kernel_text_end = .;
-	} > RamLoc
-
-	.user_text :
-	ALIGN (256)
-	{
-		user_text_start = .;
-		*(.user_text*)
-		. = ALIGN (256);
-		user_text_end = .;
-	} > RamLoc
-	end_of_text = .;
-
-	.sym_tab :
-	{
-		symtab_start = .;
-		KEEP(*(.sym_tab*))
-		symtab_end = .;
-	} > RamLoc
+	} > MFlash
 
 	.stack :
 	ALIGN (256)
@@ -88,6 +71,7 @@ SECTIONS {
 	} > RamLoc
 
 	.data :
+	AT( ADDR(.text) + SIZEOF(.text) )
 	ALIGN (256)
 	{
 		kernel_data_start = .;
@@ -115,8 +99,21 @@ SECTIONS {
 		bss_end = .;
 	} > RamLoc
 
+	user_text_flash_start = ADDR(.text) + 0xc000;
+	.user_text :
+	AT ( 0x0800c000 )
+	ALIGN (256)
+	{
+		user_text_start = .;
+		*(.user_text*)
+		. = ALIGN (256);
+		user_text_end = .;
+	} > RamLoc
+	user_text_flash_end = user_text_flash_start + SIZEOF(.user_text);
+	end_of_text = .;
 
 	.user_data :
+	AT( 0x0800c000 + SIZEOF(.user_text) )
 	ALIGN (256)
 	{
 		user_data_start = .;
@@ -148,5 +145,12 @@ SECTIONS {
 		bitmap_end = .;
 		kernel_ahb_end = .;
 	} > RamCCM
+
+	.sym_tab ( 0x800c000 + SIZEOF(.user_text) + SIZEOF(.user_data) ) :
+	{
+		symtab_start = .;
+		KEEP(*(.sym_tab*))
+		symtab_end = .;
+	} > MFlash
 
 }
