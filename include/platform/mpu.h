@@ -29,6 +29,7 @@
 
 void mpu_setup_region(int n, fpage_t *fp);
 void mpu_enable(mpu_state_t i);
+void __memmanage_handler(void);
 int mpu_select_lru(as_t *as, uint32_t addr);
 
 #endif	/* PLATFORM_MPU_H_ */
