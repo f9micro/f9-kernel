@@ -92,6 +92,11 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 		/* TODO: StringItem support */
 	}
 
+	if (!to->ctx.sp || !from->ctx.sp) {
+		caller->state = T_RUNNABLE;
+		return;
+	}
+
 	to->utcb->sender = from->t_globalid;
 
 	to->state = T_RUNNABLE;
