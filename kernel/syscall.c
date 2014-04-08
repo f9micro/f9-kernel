@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
+/* Copyright (c) 2013, 2014 The F9 Microkernel Project. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -44,18 +44,18 @@ static void sys_thread_control(uint32_t *param1, uint32_t *param2)
 	l4_thread_t dest = param1[REG_R0];
 	l4_thread_t space = param1[REG_R1];
 	l4_thread_t pager = param1[REG_R3];
-	void *utcb = (void *) param2[0];	/* R4 */
-
-	mempool_t *utcb_pool = mempool_getbyid(mempool_search((memptr_t) utcb,
-	                                       UTCB_SIZE));
-
-	if (!utcb_pool || !(utcb_pool->flags & (MP_UR | MP_UW))) {
-		/* Incorrect UTCB relocation */
-		return;
-	}
 
 	if (space != L4_NILTHREAD) {
 		/* Creation of thread */
+		void *utcb = (void *) param2[0];	/* R4 */
+		mempool_t *utcb_pool = mempool_getbyid(mempool_search((memptr_t) utcb,
+		                                       UTCB_SIZE));
+
+		if (!utcb_pool || !(utcb_pool->flags & (MP_UR | MP_UW))) {
+			/* Incorrect UTCB relocation */
+			return;
+		}
+
 		tcb_t *thr = thread_create(dest, utcb);
 		thread_space(thr, space, utcb);
 		thr->utcb->t_pager = pager;

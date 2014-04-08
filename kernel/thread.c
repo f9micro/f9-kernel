@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
+/* Copyright (c) 2013, 2014 The F9 Microkernel Project. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -236,19 +236,6 @@ void thread_destroy(tcb_t *thr)
 {
 	tcb_t *parent, *child, *prev_child;
 
-	/* move thr's children to caller */
-	child = thr->t_child;
-
-	while (child) {
-		child->t_parent = caller;
-		if (child->t_sibling == NULL)
-			break;
-		child = child->t_sibling;
-	}
-	/* connect thr's children to caller's children */
-	child->t_sibling = caller->t_child;
-	caller->t_child = thr->t_child;
-
 	/* remove thr from its parent and its siblings */
 	parent = thr->t_parent;
 
@@ -261,6 +248,22 @@ void thread_destroy(tcb_t *thr)
 			child = child->t_sibling;
 		}
 		prev_child->t_sibling = child->t_sibling;
+	}
+
+	/* move thr's children to caller */
+	child = thr->t_child;
+
+	if (child) {
+		child->t_parent = caller;
+
+		while (child->t_sibling) {
+			child = child->t_sibling;
+			child->t_parent = caller;
+		}
+
+		/* connect thr's children to caller's children */
+		child->t_sibling = caller->t_child;
+		caller->t_child = thr->t_child;
 	}
 
 	thread_deinit(thr);
