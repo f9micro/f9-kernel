@@ -22,7 +22,7 @@ extern struct usart_dev console_uart;
 #define BOARD_USART_CONFIGS			\
 	.base = USART1_BASE,			\
 	.rcc_apbenr = RCC_USART1_APBENR,	\
-	.rcc_reset = RCC_APB1RSTR_USART2RST,
+	.rcc_reset = RCC_APB2RSTR_USART1RST,
 #define BOARD_USART_TX_IO_PORT	GPIOA
 #define BOARD_USART_TX_IO_PIN	9
 #define BOARD_USART_RX_IO_PORT	GPIOA
