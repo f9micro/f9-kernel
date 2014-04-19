@@ -14,6 +14,7 @@
 #include <ipc.h>
 #include <sched.h>
 #include <user-log.h>
+#include <user-gpioer.h>
 #include <ktimer.h>
 
 extern tcb_t *caller;
@@ -152,6 +153,10 @@ void sys_ipc(uint32_t *param1)
 
 		if (to_tid == TID_TO_GLOBALID(THREAD_LOG)) {
 			user_log(caller);
+			caller->state = T_RUNNABLE;
+			return;
+		} else if (to_tid == TID_TO_GLOBALID(THREAD_GPIOER)) {
+			user_gpioer(caller);
 			caller->state = T_RUNNABLE;
 			return;
 		} else if ((to_thr && to_thr->state == T_RECV_BLOCKED)

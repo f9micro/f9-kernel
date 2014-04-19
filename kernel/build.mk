@@ -18,6 +18,7 @@ kernel-y = \
 	systhread.o \
 	thread.o \
 	user-log.o \
+	user-gpioer.o \
 
 KDB-$(CONFIG_KDB) = \
 	kdb.o
