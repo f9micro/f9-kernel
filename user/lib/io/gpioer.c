@@ -15,7 +15,6 @@
 void __USER_TEXT gpioer_config_output(uint8_t port, uint8_t pin, uint8_t pupd, uint8_t speed) 
 {
 	L4_Msg_t msg;
-	va_list va;
 
 	L4_MsgClear(&msg);
 	L4_MsgAppendWord(&msg, (L4_Word_t)GPIO_CMD_CONFIG_OUTPUT);
@@ -28,14 +27,11 @@ void __USER_TEXT gpioer_config_output(uint8_t port, uint8_t pin, uint8_t pupd, u
 	L4_Send((L4_ThreadId_t) {
 		.raw = TID_TO_GLOBALID(THREAD_GPIOER)
 	});
-
-	va_end(va);
 }
 
 void __USER_TEXT gpioer_out(uint8_t port, uint8_t pin, uint8_t action)
 {
 	L4_Msg_t msg;
-	va_list va;
 
 	L4_MsgClear(&msg);
 	L4_MsgAppendWord(&msg, (L4_Word_t)GPIO_CMD_OUT);
@@ -47,6 +43,4 @@ void __USER_TEXT gpioer_out(uint8_t port, uint8_t pin, uint8_t action)
 	L4_Send((L4_ThreadId_t) {
 		.raw = TID_TO_GLOBALID(THREAD_GPIOER)
 	});
-
-	va_end(va);
 }
