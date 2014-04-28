@@ -70,6 +70,9 @@ typedef struct {
 
 #define MP_USER_PERM(mpflags) ((mpflags & 0xF0) >> 4)
 
+/* Mapping value for NO FPAGE region */
+#define INVALID_FPAGE_REGION 0xffffffff
+
 typedef enum {
 	MPT_KERNEL_TEXT,
 	MPT_KERNEL_DATA,

@@ -92,28 +92,20 @@ extern kip_mem_desc_t *mem_desc;
 extern char *kip_extra;
 
 /* Some helper functions */
-
+/* size value must be 2^k */
 static memptr_t addr_align(memptr_t addr, size_t size)
 {
-	if (addr & (size - 1))
-		return (addr & ~(size - 1)) + size;
-	return (addr & ~(size - 1));
+	return (addr + (size - 1)) & ~(size - 1);
 }
 
 #define CONFIG_SMALLEST_FPAGE_SIZE	(1 << CONFIG_SMALLEST_FPAGE_SHIFT)
 
 memptr_t mempool_align(int mpid, memptr_t addr)
 {
-	switch (memmap[mpid].flags & MP_FPAGE_MASK) {
-	case MP_MEMPOOL:
-	case MP_SRAM:
-	case MP_AHB_RAM:
+	if (memmap[mpid].flags & MP_FPAGE_MASK)
 		return addr_align(addr, CONFIG_SMALLEST_FPAGE_SIZE);
-	case MP_DEVICES:
-		return addr & 0xFFFC0000;
-	}
 
-	return addr_align(addr, CONFIG_SMALLEST_FPAGE_SIZE);
+	return INVALID_FPAGE_REGION;
 }
 
 int mempool_search(memptr_t base, size_t size)
@@ -300,7 +292,8 @@ void as_map_user(as_t *as)
 		switch (memmap[i].tag) {
 		case MPT_USER_DATA:
 		case MPT_USER_TEXT:
-			/* Create fpages only for user text and user data */
+		case MPT_DEVICES:
+			/* Map user text, data and hardware device memory */
 			assign_fpages(as, memmap[i].start,
 			              (memmap[i].end - memmap[i].start));
 		}
