@@ -43,7 +43,6 @@ typedef enum {
 	THREAD_KERNEL,
 	THREAD_ROOT,
 	THREAD_LOG,
-	THREAD_GPIOER,
 	THREAD_SYS	= 16,				/* Systembase */
 	THREAD_USER	= CONFIG_INTR_THREAD_MAX	/* Userbase */
 } thread_tag_t;

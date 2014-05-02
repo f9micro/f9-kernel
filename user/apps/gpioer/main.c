@@ -46,7 +46,7 @@ static inline void __USER_TEXT led_init(void)
 	}
 }
 
-static void __USER_TEXT leds_onoff(bool on)
+static inline void __USER_TEXT leds_onoff(bool on)
 {
 	for (int i = 0; i < BOARD_LED_NUM; ++i)
 	{
@@ -56,19 +56,22 @@ static void __USER_TEXT leds_onoff(bool on)
 	}
 }
 
+int __USER_TEXT L4_Map(L4_ThreadId_t where, memptr_t base, size_t size);
+
 void __USER_TEXT gpioer_thread(void)
 {
 	int i = 0;
 
 	bool flag = false;
 
-	printf("test gpioer to on off\n");
-
-	led_init();
-	for (i = 0; i < 100 ; ++i, flag = !flag)
-	{
-		leds_onoff(flag);
-		L4_Sleep(L4_TimePeriod(1000 * 1000));
+	printf("sample: built-in leds blinking with gpioer\n");
+    led_init();
+	if (1) {
+        for (i = 0; i < 100 ; ++i, flag = !flag)
+        {
+            leds_onoff(flag);
+            L4_Sleep(L4_TimePeriod(1000 * 1000));
+        }
 	}
 
 	while (1)

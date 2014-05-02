@@ -155,10 +155,6 @@ void sys_ipc(uint32_t *param1)
 			user_log(caller);
 			caller->state = T_RUNNABLE;
 			return;
-		} else if (to_tid == TID_TO_GLOBALID(THREAD_GPIOER)) {
-			user_gpioer(caller);
-			caller->state = T_RUNNABLE;
-			return;
 		} else if ((to_thr && to_thr->state == T_RECV_BLOCKED)
 		           || to_tid == caller->t_globalid) {
 			/* To thread who is waiting for us or sends to myself */

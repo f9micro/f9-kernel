@@ -3,5 +3,4 @@
 # found in the LICENSE file.
 
 user-lib-io-y = \
-	l4io.o \
-	gpioer.o 
+	l4io.o 
