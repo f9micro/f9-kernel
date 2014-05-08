@@ -130,7 +130,7 @@ void __USER_TEXT gpioer_config_input(uint8_t port, uint8_t pin, uint8_t pupd)
 	};
 
 	*RCC_AHB1ENR |= (1 << port);
-	gpio_config(&cfg);
+	gpioer_config(&cfg);
 }
 
 void __USER_TEXT gpioer_out_high(uint8_t port, uint8_t pin)

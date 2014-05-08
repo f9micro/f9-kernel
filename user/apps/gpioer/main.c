@@ -66,13 +66,23 @@ void __USER_TEXT gpioer_thread(void)
 
 	printf("sample: built-in leds blinking with gpioer\n");
     led_init();
-	if (1) {
-        for (i = 0; i < 100 ; ++i, flag = !flag)
-        {
+    for (i = 0; i < 5 ; ++i, flag = !flag)
+    {
             leds_onoff(flag);
             L4_Sleep(L4_TimePeriod(1000 * 1000));
-        }
-	}
+    }
+    printf("step2\n");
+	gpioer_config_input(GPIOA,
+			2,
+			GPIO_PUPDR_DOWN);
+
+    printf("step3\n");
+    while (1) {
+            uint8_t i = gpioer_input_bit(GPIOA, 2);
+            printf("button %d\n", (int)i);
+            L4_Sleep(L4_TimePeriod(1000 * 1000));
+    }
+
 
 	while (1)
 		L4_Sleep(L4_TimePeriod(10000 * 1000));

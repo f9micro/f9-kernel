@@ -16,7 +16,13 @@ extern "C" {
 #define GPIO_LOW 0
 
 void gpioer_config_output(uint8_t port, uint8_t pin, uint8_t pupd, uint8_t speed);
+
 void gpioer_out(uint8_t port, uint8_t pin, uint8_t action);
+
+void gpioer_config_input(uint8_t port, uint8_t pin, uint8_t pupd);
+
+uint8_t gpioer_input_bit(uint8_t port, uint8_t pin);
+
 
 #ifdef __cplusplus
 }
