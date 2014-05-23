@@ -12,9 +12,9 @@
 
 #define STACK_SIZE 256
 
-enum { GPIOER_THREAD };
+enum { GPIOER_THREAD, BUTTON_MONITOR_THREAD };
 
-static L4_ThreadId_t threads[1] __USER_DATA;
+static L4_ThreadId_t threads[2] __USER_DATA;
 
 static L4_Word_t last_thread __USER_DATA;
 static L4_Word_t free_mem __USER_DATA;
@@ -56,36 +56,52 @@ static inline void __USER_TEXT leds_onoff(bool on)
 	}
 }
 
-int __USER_TEXT L4_Map(L4_ThreadId_t where, memptr_t base, size_t size);
 
 void __USER_TEXT gpioer_thread(void)
 {
-	int i = 0;
+	bool flag = true;
 
-	bool flag = false;
-
-	printf("sample: built-in leds blinking with gpioer\n");
+	printf("gpioer thread: built-in leds blinking\n");
     led_init();
-    for (i = 0; i < 5 ; ++i, flag = !flag)
+    while (1)
     {
             leds_onoff(flag);
             L4_Sleep(L4_TimePeriod(1000 * 1000));
+            flag=!flag;
     }
-    printf("step2\n");
-	gpioer_config_input(GPIOA,
-			2,
-			GPIO_PUPDR_DOWN);
+}
 
-    printf("step3\n");
-    while (1) {
-            uint8_t i = gpioer_input_bit(GPIOA, 2);
-            printf("button %d\n", (int)i);
+
+/* STM32F407-Discovery
+ * User Button connected on PA0 
+ * as result, for this demo app, 
+ * Because USART4 (PA0, PA1) is conflict, 
+ * choose USART1 (PA9,PA10) or USART2 (PA2,PA3) instead.
+ **/
+
+#define BUTTON_USER_PIN 0
+
+/* if you use external button, please 
+ * update the BUTTON_CUSTOM_PIN with your own number
+ **/
+
+#define BUTTON_CUSTOM_PIN BUTTON_USER_PIN
+
+void __USER_TEXT button_monitor_thread(void)
+{
+    int count = 1;
+
+    gpioer_config_input(GPIOA, BUTTON_CUSTOM_PIN, GPIO_PUPDR_DOWN);
+	printf("thread: built-in user button detection\n");
+    while (1)
+    {
+            uint8_t state = gpioer_input_bit(GPIOA, BUTTON_CUSTOM_PIN);
+            if (state != 0) {
+                printf("button %s %d times\n", state == 0 ? "open" : "pushed", count);
+                count++;
+            }
             L4_Sleep(L4_TimePeriod(1000 * 1000));
     }
-
-
-	while (1)
-		L4_Sleep(L4_TimePeriod(10000 * 1000));
 }
 
 static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
@@ -122,11 +138,12 @@ static void __USER_TEXT main(user_struct *user)
 	free_mem = user->fpages[0].base;
 
 	threads[GPIOER_THREAD] = create_thread(user, gpioer_thread);
+	threads[BUTTON_MONITOR_THREAD] = create_thread(user, button_monitor_thread);
 }
 
 DECLARE_USER(
 	0,
 	gpioer,
 	main,
-	DECLARE_FPAGE(0x0, 1 * UTCB_SIZE + 1 * STACK_SIZE)
+	DECLARE_FPAGE(0x0, 2 * UTCB_SIZE + 2 * STACK_SIZE)
 );
