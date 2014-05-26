@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
+/* Copyright (c) 2013, 2014 The F9 Microkernel Project. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -29,7 +29,7 @@
 static char banner[] =
 	"\n"
 	"====================================================\n"
-	"      Copyright(C) 2013 The F9 Microkernel Project  \n"
+	" Copyright(C) 2013-2014 The F9 Microkernel Project  \n"
 	"====================================================\n"
 	"Git head: " GIT_HEAD "\n"
 	"Host: " MACH_TYPE "\n"
