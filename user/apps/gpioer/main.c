@@ -39,7 +39,7 @@ static inline void __USER_TEXT led_init(void)
 
 	for (int i = 0; i < BOARD_LED_NUM; ++i)
 	{
-		gpioer_config_output(BOARD_LED_PORT,
+		gpio_config_output(BOARD_LED_PORT,
 			board_leds[i],
 			GPIO_PUPDR_UP,
 			GPIO_OSPEEDR_50M);
@@ -50,9 +50,10 @@ static inline void __USER_TEXT leds_onoff(bool on)
 {
 	for (int i = 0; i < BOARD_LED_NUM; ++i)
 	{
-		uint8_t action = (on) ? GPIO_HIGH : GPIO_LOW;
-
-		gpioer_out(BOARD_LED_PORT, board_leds[i], action);
+		if (on)
+            gpio_out_high(BOARD_LED_PORT, board_leds[i]);
+        else
+            gpio_out_low(BOARD_LED_PORT, board_leds[i]);
 	}
 }
 
@@ -91,16 +92,16 @@ void __USER_TEXT button_monitor_thread(void)
 {
     int count = 1;
 
-    gpioer_config_input(GPIOA, BUTTON_CUSTOM_PIN, GPIO_PUPDR_DOWN);
+    gpio_config_input(GPIOA, BUTTON_CUSTOM_PIN, GPIO_PUPDR_DOWN);
 	printf("thread: built-in user button detection\n");
     while (1)
     {
-            uint8_t state = gpioer_input_bit(GPIOA, BUTTON_CUSTOM_PIN);
+            uint8_t state = gpio_input_bit(GPIOA, BUTTON_CUSTOM_PIN);
             if (state != 0) {
                 printf("button %s %d times\n", state == 0 ? "open" : "pushed", count);
                 count++;
             }
-            L4_Sleep(L4_TimePeriod(1000 * 1000));
+            L4_Sleep(L4_TimePeriod(1000 * 200));
     }
 }
 
@@ -141,9 +142,14 @@ static void __USER_TEXT main(user_struct *user)
 	threads[BUTTON_MONITOR_THREAD] = create_thread(user, button_monitor_thread);
 }
 
+#define DEV_SIZE 0x3c00
+#define AHB1_1DEV 0x40020000
+
 DECLARE_USER(
 	0,
 	gpioer,
 	main,
 	DECLARE_FPAGE(0x0, 2 * UTCB_SIZE + 2 * STACK_SIZE)
+    /* map thread with AHB DEVICE for gpio accessing */
+	DECLARE_FPAGE(AHB1_1DEV, DEV_SIZE)
 );

@@ -75,7 +75,6 @@ static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
 }
 
 #define STACK_SIZE 0x200
-#define AHB1_1DEV 0x40020000
 
 void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 {
@@ -100,9 +99,6 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 		L4_Map(tid, (L4_Word_t)free_mem, STACK_SIZE);
 		free_mem += STACK_SIZE;
 		stack = (L4_Word_t)free_mem;
-
-        /* map thread with AHB DEVICE for gpio accessing */
-        L4_Map(tid, (memptr_t) AHB1_1DEV, 0x3c00);
 
 		/* map fpages */
 		while (fpage->base || fpage->size) {

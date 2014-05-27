@@ -63,7 +63,7 @@ inline static void gpio_afr(uint8_t port, uint8_t pin, uint8_t func)
 	}
 }
 
-void gpio_config(struct gpio_cfg *cfg)
+void __USER_TEXT gpio_config(struct gpio_cfg *cfg)
 {
 	uint8_t port, pin, cfg_data;
 
@@ -98,7 +98,7 @@ void gpio_config(struct gpio_cfg *cfg)
 	gpio_ospeedr(port, pin, cfg_data);
 }
 
-void gpio_config_output(uint8_t port, uint8_t pin, uint8_t pupd, uint8_t speed)
+void __USER_TEXT gpio_config_output(uint8_t port, uint8_t pin, uint8_t pupd, uint8_t speed)
 {
 	struct  gpio_cfg cfg = {
 		.port = port,
@@ -111,11 +111,12 @@ void gpio_config_output(uint8_t port, uint8_t pin, uint8_t pupd, uint8_t speed)
 		.speed = speed,
 	};
 
+
 	*RCC_AHB1ENR |= (1 << port);
 	gpio_config(&cfg);
 }
 
-void gpio_config_input(uint8_t port, uint8_t pin, uint8_t pupd)
+void __USER_TEXT gpio_config_input(uint8_t port, uint8_t pin, uint8_t pupd)
 {
 	struct  gpio_cfg cfg = {
 		.port = port,
@@ -132,20 +133,29 @@ void gpio_config_input(uint8_t port, uint8_t pin, uint8_t pupd)
 	gpio_config(&cfg);
 }
 
-void gpio_out_high(uint8_t port, uint8_t pin)
+void __USER_TEXT gpio_out_high(uint8_t port, uint8_t pin)
 {
 	*GPIO_ODR(port) |= (1 << pin);
 }
 
-void gpio_out_low(uint8_t port, uint8_t pin)
+void __USER_TEXT gpio_out_low(uint8_t port, uint8_t pin)
 {
 	*GPIO_ODR(port) &= ~(1 << pin);
 }
 
-uint8_t gpio_input_bit(uint8_t port, uint8_t pin)
+uint8_t __USER_TEXT gpio_input_bit(uint8_t port, uint8_t pin)
 {
 	if (*GPIO_IDR(port) & (1 << pin))
 		return 1;
 
 	return 0;
+}
+
+#define GPIO_HIGH 1
+void __USER_TEXT gpio_out(uint8_t port, uint8_t pin, uint8_t action) {
+	if (action == GPIO_HIGH) {
+		gpio_out_high(port, pin);
+	} else {
+		gpio_out_low(port, pin);
+	}
 }

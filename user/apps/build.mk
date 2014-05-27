@@ -3,5 +3,4 @@
 # found in the LICENSE file.
 
 user-apps-dirs = \
-	l4test \
-	pingpong
+	gpioer

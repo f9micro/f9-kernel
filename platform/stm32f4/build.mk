@@ -4,7 +4,6 @@
 
 chip-y = \
 	gpio.o \
-	gpioer.o \
 	rcc.o \
 	usart.o \
 	nvic.o \
