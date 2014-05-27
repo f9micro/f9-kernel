@@ -42,7 +42,8 @@ $(eval BOARD_$(BOARD)=y)
 KCONFIG_FILES = \
 	platform/Kconfig \
 	kernel/Kconfig \
-	loader/Kconfig
+	loader/Kconfig \
+	user/apps/Kconfig
 
 # Read configurations about system features and characteristics
 include mk/config.mk
