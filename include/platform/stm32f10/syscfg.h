@@ -3,8 +3,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef PLATFORM_STM32F4_SYSCFG_H_
-#define PLATFORM_STM32F4_SYSCFG_H_
+#ifndef PLATFORM_STM32F10_SYSCFG_H_
+#define PLATFORM_STM32F10_SYSCFG_H_
 
 #include <platform/stm32f10/registers.h>
 

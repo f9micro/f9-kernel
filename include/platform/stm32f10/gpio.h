@@ -3,8 +3,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef PLATFORM_STM32F4_GPIO_H_
-#define PLATFORM_STM32F4_GPIO_H_
+#ifndef PLATFORM_STM32F10_GPIO_H_
+#define PLATFORM_STM32F10_GPIO_H_
 
 #include <platform/stm32f10/registers.h>
 
@@ -80,4 +80,4 @@ void gpio_out_high(uint8_t port, uint8_t pin);
 void gpio_out_low(uint8_t port, uint8_t pin);
 uint8_t gpio_input_bit(uint8_t port, uint8_t pin);
 
-#endif /* PLATFORM_STM32F4_GPIO_H_ */
+#endif /* PLATFORM_STM32F10_GPIO_H_ */

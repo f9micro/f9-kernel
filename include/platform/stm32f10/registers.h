@@ -1,7 +1,7 @@
-/* STM32F4 Registers and Memory Locations */
+/* STM32F10 Registers and Memory Locations */
 
-#ifndef STM32F4_REGISTERS_H_INCLUDED
-#define STM32F4_REGISTERS_H_INCLUDED
+#ifndef STM32F10_REGISTERS_H_INCLUDED
+#define STM32F10_REGISTERS_H_INCLUDED
 
 #include <stdint.h>
 
@@ -313,7 +313,7 @@
 
 /**********************************************************************************************************************************************/
 
-/* Bit Masks - See RM0090 Reference Manual for STM32F4 for details */
+/* Bit Masks - See RM0090 Reference Manual for STM32F10 for details */
 #define PWR_CR_VOS                      (uint16_t) (1 << 14)                                    /* Regulator voltage scaling output selection */
 
 #define RCC_CR_HSION                    (uint32_t) (1 << 0)                                     /* HSI clock enable */

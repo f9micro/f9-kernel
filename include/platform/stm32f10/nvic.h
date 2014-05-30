@@ -3,8 +3,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef __PLATFORM_STM32F4_NVIC_H__
-#define __PLATFORM_STM32F4_NVIC_H__
+#ifndef __PLATFORM_STM32F10_NVIC_H__
+#define __PLATFORM_STM32F10_NVIC_H__
 
 #include <platform/stm32f10/registers.h>
 #include <platform/cortex_m.h>
@@ -268,4 +268,4 @@ inline static uint32_t NVIC_GetActive(IRQn_Type IRQn)
 	                  (1 << ((uint32_t)(IRQn) & 0x1F))) ? 1 : 0);
 }
 
-#endif /* __PLATFORM_STM32F4_NVIC_H__ */
+#endif /* __PLATFORM_STM32F10_NVIC_H__ */

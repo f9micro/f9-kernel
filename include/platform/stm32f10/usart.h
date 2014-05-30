@@ -3,8 +3,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef PLATFORM_STM32F4_USART_H_
-#define PLATFORM_STM32F4_USART_H_
+#ifndef PLATFORM_STM32F10_USART_H_
+#define PLATFORM_STM32F10_USART_H_
 
 #include <platform/stm32f10/registers.h>
 #include <platform/stm32f10/gpio.h>
@@ -57,4 +57,4 @@ int usart_status(struct usart_dev *usart, uint16_t st);
 int usart_interrupt_status(struct usart_dev *usart, uint16_t it);
 void usart_config_interrupt(struct usart_dev *usart, uint16_t it, uint8_t state);
 
-#endif /* PLATFORM_STM32F4_USART_H_ */
+#endif /* PLATFORM_STM32F10_USART_H_ */
