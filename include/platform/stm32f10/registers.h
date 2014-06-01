@@ -153,16 +153,13 @@
 #define USART1_GTPR                     (volatile uint32_t *) (USART1_BASE + 0x18)              /* USART1 gaurd time and prescale register */
 
 /* GPIO Port (GPIO) */
-#define GPIO_MODER(port)                (volatile uint32_t *) (GPIO_BASE(port) + 0x00)          /* Port mode register */
-#define GPIO_OTYPER(port)               (volatile uint32_t *) (GPIO_BASE(port) + 0x04)          /* Port output type register */
-#define GPIO_OSPEEDR(port)              (volatile uint32_t *) (GPIO_BASE(port) + 0x08)          /* Port output speed register */
-#define GPIO_PUPDR(port)                (volatile uint32_t *) (GPIO_BASE(port) + 0x0C)          /* Port pull up/down register */
-#define GPIO_IDR(port)                  (volatile uint32_t *) (GPIO_BASE(port) + 0x10)          /* Port input data register */
-#define GPIO_ODR(port)                  (volatile uint32_t *) (GPIO_BASE(port) + 0x14)          /* Port output data register */
-#define GPIO_BSRR(port)                 (volatile uint32_t *) (GPIO_BASE(port) + 0x18)          /* Port bit set/reset register */
-#define GPIO_LCKR(port)                 (volatile uint32_t *) (GPIO_BASE(port) + 0x1C)          /* Port configuration lock register */
-#define GPIO_AFRL(port)                 (volatile uint32_t *) (GPIO_BASE(port) + 0x20)          /* Port alternate function low register */
-#define GPIO_AFRH(port)                 (volatile uint32_t *) (GPIO_BASE(port) + 0x24)          /* Port alternate function high register */
+#define GPIO_CRL(port)                  (volatile uint32_t *) (GPIO_BASE(port) + 0x00)          /* Port configuration register low */
+#define GPIO_CRH(port)                  (volatile uint32_t *) (GPIO_BASE(port) + 0x04)          /* Port configuration register high */
+#define GPIO_IDR(port)                  (volatile uint32_t *) (GPIO_BASE(port) + 0x08)          /* Port input data register */
+#define GPIO_ODR(port)                  (volatile uint32_t *) (GPIO_BASE(port) + 0x0C)          /* Port output data register */
+#define GPIO_BSRR(port)                 (volatile uint32_t *) (GPIO_BASE(port) + 0x10)          /* Port bit set/reset register */
+#define GPIO_BRR(port)                  (volatile uint32_t *) (GPIO_BASE(port) + 0x14)          /* Port bit reset register */
+#define GPIO_LCKR(port)                 (volatile uint32_t *) (GPIO_BASE(port) + 0x18)          /* Port configuration lock register */
 
 /* Reset and Clock Control (RCC) */
 #define RCC_CR                          (volatile uint32_t *) (RCC_BASE + 0x00)                 /* Clock Control Register */
@@ -653,30 +650,22 @@
 #define GPIOH                           (uint8_t)  (7)                                          /* GPIO Port H */
 #define GPIOI                           (uint8_t)  (8)                                          /* GPIO Port I */
 
-#define GPIO_MODER_PIN(n)               (uint32_t) (2*n)                                        /* Pin bitshift */
-#define GPIO_MODER_M(n)                 (uint32_t) (0x3 << 2*n)                                 /* Pin mask */
-#define GPIO_MODER_IN                   (uint32_t) (0x0)                                        /* Input mode */
-#define GPIO_MODER_OUT                  (uint32_t) (0x1)                                        /* Output mode */
-#define GPIO_MODER_ALT                  (uint32_t) (0x2)                                        /* Alternative function mode */
-#define GPIO_MODER_ANA                  (uint32_t) (0x3)                                        /* Analog mode */
+#define GPIO_CR_PIN(n)                  (uint32_t) (4*n)                                        /* Pin bitshift */
+#define GPIO_CR_M(n)                    (uint32_t) (0xF << (4*n))                               /* Pin mask */
 
-#define GPIO_OTYPER_PIN(n)              (uint32_t) (n)                                          /* Pin bitshift */
-#define GPIO_OTYPER_M(n)                (uint32_t) (1 << n)                                     /* Pin mask */
-#define GPIO_OTYPER_PP                  (uint32_t) (0x0)                                        /* Output push-pull */
-#define GPIO_OTYPER_OD                  (uint32_t) (0x1)                                        /* Output open drain */
+#define GPIO_MODE_IN                    (uint32_t) (0x0)                                        /* Input mode */
+#define GPIO_MODE_OUT_10M               (uint32_t) (0x1)                                        /* Output mode, max speed 10MHz */
+#define GPIO_MODE_OUT_2M                (uint32_t) (0x2)                                        /* Output mode, max speed 2MHz */
+#define GPIO_MODE_OUT_50M               (uint32_t) (0x3)                                        /* Output mode, max speed 50MHz */
 
-#define GPIO_OSPEEDR_PIN(n)             (uint32_t) (2*n)                                        /* Pin bitshift */
-#define GPIO_OSPEEDR_M(n)               (uint32_t) (0x3 << (2*n))                               /* Pin mask */
-#define GPIO_OSPEEDR_2M                 (uint32_t) (0x0)                                        /* Output speed 2MHz */
-#define GPIO_OSPEEDR_25M                (uint32_t) (0x1)                                        /* Output speed 25MHz */
-#define GPIO_OSPEEDR_50M                (uint32_t) (0x2)                                        /* Output speed 50MHz */
-#define GPIO_OSPEEDR_100M               (uint32_t) (0x3)                                        /* Output speed 100MHz */
+#define GPIO_CNF_IN_ANALOG              (uint32_t) (0x0)                                        /* Input analog mode */
+#define GPIO_CNF_IN_FLOAT               (uint32_t) (0x1)                                        /* Input floating point mode */
+#define GPIO_CNF_IN_PUPDR               (uint32_t) (0x2)                                        /* Input pull-up/push-down mode */
 
-#define GPIO_PUPDR_PIN(n)               (uint32_t) (2*n)                                        /* Pin bitshift */
-#define GPIO_PUPDR_M(n)                 (uint32_t) (0x3 << (2*n))                               /* Pin mask */
-#define GPIO_PUPDR_NONE                 (uint32_t) (0x0)                                        /* Port no pull-up, pull-down */
-#define GPIO_PUPDR_UP                   (uint32_t) (0x1)                                        /* Port pull-up */
-#define GPIO_PUPDR_DOWN                 (uint32_t) (0x2)                                        /* Port pull-down */
+#define GPIO_CNF_OUT_PP                 (uint32_t) (0x0)                                        /* General purpose output push-pull mode */
+#define GPIO_CNF_OUT_OD                 (uint32_t) (0x1)                                        /* General purpose output open-drain mode */
+#define GPIO_CNF_OUT_ALT_PP             (uint32_t) (0x2)                                        /* Alternative function output push-pull mode */
+#define GPIO_CNF_OUT_ALT_OD             (uint32_t) (0x3)                                        /* Alternative function output open-drain mode */
 
 #define GPIO_IDR_PIN(n)                 (uint32_t) (1 << n)                                     /* Input for pin n */
 
@@ -684,11 +673,6 @@
 
 #define GPIO_BSRR_BS(n)                 (uint32_t) (1 << n)                                     /* Set pin n */
 #define GPIO_BSRR_BR(n)                 (uint32_t) (1 << (n+16))                                /* Reset pin n */
-
-#define GPIO_AFRL_PIN(n)                (uint32_t) (4*n)                                        /* Pin bitshift */
-#define GPIO_AFRL_M(n)                  (uint32_t) (0xF << (4*n))                               /* Pin mask */
-#define GPIO_AFRH_PIN(n)                (uint32_t) (4*(n-8))                                    /* Pin bitshift */
-#define GPIO_AFRH_M(n)                  (uint32_t) (0xF << (4*(n-8)))                           /* Pin mask */
 
 /* DMA */
 #define DMA_LISR_TCIF2                  (uint32_t) (1 << 21)                                    /* DMA stream 2 transfer complete flag */

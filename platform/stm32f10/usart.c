@@ -107,7 +107,6 @@ void usart_init(struct usart_dev *usart)
 	*(usart->rcc_apbenr) |= usart->rcc_reset;
 	gpio_config(&usart->tx);
 	gpio_config(&usart->rx);
-	*RCC_APB1ENR |= (1 << 17);
 
 	uregs = (struct usart_regs *) usart->base;
 
