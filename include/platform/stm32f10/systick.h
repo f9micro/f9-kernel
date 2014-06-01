@@ -3,7 +3,7 @@
 
 #include <platform/stm32f10/registers.h>
 
-#define CORE_CLOCK		(0x0a037a00) /* 168MHz */
+#define CORE_CLOCK		(0x02dc6c00) /* 48MHz */
 #define SYSTICK_MAXRELOAD	(0x00ffffff)
 
 void init_systick(uint32_t tick_reload, uint32_t tick_next_reload);
