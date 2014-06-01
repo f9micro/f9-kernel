@@ -492,12 +492,6 @@
 #define RCC_APB2ENR_TIM10EN             (uint32_t) (1 << 17)                                    /* TIM10 clock enable */
 #define RCC_APB2ENR_TIM11EN             (uint32_t) (1 << 18)                                    /* TIM11 clock enable */
 
-#define FLASH_ACR_PRFTEN                (uint32_t) (1 << 8)                                     /* Prefetch enable */
-#define FLASH_ACR_ICEN                  (uint32_t) (1 << 9)                                     /* Instruction cache enable */
-#define FLASH_ACR_DCEN                  (uint32_t) (1 << 10)                                    /* Data cache enable */
-#define FLASH_ACR_ICRST                 (uint32_t) (1 << 11)                                    /* Instruction cache reset */
-#define FLASH_ACR_CCRST                 (uint32_t) (1 << 12)                                    /* Data cache reset */
-#define FLASH_ACR_LATENCY_M             (uint32_t) (7 << 0)                                     /* Latency mask */
 #define FLASH_ACR_LATENCY(n)            (uint32_t) (n << 0)                                     /* Latency - n wait states */
 
 /* TIMx */
