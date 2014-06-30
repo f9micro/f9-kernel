@@ -16,6 +16,7 @@
 #include <debug.h>
 #include <types.h>
 #include <debug.h>
+#include <lib/string.h>
 
 #include <elf/elf.h>
 
@@ -96,27 +97,15 @@ int main(void)
 	return 0;
 }
 
-static inline void init_zero_seg(uint32_t *dst, uint32_t *dst_end)
-{
-	while (dst < dst_end)
-		*dst++ = 0;
-}
-
-static inline void init_copy_seg(uint32_t *src, uint32_t *dst, uint32_t *dst_end)
-{
-	while (dst < dst_end)
-		*dst++ = *src++;
-}
-
 void __loader_start(void)
 {
 	/* Copy data segments */
-	init_copy_seg(&kernel_flash_start + (&kernel_end - &kernel_start),
-	              &data_start, &data_end);
+	memcpy(&data_start, &kernel_flash_start + (&kernel_end - &kernel_start),
+	       (&data_end - &data_start) * sizeof(uint32_t));
 	/* DATA (ROM) -> DATA (RAM) */
 
 	/* Fill bss with zeroes */
-	init_zero_seg(&bss_start, &bss_end);
+	memset(&bss_start, 0, (&bss_end - &bss_start) * sizeof(uint32_t));
 
 	sys_clock_init();
 
