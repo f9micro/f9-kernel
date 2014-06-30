@@ -9,6 +9,8 @@
 #include <l4/ipc.h>
 #include <types.h>
 #include <user_runtime.h>
+#include <l4io.h>
+#include <gpioer.h>
 
 extern user_struct user_runtime_start[];
 extern user_struct user_runtime_end[];

@@ -14,6 +14,7 @@
 #include <ipc.h>
 #include <sched.h>
 #include <user-log.h>
+#include <user-gpioer.h>
 #include <ktimer.h>
 
 extern tcb_t *caller;

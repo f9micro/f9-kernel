@@ -1,11 +1,6 @@
 # Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-ifeq ($(CONFIG_GPIOER_APP), y)
-user-apps-dirs=gpioer
-else
-user-apps-dirs = \
-	l4test \
-	pingpong
-endif
 
+user-apps-gpioer-y = \
+	main.o
