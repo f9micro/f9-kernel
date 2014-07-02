@@ -96,6 +96,9 @@ SECTIONS {
 		bitmap_bitband_start = .;
 		*(.bitmap_bitband*)
 		bitmap_bitband_end = .;
+		bitmap_start = .;
+		*(.bitmap*)
+		bitmap_end = .;
 		bss_end = .;
 	} > RamLoc
 
@@ -140,9 +143,6 @@ SECTIONS {
 	.data_AHB (NOLOAD) :
 	{
 		kernel_ahb_start = .;
-		bitmap_start = .;
-		*(.bitmap*)
-		bitmap_end = .;
 		kernel_ahb_end = .;
 	} > RamCCM
 

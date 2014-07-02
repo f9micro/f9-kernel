@@ -19,7 +19,7 @@ struct usart_dev {
 	struct gpio_cfg rx;
 };
 
-#define USART_NUM 6
+#define USART_NUM 5
 
 /* status bit */
 #define USART_CTS	((uint16_t) (0x1 << 9))

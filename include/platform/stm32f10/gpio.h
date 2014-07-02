@@ -30,11 +30,9 @@ enum {
 struct gpio_cfg {
     uint8_t port;
     uint8_t pin;
-    uint8_t pupd;
-    uint8_t speed;
-    uint8_t type;
+    uint8_t cnf;
+    uint8_t mode;
     uint8_t func;
-    uint8_t o_type;
 };
 
 /* GPIO Alternative Function */
@@ -74,8 +72,8 @@ struct gpio_cfg {
 #define     af_eventout         AF15
 
 void gpio_config(struct gpio_cfg *cfg);
-void gpio_config_output(uint8_t port, uint8_t pin, uint8_t pupd, uint8_t speed);
-void gpio_config_input(uint8_t port, uint8_t pin, uint8_t pupd);
+void gpio_config_output(uint8_t port, uint8_t pin, uint8_t cnf , uint8_t mode);
+void gpio_config_input(uint8_t port, uint8_t pin, uint8_t cnf , uint8_t mode);
 void gpio_out_high(uint8_t port, uint8_t pin);
 void gpio_out_low(uint8_t port, uint8_t pin);
 uint8_t gpio_input_bit(uint8_t port, uint8_t pin);

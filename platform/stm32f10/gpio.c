@@ -6,129 +6,57 @@
 #include <platform/stm32f10/gpio.h>
 #include <error.h>
 
-inline static void gpio_moder(uint8_t port, uint8_t pin, uint8_t type)
-{
-	uint32_t reg = *GPIO_MODER(port);
-
-	reg &= ~(GPIO_MODER_M(pin));
-	reg |= (type << GPIO_MODER_PIN(pin));
-
-	*GPIO_MODER(port) = reg;
-}
-
-inline static void gpio_otyper(uint8_t port, uint8_t pin, uint8_t type)
-{
-	uint32_t reg = *GPIO_OTYPER(port);
-
-	reg &= ~(GPIO_OTYPER_M(pin));
-	reg |= (type << GPIO_OTYPER_PIN(pin));
-
-	*GPIO_OTYPER(port) = reg;
-}
-
-inline static void gpio_ospeedr(uint8_t port, uint8_t pin, uint8_t speed)
-{
-	uint32_t reg = *GPIO_OSPEEDR(port);
-
-	reg &= ~(GPIO_OSPEEDR_M(pin));
-	reg |= (speed << GPIO_OSPEEDR_PIN(pin));
-
-	*GPIO_OSPEEDR(port) = reg;
-}
-
-inline static void gpio_pupdr(uint8_t port, uint8_t pin, uint8_t mode)
-{
-	uint32_t reg = *GPIO_PUPDR(port);
-
-	reg &= ~(GPIO_PUPDR_M(pin));
-	reg |= (mode << GPIO_PUPDR_PIN(pin));
-
-	*GPIO_PUPDR(port) = reg;
-}
-
-inline static void gpio_afr(uint8_t port, uint8_t pin, uint8_t func)
-{
-	uint32_t reg;
-
-	if (pin < 8) {
-		reg = *GPIO_AFRL(port);
-		reg &= ~(GPIO_AFRL_M(pin));
-		reg |= (func << GPIO_AFRL_PIN(pin));
-		*GPIO_AFRL(port) = reg;
-	} else {
-		reg = *GPIO_AFRH(port);
-		reg &= ~(GPIO_AFRH_M(pin));
-		reg |= (func << GPIO_AFRH_PIN(pin));
-		*GPIO_AFRH(port) = reg;
-	}
-}
-
 void gpio_config(struct gpio_cfg *cfg)
 {
-	uint8_t port, pin, cfg_data;
+	uint8_t port, pin;
+	volatile uint32_t *gpio_cr;
+	uint32_t reg;
 
 	port = cfg->port;
 	pin = cfg->pin;
 
-	*RCC_AHB1ENR |= (1 << port);
+	*RCC_APB2ENR |= (1 << (port + 2));
 
-	/* pupd */
-	cfg_data = cfg->pupd;
-	gpio_pupdr(port, pin, cfg_data);
-
-	/* mode type */
-	cfg_data = cfg->type;
-	gpio_moder(port, pin, cfg_data);
-
-	if (cfg_data == GPIO_MODER_IN)
-		return;
-
-	/* Alternative function */
-	if (cfg_data == GPIO_MODER_ALT) {
-		uint8_t func = cfg->func;
-		gpio_afr(port, pin, func);
+	if (pin < 8) { 
+		/* low */
+		gpio_cr = GPIO_CRL(port);
+	} else { 
+		/* high */
+		gpio_cr = GPIO_CRH(port);
 	}
 
-	/* Sets pin output type */
-	cfg_data = cfg->o_type;
-	gpio_otyper(port, pin, cfg_data);
+	reg = *gpio_cr;
+	reg &= ~(GPIO_CR_M(pin));
+	reg |= (((cfg->cnf << 2) | cfg->mode) << GPIO_CR_PIN(pin));
 
-	/* Speed */
-	cfg_data = cfg->speed;
-	gpio_ospeedr(port, pin, cfg_data);
+	*gpio_cr = reg;
 }
 
-void gpio_config_output(uint8_t port, uint8_t pin, uint8_t pupd, uint8_t speed)
+void gpio_config_output(uint8_t port, uint8_t pin, uint8_t cnf, uint8_t mode)
 {
 	struct  gpio_cfg cfg = {
 		.port = port,
 		.pin = pin,
-		.pupd = pupd,
-		.type = GPIO_MODER_OUT,
+		.cnf = cnf,
+		.mode = mode,
 		.func = 0,
-		.o_type = GPIO_OTYPER_PP,
-		.pupd = pupd,
-		.speed = speed,
 	};
 
-	*RCC_AHB1ENR |= (1 << port);
+	*RCC_APB2ENR |= (1 << (port + 2));
 	gpio_config(&cfg);
 }
 
-void gpio_config_input(uint8_t port, uint8_t pin, uint8_t pupd)
+void gpio_config_input(uint8_t port, uint8_t pin, uint8_t cnf, uint8_t mode)
 {
 	struct  gpio_cfg cfg = {
 		.port = port,
 		.pin = pin,
-		.pupd = pupd,
-		.type = GPIO_MODER_IN,
+		.cnf = cnf,
+		.mode = mode,
 		.func = 0,
-		.o_type = 0,
-		.pupd = pupd,
-		.speed = 0,
 	};
 
-	*RCC_AHB1ENR |= (1 << port);
+	*RCC_APB2ENR |= (1 << (port + 2));
 	gpio_config(&cfg);
 }
 
