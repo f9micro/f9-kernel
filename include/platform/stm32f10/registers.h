@@ -1,4 +1,4 @@
-/* STM32F10 Registers and Memory Locations */
+/* STM32F10x Registers and Memory Locations */
 
 #ifndef STM32F10_REGISTERS_H_INCLUDED
 #define STM32F10_REGISTERS_H_INCLUDED
