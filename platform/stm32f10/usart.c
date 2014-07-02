@@ -30,16 +30,16 @@ static int16_t usart_baud(uint32_t base, uint32_t baud)
 	uint16_t mantissa;
 	uint16_t fraction;
 
-	/* USART1 and USART6 are on APB2 whose frequency is 84MHz,
+	/* USART1 is on APB2 whose frequency is 24MHz,
 	 * while USART2, USART3, UART4, and UART5 are on APB1 whose
-	 * frequency is 42 MHz (max).
+	 * frequency is 12 MHz.
 	 */
 	if (base == USART1_BASE) {
-		mantissa = (84000000) / (16 *  baud);
-		fraction = (84000000 / baud) % 16;
+		mantissa = (24000000) / (16 *  baud);
+		fraction = (24000000 / baud) % 16;
 	} else {
-		mantissa = (42000000) / (16 *  baud);
-		fraction = (42000000 / baud) % 16;
+		mantissa = (12000000) / (16 *  baud);
+		fraction = (12000000 / baud) % 16;
 	}
 
 	return (mantissa << 4) | fraction;
