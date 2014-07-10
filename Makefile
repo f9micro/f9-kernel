@@ -36,6 +36,7 @@ includes = \
 	board/$(BOARD) \
 	include \
 	include/platform \
+	.\
 $(eval BOARD_$(BOARD)=y)
 
 # Kconfig files to use

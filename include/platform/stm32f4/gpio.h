@@ -79,5 +79,6 @@ void gpio_config_input(uint8_t port, uint8_t pin, uint8_t pupd);
 void gpio_out_high(uint8_t port, uint8_t pin);
 void gpio_out_low(uint8_t port, uint8_t pin);
 uint8_t gpio_input_bit(uint8_t port, uint8_t pin);
+void gpio_writebit(uint8_t port, uint8_t pin, uint8_t bitval);
 
 #endif /* PLATFORM_STM32F4_GPIO_H_ */

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 chip-y = \
-	gpio.o \
 	rcc.o \
 	usart.o \
 	nvic.o \
