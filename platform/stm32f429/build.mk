@@ -8,7 +8,9 @@ chip-y = \
 	sdram.o \
 	fmc.o \
 	ltdc.o \
-	dma2d.o
+	dma2d.o \
+	i2c.o \
+	ioe.o 
 
 loader-chip-y = \
 	gpio.loader.o \
