@@ -8,4 +8,5 @@ common-y =  \
 	mpu.o \
 	nvic.o \
 	systick.o \
-	hwtimer.o
+	hwtimer.o \
+	usart.o
