@@ -2,11 +2,5 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-user-apps-dirs = \
-	l4test \
-	pingpong
-
-ifdef CONFIG_BOARD_STM32F429DISCOVERY
-user-apps-dirs += \
-	lcd_test
-endif
+user-apps-lcd_test-y = \
+	main.o
