@@ -14,7 +14,11 @@ unconfigured_error:
 	@$(MAKE) -s UNKNOWN 2>/dev/null
 endif
 
+ifdef CONFIG_BOARD_STM32F429DISCOVERY
+BOARD ?= discoveryf429
+else
 BOARD ?= discoveryf4
+endif
 
 PROJECT ?= f9
 
