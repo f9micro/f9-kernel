@@ -4,7 +4,6 @@
 
 chip-y = \
 	usart.o \
-	nvic.o \
 	systick.o \
  	hwtimer.o 
 

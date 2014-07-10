@@ -5,5 +5,6 @@
 common-y =  \
 	gpio.o \
 	rcc.o \
-	mpu.o
+	mpu.o \
+	nvic.o
 
