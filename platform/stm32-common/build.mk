@@ -3,5 +3,6 @@
 # found in the LICENSE file.
 
 common-y =  \
-	gpio.o
+	gpio.o \
+	rcc.o
 

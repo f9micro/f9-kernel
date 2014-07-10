@@ -332,6 +332,9 @@
 
 #define RCC_PLLCFGR_RESET               (uint32_t) (0x24003010)                                 /* PLLCFGR register reset value */
 #define RCC_PLLCFGR_PLLSRC_HSE          (uint32_t) (1 << 22)                                    /* HSE oscillator selected as clock entry */
+#define RCC_PLLCFGR_PLLM                (uint32_t) (0x003F)
+#define RCC_PLLCFGR_PLLN                (uint32_t) (0x7FC0)
+#define RCC_PLLCFGR_PLLP                (uint32_t) (0x00030000)
 
 #define RCC_CFGR_SW_M                   (uint32_t) (3 << 0)                                     /* System clock switch mask */
 #define RCC_CFGR_SW_HSI                 (uint32_t) (0 << 0)                                     /* System clock switch - HSI selected as system clock */
