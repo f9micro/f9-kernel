@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 CHIP := stm32f4
+PLATFORM := stm32
 
 board-y = board.o
 loader-board-y = board.loader.o

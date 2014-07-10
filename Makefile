@@ -49,6 +49,7 @@ include mk/config.mk
 
 # Get build configuration from sub-directories
 include platform/$(CHIP)/build.mk
+include platform/$(PLATFORM)-common/build.mk
 include platform/build.mk
 include kernel/lib/build.mk
 include kernel/build.mk
@@ -63,6 +64,7 @@ objs_from_dir = $(foreach obj, $($(2)-y), \
 
 # Get all sources to build
 all-y += $(call objs_from_dir,platform/$(CHIP),chip)
+all-y += $(call objs_from_dir,platform/$(PLATFORM)-common,common)
 all-y += $(call objs_from_dir,board/$(BOARD),board)
 all-y += $(call objs_from_dir,platform,platform)
 all-y += $(call objs_from_dir,kernel/lib,kernel-lib)
@@ -81,6 +83,7 @@ dirs = \
 	kernel/lib \
 	kernel \
 	platform/$(CHIP) \
+	platform/$(PLATFORM)-common \
 	board/$(BOARD) \
 	user \
 	loader \
