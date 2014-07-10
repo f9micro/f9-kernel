@@ -6,8 +6,7 @@ chip-y = \
 	usart.o \
 	nvic.o \
 	systick.o \
-	hwtimer.o \
-	mpu.o
+ 	hwtimer.o 
 
 loader-chip-y = \
 	gpio.loader.o \

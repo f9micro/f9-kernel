@@ -4,5 +4,6 @@
 
 common-y =  \
 	gpio.o \
-	rcc.o
+	rcc.o \
+	mpu.o
 
