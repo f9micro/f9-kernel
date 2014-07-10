@@ -6,5 +6,6 @@ common-y =  \
 	gpio.o \
 	rcc.o \
 	mpu.o \
-	nvic.o
+	nvic.o \
+	systick.o
 

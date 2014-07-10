@@ -4,7 +4,6 @@
 
 chip-y = \
 	usart.o \
-	systick.o \
  	hwtimer.o 
 
 loader-chip-y = \
