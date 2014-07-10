@@ -7,5 +7,5 @@ common-y =  \
 	rcc.o \
 	mpu.o \
 	nvic.o \
-	systick.o
-
+	systick.o \
+	hwtimer.o

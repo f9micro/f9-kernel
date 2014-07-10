@@ -3,8 +3,7 @@
 # found in the LICENSE file.
 
 chip-y = \
-	usart.o \
- 	hwtimer.o 
+	usart.o
 
 loader-chip-y = \
 	gpio.loader.o \
