@@ -4,6 +4,15 @@
 
 menu "Platform"
 
+choice
+	prompt "Platform"
+	default BOARD_STM32F4DISCOVERY
+
+config BOARD_STM32F4DISCOVERY
+	bool "STM32F4"
+
+endchoice
+
 config BITMAP_BITBAND
 	bool "Generate bitmap address in bit-band region"
 	default n
