@@ -1,7 +1,9 @@
 language: c
 
 compiler: gcc
-env: BOARD=discoveryf4
+env: 
+  - BOARD=discoveryf4
+  - BOARD=discoveryf429	
 
 before_install:
   - sudo apt-get install build-essential
