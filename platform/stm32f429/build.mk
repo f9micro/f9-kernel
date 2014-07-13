@@ -2,7 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-chip-y = 
+chip-y = \
+	lcd.o \
+	spi.o \
+	sdram.o \
+	fmc.o \
+	ltdc.o \
+	dma2d.o \
+	i2c.o \
+	ioe.o 
 
 loader-chip-y = \
 	gpio.loader.o \

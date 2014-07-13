@@ -1,7 +1,7 @@
-/* STM32F4 Registers and Memory Locations */
+/* STM32F429 Registers and Memory Locations */
 
-#ifndef STM32F4_REGISTERS_H_INCLUDED
-#define STM32F4_REGISTERS_H_INCLUDED
+#ifndef STM32F429_REGISTERS_H_INCLUDED
+#define STM32F429_REGISTERS_H_INCLUDED
 
 #include <stdint.h>
 
@@ -20,7 +20,7 @@
 #define AHB1PERIPH_BASE                 (PERIPH_BASE + 0x00020000)
 #define AHB2PERIPH_BASE                 (PERIPH_BASE + 0x10000000)
 
-
+#define PERIPH_BB_BASE                  (PERIPH_BASE + 0x02000000)                                 /* Peripheral base address in bit-band region */
 
 /* APB1 peripherals */
 #define TIM2_BASE             (APB1PERIPH_BASE + 0x0000)
@@ -67,6 +67,8 @@
 #define TIM9_BASE             (APB2PERIPH_BASE + 0x4000)
 #define TIM10_BASE            (APB2PERIPH_BASE + 0x4400)
 #define TIM11_BASE            (APB2PERIPH_BASE + 0x4800)
+#define SPI5_BASE             (APB2PERIPH_BASE + 0x5000)
+#define LTDC_BASE             (APB2PERIPH_BASE + 0x6800)
 
 /* AHB */
 #define GPIO_BASE(port)                 (AHB1PERIPH_BASE + (0x400*port))                        /* GPIO Port base address */
@@ -74,6 +76,7 @@
 #define FLASH_R_BASE                    (AHB1PERIPH_BASE + 0x3C00)                              /* Flash registers base address */
 #define DMA1_BASE                       (AHB1PERIPH_BASE + 0x6000)                              /* DMA1 base address */
 #define DMA2_BASE                       (AHB1PERIPH_BASE + 0x6400)                              /* DMA2 base address */
+#define DMA2D_BASE                      (AHB1PERIPH_BASE + 0xB000)                              /* DMA2D base address */
 #define USB_FS_BASE                     (AHB2PERIPH_BASE + 0x0000)                              /* USB OTG FS base address */
 
 
@@ -122,6 +125,7 @@
 #define PWR_CSR                         (volatile uint32_t *) (PWR_BASE + 0x04)                 /* Power Control/Status Register */
 
 /* SPI */
+#define SPI_BASE(port)                  (port)                              /* Temporary SPI base */
 #define SPI_CR1(port)                   (volatile uint32_t *) (SPI_BASE(port) + 0x00)           /* SPI control register 1 */
 #define SPI_CR2(port)                   (volatile uint32_t *) (SPI_BASE(port) + 0x04)           /* SPI control register 2 */
 #define SPI_SR(port)                    (volatile uint32_t *) (SPI_BASE(port) + 0x08)           /* SPI status register */
@@ -133,6 +137,7 @@
 #define SPI_I2SPR(port)                 (volatile uint32_t *) (SPI_BASE(port) + 0x20)           /* SPI I2C prescaler register */
 
 /* I2C */
+#define I2C_BASE(port)                  (port)                                                  /* I2C Base */
 #define I2C_CR1(port)                   (volatile uint32_t *) (I2C_BASE(port) + 0x00)           /* I2C control register 1 */
 #define I2C_CR2(port)                   (volatile uint32_t *) (I2C_BASE(port) + 0x04)           /* I2C control register 2 */
 #define I2C_OAR1(port)                  (volatile uint32_t *) (I2C_BASE(port) + 0x08)           /* I2C own address register 1 */
@@ -170,10 +175,17 @@
 #define RCC_CFGR                        (volatile uint32_t *) (RCC_BASE + 0x08)                 /* Clock Configuration Register */
 #define RCC_CIR                         (volatile uint32_t *) (RCC_BASE + 0x0C)                 /* Clock Interrupt Register */
 #define RCC_AHB1RSTR                    (volatile uint32_t *) (RCC_BASE + 0x10)                 /* AHB1 reset Register */
+#define RCC_APB1RSTR                    (volatile uint32_t *) (RCC_BASE + 0x20)                 /* APB1 reset Register */
+#define RCC_APB2RSTR                    (volatile uint32_t *) (RCC_BASE + 0x24)                 /* APB2 reset Register */
 #define RCC_AHB1ENR                     (volatile uint32_t *) (RCC_BASE + 0x30)                 /* AHB1 Enable Register */
 #define RCC_AHB2ENR                     (volatile uint32_t *) (RCC_BASE + 0x34)                 /* AHB2 Enable Register */
+#define RCC_AHB3ENR                     (volatile uint32_t *) (RCC_BASE + 0x38)                 /* AHB3 Enable Register */
 #define RCC_APB1ENR                     (volatile uint32_t *) (RCC_BASE + 0x40)                 /* APB1 Peripheral Clock Enable Register */
 #define RCC_APB2ENR                     (volatile uint32_t *) (RCC_BASE + 0x44)                 /* APB2 Peripheral Clock Enable Register */
+#define RCC_BDCR                        (volatile uint32_t *) (RCC_BASE + 0x70)                 /* RCC Backup Domain Control Register */
+#define RCC_CSR                         (volatile uint32_t *) (RCC_BASE + 0x74)                 /* RCC Clock Control & Status Register */
+#define RCC_PLLSAICFGR                  (volatile uint32_t *) (RCC_BASE + 0x88)                 /* RCC PLLSAI Configuration register */
+#define RCC_DCKCFGR                     (volatile uint32_t *) (RCC_BASE + 0x8C)                 /* RCC Dedicated Clocks Configuration register */
 
 /* SYSCFG */
 #define SYSCFG_MEMRMP					(volatile uint32_t *)(SYSCFG_BASE + 0x0)				/* Memory remap register */
@@ -255,6 +267,28 @@
 #define DMA2_M1AR_S(n)                  (volatile uint32_t *) (DMA2_BASE + 0x20 + (0x18*n))     /* DMA2 stream n memory 1 address register */
 #define DMA2_FCR_S(n)                   (volatile uint32_t *) (DMA2_BASE + 0x24 + (0x18*n))     /* DMA2 stream n FIFO control register */
 
+/* DMA2D Registers */
+#define DMA2D_CR                        (volatile uint32_t *) (DMA2D_BASE + 0x00)               /* DMA2D Control Register */
+#define DMA2D_ISR                       (volatile uint32_t *) (DMA2D_BASE + 0x04)               /* DMA2D Interrupt Status Register */
+#define DMA2D_IFCR                      (volatile uint32_t *) (DMA2D_BASE + 0x08)               /* DMA2D Interrupt Flag Clear Register */
+#define DMA2D_FGMAR                     (volatile uint32_t *) (DMA2D_BASE + 0x0C)               /* DMA2D Foreground Memory Address Register */
+#define DMA2D_FGOR                      (volatile uint32_t *) (DMA2D_BASE + 0x10)               /* DMA2D Foreground Offset Register */
+#define DMA2D_BGMAR                     (volatile uint32_t *) (DMA2D_BASE + 0x14)               /* DMA2D Background Memory Address Register */
+#define DMA2D_BGOR                      (volatile uint32_t *) (DMA2D_BASE + 0x18)               /* DMA2D Background Offset Register */
+#define DMA2D_FGPFCCR                   (volatile uint32_t *) (DMA2D_BASE + 0x1C)               /* DMA2D Foreground PFC Control Register */
+#define DMA2D_FGCOLR                    (volatile uint32_t *) (DMA2D_BASE + 0x20)               /* DMA2D Foreground Color Control Register */
+#define DMA2D_BGPFCCR                   (volatile uint32_t *) (DMA2D_BASE + 0x24)               /* DMA2D Background PFC Control Register */
+#define DMA2D_BGCOLR                    (volatile uint32_t *) (DMA2D_BASE + 0x28)               /* DMA2D Background Color Control Register */
+#define DMA2D_FGCMAR                    (volatile uint32_t *) (DMA2D_BASE + 0x2C)               /* DMA2D Foreground CLUT Memory Address Register */
+#define DMA2D_BGCMAR                    (volatile uint32_t *) (DMA2D_BASE + 0x30)               /* DMA2D Background CLUT Memory Address Register */
+#define DMA2D_OPFCCR                    (volatile uint32_t *) (DMA2D_BASE + 0x34)               /* DMA2D Output PFC Control Register */
+#define DMA2D_OCOLR                     (volatile uint32_t *) (DMA2D_BASE + 0x38)               /* DMA2D Output Color Register */
+#define DMA2D_OMAR                      (volatile uint32_t *) (DMA2D_BASE + 0x3C)               /* DMA2D Output Memory Address Register */
+#define DMA2D_OOR                       (volatile uint32_t *) (DMA2D_BASE + 0x40)               /* DMA2D Output Offset Register */
+#define DMA2D_NLR                       (volatile uint32_t *) (DMA2D_BASE + 0x44)               /* DMA2D Number of Line Register */
+#define DMA2D_LWR                       (volatile uint32_t *) (DMA2D_BASE + 0x48)               /* DMA2D Line Watermark Register */
+#define DMA2D_AMTCR                     (volatile uint32_t *) (DMA2D_BASE + 0x4C)               /* DMA2D AHB Master Timer Configuration Register */
+
 /* USB OTG Full-Speed */
 /* Global Control and Status Registers */
 #define USB_FS_GOTGCTL                  (volatile uint32_t *) (USB_FS_BASE + 0x0000)            /* USB control and status register */
@@ -315,6 +349,9 @@
 
 /* Bit Masks - See RM0090 Reference Manual for STM32F4 for details */
 #define PWR_CR_VOS                      (uint16_t) (1 << 14)                                    /* Regulator voltage scaling output selection */
+
+#define HSI_VALUE                       (uint32_t) (16000000)                                   /* HSI value in Hz */
+#define HSE_VALUE                       (uint32_t) (1 << 27)                                    /* HSE value in Hz */
 
 #define RCC_CR_HSION                    (uint32_t) (1 << 0)                                     /* HSI clock enable */
 #define RCC_CR_HSIRDY                   (uint32_t) (1 << 1)                                     /* HSI ready */
@@ -423,10 +460,12 @@
 #define RCC_APB2RSTR_ADCRST             (uint32_t) (1 << 8)                                     /* ADC1 reset */
 #define RCC_APB2RSTR_SDIORST            (uint32_t) (1 << 11)                                    /* SDIO reset */
 #define RCC_APB2RSTR_SPI1RST            (uint32_t) (1 << 12)                                    /* SPI1 reset */
+#define RCC_APB2RSTR_SPI5RST            (uint32_t) (1 << 20)                                    /* SPI5 reset */
 #define RCC_APB2RSTR_SYSCFGRST          (uint32_t) (1 << 14)                                    /* System configuration controller reset */
 #define RCC_APB2RSTR_TIM9RST            (uint32_t) (1 << 16)                                    /* TIM9 reset */
 #define RCC_APB2RSTR_TIM10RST           (uint32_t) (1 << 17)                                    /* TIM10 reset */
 #define RCC_APB2RSTR_TIM11RST           (uint32_t) (1 << 18)                                    /* TIM11 reset */
+#define RCC_APB2RSTR_LTDC               (uint32_t) (1 << 26)                                    /* LTDC reset */
 
 #define RCC_AHB1ENR_GPIOAEN             (uint32_t) (1 << 0)                                     /* GPIOA clock enable */
 #define RCC_AHB1ENR_GPIOBEN             (uint32_t) (1 << 1)                                     /* GPIOB clock enable */
@@ -442,6 +481,7 @@
 #define RCC_AHB1ENR_CCMDATARAMEN        (uint32_t) (1 << 20)                                    /* CCM data RAM clock enable */
 #define RCC_AHB1ENR_DMA1EN              (uint32_t) (1 << 21)                                    /* DMA1 clock enable */
 #define RCC_AHB1ENR_DMA2EN              (uint32_t) (1 << 22)                                    /* DMA2 clock enable */
+#define RCC_AHB1ENR_DMA2DEN             (uint32_t) (1 << 23)                                    /* DMA2D clock enable */
 #define RCC_AHB1ENR_ETHMACEN            (uint32_t) (1 << 25)                                    /* Ethernet MAC clock enable */
 #define RCC_AHB1ENR_ETHMACTXEN          (uint32_t) (1 << 26)                                    /* Ethernet MAC TX clock enable */
 #define RCC_AHB1ENR_ETHMACRXEN          (uint32_t) (1 << 27)                                    /* Ethernet MAC RX clock enable */
@@ -456,6 +496,7 @@
 #define RCC_AHB2ENR_OTGFSEN             (uint32_t) (1 << 7)                                     /* USB OTG FS clock enable */
 
 #define RCC_AHB3ENR_FSMCEN              (uint32_t) (1 << 0)                                     /* Flexible static memeory controller clock enable */
+#define RCC_AHB3ENR_FMCEN               (uint32_t) (1 << 0)                                     /* FMC clock enable */
 
 #define RCC_APB1ENR_TIM2EN              (uint32_t) (1 << 0)                                     /* TIM2 clock enable */
 #define RCC_APB1ENR_TIM3EN              (uint32_t) (1 << 1)                                     /* TIM3 clock enable */
@@ -494,6 +535,8 @@
 #define RCC_APB2ENR_TIM9EN              (uint32_t) (1 << 16)                                    /* TIM9 clock enable */
 #define RCC_APB2ENR_TIM10EN             (uint32_t) (1 << 17)                                    /* TIM10 clock enable */
 #define RCC_APB2ENR_TIM11EN             (uint32_t) (1 << 18)                                    /* TIM11 clock enable */
+#define RCC_APB2ENR_SPI5EN              (uint32_t) (1 << 20)                                    /* SPI5 clock enable */
+#define RCC_APB2ENR_LTDCEN              (uint32_t) (1 << 26)                                    /* LTDC clock enable */
 
 #define FLASH_ACR_PRFTEN                (uint32_t) (1 << 8)                                     /* Prefetch enable */
 #define FLASH_ACR_ICEN                  (uint32_t) (1 << 9)                                     /* Instruction cache enable */
@@ -585,6 +628,7 @@
 #define I2C_CR1_ALERT                   (uint32_t) (1 << 13)                                    /* I2C SMBus alert */
 #define I2C_CR1_SWRST                   (uint32_t) (1 << 15)                                    /* I2C software reset */
 
+#define I2C_CR2_FREQ_ALL                (uint32_t) (0x003F)                                     /* FREQ[5:0] bits */
 #define I2C_CR2_FREQ(n)                 (uint32_t) (n << 0)                                     /* I2C clock frequency */
 #define I2C_CR2_ITERREN                 (uint32_t) (1 << 8)                                     /* I2C error interrupt enable */
 #define I2C_CR2_ITEVTEN                 (uint32_t) (1 << 9)                                     /* I2C event interrupt enable */
@@ -592,6 +636,7 @@
 #define I2C_CR2_DMAEN                   (uint32_t) (1 << 11)                                    /* I2C DMA requests enable */
 #define I2C_CR2_LAST                    (uint32_t) (1 << 12)                                    /* I2C DMA last transfer */
 
+#define I2C_OAR1_ADD(n)                 (uint16_t) (1 << n)                                     /* I2C interface address */
 #define I2C_OAR1_ADD10(n)               (uint32_t) (n << 0)                                     /* I2C interface address (10-bit) */
 #define I2C_OAR1_ADD7(n)                (uint32_t) (n << 1)                                     /* I2C interface address (7-bit) */
 #define I2C_OAR1_ADDMODE                (uint32_t) (1 << 15)                                    /* I2C interface address mode (1=10-bit) */
@@ -1022,5 +1067,117 @@
 #define USB_FS_PCGCCTL_STPPCLK          (uint32_t) (1 << 0)                                     /* USB stop PHY clock */
 #define USB_FS_PCGCCTL_GATEHCLK         (uint32_t) (1 << 1)                                     /* USB gate HCLK */
 #define USB_FS_PCGCCTL_PHYSUSP          (uint32_t) (1 << 4)                                     /* USB PHY suspended */
+
+/* FMC definition */
+#define FMC_R_BASE                      ((uint32_t) 0xA0000000)                                 /* FMC registers base address */
+
+#define FMC_Bank5_6_R_BASE              (FMC_R_BASE + 0x0140)
+
+#define FMC_Bank5_6_SDCR(n)             (volatile uint32_t *) (FMC_Bank5_6_R_BASE + 0x00 + (4*n))      /* SDRAM Control Register */
+#define FMC_Bank5_6_SDTR(n)             (volatile uint32_t *) (FMC_Bank5_6_R_BASE + 0x08 + (4*n))      /* SDRAM Timing Register */
+#define FMC_Bank5_6_SDCMR               (volatile uint32_t *) (FMC_Bank5_6_R_BASE + 0x10)      /* SDRAM Command Mode Register */
+#define FMC_Bank5_6_SDRTR               (volatile uint32_t *) (FMC_Bank5_6_R_BASE + 0x14)      /* SDRAM Refresh Timer Register */
+#define FMC_Bank5_6_SDSR                (volatile uint32_t *) (FMC_Bank5_6_R_BASE + 0x18)      /* SDRAM Status Register */
+
+/* RCC_PLL_Clock definition */
+#define RCC_PLLSAIDivR_Div2             ((uint32_t)0x00000000)
+#define RCC_PLLSAIDivR_Div4             ((uint32_t)0x00010000)
+#define RCC_PLLSAIDivR_Div8             ((uint32_t)0x00020000)
+#define RCC_PLLSAIDivR_Div16            ((uint32_t)0x00030000)
+
+/* RCC_DCKCFGR definition */
+#define  RCC_DCKCFGR_PLLI2SDIVQ         ((uint32_t)0x0000001F)
+#define  RCC_DCKCFGR_PLLSAIDIVQ         ((uint32_t)0x00001F00)
+#define  RCC_DCKCFGR_PLLSAIDIVR         ((uint32_t)0x00030000)
+#define  RCC_DCKCFGR_SAI1ASRC           ((uint32_t)0x00300000)
+#define  RCC_DCKCFGR_SAI1BSRC           ((uint32_t)0x00C00000)
+#define  RCC_DCKCFGR_TIMPRE             ((uint32_t)0x01000000)
+
+/* LTDC definition */
+#define LTDC_Layer_BASE(layer)          (LTDC_BASE + 0x84 + ((layer - 1) * 0x80))
+#define LTDC_Layer1                     1
+#define LTDC_Layer2                     2
+#define LTDC_Layer1_BASE                LTDC_Layer_BASE(LTDC_Layer1)
+#define LTDC_Layer2_BASE                LTDC_Layer_BASE(LTDC_Layer2)
+
+#define LTDC_SSCR                       (volatile uint32_t *) (LTDC_BASE + 0x08)                /* LTDC Synchronization Size Configuration Register */
+#define LTDC_BPCR                       (volatile uint32_t *) (LTDC_BASE + 0x0C)                /* LTDC Back Porch Configuration Register */
+#define LTDC_AWCR                       (volatile uint32_t *) (LTDC_BASE + 0x10)                /* LTDC Active Width Configuration Register */
+#define LTDC_TWCR                       (volatile uint32_t *) (LTDC_BASE + 0x14)                /* LTDC Total Width Configuration Register */
+#define LTDC_GCR                        (volatile uint32_t *) (LTDC_BASE + 0x18)                /* LTDC Global Control Register */
+#define LTDC_SRCR                       (volatile uint32_t *) (LTDC_BASE + 0x24)                /* LTDC Shadow Reload Configuration Register */
+#define LTDC_BCCR                       (volatile uint32_t *) (LTDC_BASE + 0x2C)                /* LTDC Background Color Configuration Register */
+#define LTDC_IER                        (volatile uint32_t *) (LTDC_BASE + 0x34)                /* LTDC Interrupt Enable Register */
+#define LTDC_ISR                        (volatile uint32_t *) (LTDC_BASE + 0x38)                /* LTDC Interrupt Status Register */
+#define LTDC_ICR                        (volatile uint32_t *) (LTDC_BASE + 0x3C)                /* LTDC Interrupt Clear Register */
+#define LTDC_LIPCR                      (volatile uint32_t *) (LTDC_BASE + 0x40)                /* LTDC Line Interrupt Position Configuration Register */
+#define LTDC_CPSR                       (volatile uint32_t *) (LTDC_BASE + 0x44)                /* LTDC Current Position Status Register */
+#define LTDC_CDSR                       (volatile uint32_t *) (LTDC_BASE + 0x48)                /* LTDC Current Display Status Register */
+
+#define LTDC_SSCR_VSH                   ((uint32_t)0x000007FF)                                  /* Vertical Synchronization Height */
+#define LTDC_SSCR_HSW                   ((uint32_t)0x0FFF0000)                                  /* Horizontal Synchronization Width */
+
+#define LTDC_BPCR_AVBP                  ((uint32_t)0x000007FF)                                  /* Accumulated Vertical Back Porch */
+#define LTDC_BPCR_AHBP                  ((uint32_t)0x0FFF0000)                                  /* Accumulated Horizontal Back Porch */
+
+#define LTDC_AWCR_AAH                   ((uint32_t)0x000007FF)                                  /* Accumulated Active heigh */
+#define LTDC_AWCR_AAW                   ((uint32_t)0x0FFF0000)                                  /* Accumulated Active Width */
+
+#define LTDC_TWCR_TOTALH                ((uint32_t)0x000007FF)                                  /* Total Heigh */
+#define LTDC_TWCR_TOTALW                ((uint32_t)0x0FFF0000)                                  /* Total Width */
+
+#define LTDC_GCR_LTDCEN                 ((uint32_t)0x00000001)                                  /* LCD-TFT controller enable bit */
+#define LTDC_GCR_DBW                    ((uint32_t)0x00000070)                                  /* Dither Blue Width */
+#define LTDC_GCR_DGW                    ((uint32_t)0x00000700)                                  /* Dither Green Width */
+#define LTDC_GCR_DRW                    ((uint32_t)0x00007000)                                  /* Dither Red Width */
+#define LTDC_GCR_DTEN                   ((uint32_t)0x00010000)                                  /* Dither Enable */
+#define LTDC_GCR_PCPOL                  ((uint32_t)0x10000000)                                  /* Pixel Clock Polarity */
+#define LTDC_GCR_DEPOL                  ((uint32_t)0x20000000)                                  /* Data Enable Polarity */
+#define LTDC_GCR_VSPOL                  ((uint32_t)0x40000000)                                  /* Vertical Synchronization Polarity */
+#define LTDC_GCR_HSPOL                  ((uint32_t)0x80000000)                                  /* Horizontal Synchronization Polarity */
+
+#define LTDC_SRCR_IMR                   ((uint32_t) 1 << 0)                                     /* Immediate Reload */
+#define LTDC_SRCR_VBR                   ((uint32_t) 1 << 1)                                     /* Vertical Blanking Reload */
+
+#define LTDC_BCCR_BCBLUE                ((uint32_t)0x000000FF)                                  /* Background Blue value */
+#define LTDC_BCCR_BCGREEN               ((uint32_t)0x0000FF00)                                  /* Background Green value */
+#define LTDC_BCCR_BCRED                 ((uint32_t)0x00FF0000)                                  /* Background Red value */
+
+#define LTDC_IER_LIE                    ((uint32_t) 1 << 0)                                    /* Line Interrupt Enable */
+#define LTDC_IER_FUIE                   ((uint32_t) 1 << 1)                                    /* FIFO Underrun Interrupt Enable */
+#define LTDC_IER_TERRIE                 ((uint32_t) 1 << 2)                                    /* Transfer Error Interrupt Enable */
+#define LTDC_IER_RRIE                   ((uint32_t) 1 << 3)                                    /* Register Reload interrupt enable */
+
+#define LTDC_ISR_LIF                    ((uint32_t) 1 << 0)                                    /* Line Interrupt Flag */
+#define LTDC_ISR_FUIF                   ((uint32_t) 1 << 1)                                    /* FIFO Underrun Interrupt Flag */
+#define LTDC_ISR_TERRIF                 ((uint32_t) 1 << 2)                                    /* Transfer Error Interrupt Flag */
+#define LTDC_ISR_RRIF                   ((uint32_t) 1 << 3)                                    /* Register Reload interrupt Flag */
+
+#define LTDC_ICR_CLIF                   ((uint32_t) 1 << 0)                                    /* Clears the Line Interrupt Flag */
+#define LTDC_ICR_CFUIF                  ((uint32_t) 1 << 1)                                    /* Clears the FIFO Underrun Interrupt Flag */
+#define LTDC_ICR_CTERRIF                ((uint32_t) 1 << 2)                                    /* Clears the Transfer Error Interrupt Flag */
+#define LTDC_ICR_CRRIF                  ((uint32_t) 1 << 3)                                    /* Clears Register Reload interrupt Flag */
+
+#define LTDC_LIPCR_LIPOS                ((uint32_t)0x000007FF)                                 /* Line Interrupt Position */
+
+#define LTDC_CPSR_CYPOS                 ((uint32_t)0x0000FFFF)                                 /* Current Y Position */
+#define LTDC_CPSR_CXPOS                 ((uint32_t)0xFFFF0000)                                 /* Current X Position */
+
+#define LTDC_CDSR_VDES                  ((uint32_t) 1 << 0)                                    /* Vertical Data Enable Status */
+#define LTDC_CDSR_HDES                  ((uint32_t) 1 << 1)                                    /* Horizontal Data Enable Status */
+#define LTDC_CDSR_VSYNCS                ((uint32_t) 1 << 2)                                    /* Vertical Synchronization Status */
+#define LTDC_CDSR_HSYNCS                ((uint32_t) 1 << 3)                                    /* Horizontal Synchronization Status */
+
+#define LTDC_Layer_CR(layer)            (volatile uint32_t *) (LTDC_Layer_BASE(layer) + 0x00)      /* Control Register */
+#define LTDC_Layer_WHPCR(layer)         (volatile uint32_t *) (LTDC_Layer_BASE(layer) + 0x04)      /* Window Horizontal Position Configuration Register */
+#define LTDC_Layer_WVPCR(layer)         (volatile uint32_t *) (LTDC_Layer_BASE(layer) + 0x08)      /* Window Vertical Position Configuration Register */
+#define LTDC_Layer_CKCR(layer)          (volatile uint32_t *) (LTDC_Layer_BASE(layer) + 0x0C)      /* Color Keying Configuration Register */
+#define LTDC_Layer_PFCR(layer)          (volatile uint32_t *) (LTDC_Layer_BASE(layer) + 0x10)      /* Pixel Format Configuration Register */
+#define LTDC_Layer_CACR(layer)          (volatile uint32_t *) (LTDC_Layer_BASE(layer) + 0x14)      /* Constant Alpha Configuration Register */
+#define LTDC_Layer_DCCR(layer)          (volatile uint32_t *) (LTDC_Layer_BASE(layer) + 0x18)      /* Default Color Configuration Register */
+#define LTDC_Layer_BFCR(layer)          (volatile uint32_t *) (LTDC_Layer_BASE(layer) + 0x1C)      /* Blending Factors Configuration Register */
+#define LTDC_Layer_CFBAR(layer)         (volatile uint32_t *) (LTDC_Layer_BASE(layer) + 0x28)      /* Color Frame Buffer Address Register */
+#define LTDC_Layer_CFBLR(layer)         (volatile uint32_t *) (LTDC_Layer_BASE(layer) + 0x2C)      /* Color Frame Buffer Length Register */
+#define LTDC_Layer_CFBLNR(layer)        (volatile uint32_t *) (LTDC_Layer_BASE(layer) + 0x30)      /* Color Frame Buffer Line Number Register */
 
 #endif

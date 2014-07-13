@@ -5,3 +5,8 @@
 user-apps-dirs = \
 	l4test \
 	pingpong
+
+ifdef CONFIG_BOARD_STM32F429DISCOVERY
+user-apps-dirs += \
+	lcd_test
+endif
