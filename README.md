@@ -81,8 +81,10 @@ in the `LICENSE` file.
 Quick Start
 ===========
 
-The current hardware board F9 Microkernel supports is [STM32F4DISCOVERY](http://www.st.com/web/en/catalog/tools/FM116/SC959/SS1532/PF252419)
-based on ARM Cortex-M4F core, but F9 should work well on any STM32F40x
+F9 Microkernel supports the following boards:
+* [STM32F4DISCOVERY](http://www.st.com/web/en/catalog/tools/FM116/SC959/SS1532/PF252419)
+* [32F429IDISCOVERY](http://www.st.com/web/catalog/tools/FM116/SC959/SS1532/PF259090)
+Both are based on ARM Cortex-M4F core, but F9 should work well on any STM32F40x/STM32F429/STM32F439
 microcontroller.
 
 Building F9 Microkernel requires an arm-none-eabi- toolchain with Cortex-M4F support. The known working toolchains are as following
