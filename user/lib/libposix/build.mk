@@ -3,4 +3,5 @@
 # found in the LICENSE file.
 
 user-lib-libposix-y = \
-	fork.o
+	fork.o \
+	pthread.o
