@@ -3,6 +3,11 @@
 
 #include <stdint.h>
 
+/* FIXME: This should be moved to time.h */
+struct timespec {
+	uint64_t nsec;
+};
+
 /* FIXME: Define proper type for pthread type */
 typedef uint32_t pthread_mutex_t;
 typedef uint32_t pthread_t;

@@ -20,8 +20,8 @@ static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
 }
 
 __USER_TEXT int pthread_create(pthread_t *restrict thread,
-                   const pthread_attr_t *restrict attr,
-                   void *(*start_routine)(void*), void *restrict arg)
+                               const pthread_attr_t *restrict attr,
+                               void *(*start_routine)(void*), void *restrict arg)
 {
 	/* FIXME: Get valid free memory space */
 	L4_Word_t free_mem = NULL;
@@ -51,3 +51,43 @@ __USER_TEXT int pthread_create(pthread_t *restrict thread,
 	return 0;
 }
 
+__USER_TEXT int pthread_detach(pthread_t thread)
+{
+	return 0;	
+}
+
+__USER_TEXT void pthread_exit(void *value_ptr) 
+{
+
+}
+
+__USER_TEXT int pthread_join(pthread_t thread, void **value_ptr)
+{
+	return 0;
+}
+
+__USER_TEXT int pthread_mutex_destroy(pthread_mutex_t *mutex)
+{
+	return 0;
+}
+
+__USER_TEXT int pthread_mutex_lock(pthread_mutex_t *mutex)
+{
+	return 0;
+}
+
+__USER_TEXT int pthread_mutex_trylock(pthread_mutex_t *mutex)
+{
+	return 0;
+}
+
+__USER_TEXT int pthread_mutex_unlock(pthread_mutex_t *mutex)
+{
+	return 0;
+}
+
+__USER_TEXT int pthread_mutex_timedlock(pthread_mutex_t *restrict mutex,
+                                        const struct timespec *restrict abstime)
+{
+	return 0;
+}
