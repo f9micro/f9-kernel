@@ -1,7 +1,7 @@
 #ifndef PLATFORM_STM32F4_RCC_H__
 #define PLATFORM_STM32F4_RCC_H__
 
-#include <platform/stm32f429/registers.h>
+#include <platform/stm32f4/registers.h>
 struct rcc_clocks {
 	uint32_t sysclk_freq;
 	uint32_t hclk_freq;
