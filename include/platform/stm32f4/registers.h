@@ -170,10 +170,16 @@
 #define RCC_CFGR                        (volatile uint32_t *) (RCC_BASE + 0x08)                 /* Clock Configuration Register */
 #define RCC_CIR                         (volatile uint32_t *) (RCC_BASE + 0x0C)                 /* Clock Interrupt Register */
 #define RCC_AHB1RSTR                    (volatile uint32_t *) (RCC_BASE + 0x10)                 /* AHB1 reset Register */
+#define RCC_APB1RSTR                    (volatile uint32_t *) (RCC_BASE + 0x20)                 /* APB1 reset Register */
+#define RCC_APB2RSTR                    (volatile uint32_t *) (RCC_BASE + 0x24)                 /* APB2 reset Register */
 #define RCC_AHB1ENR                     (volatile uint32_t *) (RCC_BASE + 0x30)                 /* AHB1 Enable Register */
 #define RCC_AHB2ENR                     (volatile uint32_t *) (RCC_BASE + 0x34)                 /* AHB2 Enable Register */
 #define RCC_APB1ENR                     (volatile uint32_t *) (RCC_BASE + 0x40)                 /* APB1 Peripheral Clock Enable Register */
 #define RCC_APB2ENR                     (volatile uint32_t *) (RCC_BASE + 0x44)                 /* APB2 Peripheral Clock Enable Register */
+#define RCC_BDCR                        (volatile uint32_t *) (RCC_BASE + 0x70)                 /* RCC Backup Domain Control Register */
+#define RCC_CSR                         (volatile uint32_t *) (RCC_BASE + 0x74)                 /* RCC Clock Control & Status Register */
+#define RCC_PLLSAICFGR                  (volatile uint32_t *) (RCC_BASE + 0x88)                 /* RCC PLLSAI Configuration register */
+#define RCC_DCKCFGR                     (volatile uint32_t *) (RCC_BASE + 0x8C)                 /* RCC Dedicated Clocks Configuration register */
 
 /* SYSCFG */
 #define SYSCFG_MEMRMP					(volatile uint32_t *)(SYSCFG_BASE + 0x0)				/* Memory remap register */
@@ -315,6 +321,9 @@
 
 /* Bit Masks - See RM0090 Reference Manual for STM32F4 for details */
 #define PWR_CR_VOS                      (uint16_t) (1 << 14)                                    /* Regulator voltage scaling output selection */
+
+#define HSI_VALUE                       (uint32_t) (16000000)                                   /* HSI value in Hz */
+#define HSE_VALUE                       (uint32_t) (1 << 27)                                    /* HSE value in Hz */
 
 #define RCC_CR_HSION                    (uint32_t) (1 << 0)                                     /* HSI clock enable */
 #define RCC_CR_HSIRDY                   (uint32_t) (1 << 1)                                     /* HSI ready */
