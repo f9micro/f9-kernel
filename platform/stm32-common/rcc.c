@@ -17,6 +17,8 @@
 	#define PLL_Q	7	/*!< USB OTG FS, SDIO and RNG Clock = PLL_VCO / PLLQ */
 
 static __USER_DATA uint8_t APBAHBPrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9};
+#elif defined(STM32F1X)
+	#define PLL_MUL	6
 #endif
 
 /* RCC Flag Mask */
@@ -37,14 +39,20 @@ void sys_clock_init(void)
 	/* Set HSION bit */
 	*RCC_CR |= (uint32_t) 0x00000001;
 
+#if defined(STM32F1X)
+	*RCC_CFGR &= (uint32_t)0xF0FF0000;
+#else
 	/* Reset CFGR register */
 	*RCC_CFGR = 0x00000000;
+#endif
 	/* Reset HSEON, CSSON and PLLON bits */
 	*RCC_CR &= (uint32_t) 0xFEF6FFFF;
 
 #if defined(STM32F4X)
 	/* Reset PLLCFGR register */
 	*RCC_PLLCFGR = 0x24003010;
+#elif defined(STM32F1X)
+	*RCC_CFGR &= (uint32_t)0xFF80FFFF;
 #endif
 	/* Reset HSEBYP bit */
 	*RCC_CR &= (uint32_t) 0xFFFBFFFF;
@@ -52,6 +60,8 @@ void sys_clock_init(void)
 	/* Disable all interrupts */
 #if defined(STM32F4X)
 	*RCC_CIR = 0x00000000;
+#elif defined(STM32F1X)
+	*RCC_CIR = 0x009F0000;
 #endif
 
 	/* Set up the clock */
@@ -95,6 +105,8 @@ void sys_clock_init(void)
 		*RCC_PLLCFGR = PLL_M | (PLL_N << 6) |
 		               (((PLL_P >> 1) - 1) << 16) |
 		               (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24);
+#elif defined(STM32F1X)
+		*RCC_CFGR |= PLL_MUL << 18;
 #endif
 		/* Enable the main PLL */
 		*RCC_CR |= RCC_CR_PLLON;
@@ -112,6 +124,8 @@ void sys_clock_init(void)
 #endif
 #if defined(STM32F4X)
 		*FLASH_ACR = FLASH_ACR_LATENCY(5);
+#elif defined(STM32F1X)
+		*FLASH_ACR = FLASH_ACR_LATENCY(1);
 #endif
 		/* Select the main PLL as system clock source */
 		*RCC_CFGR &= (uint32_t)((uint32_t) ~(RCC_CFGR_SW_M));
@@ -146,6 +160,16 @@ void __USER_TEXT RCC_AHB1PeriphClockCmd(uint32_t rcc_AHB1, uint8_t enable)
 	else
 		*RCC_AHB1ENR &= ~rcc_AHB1;
 
+#elif defined(STM32F1X)
+void __USER_TEXT RCC_AHBPeriphClockCmd(uint32_t rcc_AHB, uint8_t enable)
+{
+	/* TODO: assertion */
+
+	if (enable != 0)
+		*RCC_AHBENR |= rcc_AHB;
+	else
+		*RCC_AHBENR &= ~rcc_AHB;
+
 #endif
 }
 
@@ -158,6 +182,16 @@ void __USER_TEXT RCC_AHB1PeriphResetCmd(uint32_t rcc_AHB1, uint8_t enable)
 		*RCC_AHB1RSTR |= rcc_AHB1;
 	else
 		*RCC_AHB1RSTR &= ~rcc_AHB1;
+
+#elif defined(STM32F1X)
+void __USER_TEXT RCC_AHBPeriphResetCmd(uint32_t rcc_AHB, uint8_t enable)
+{
+	/* TODO: assertion */
+
+	if (enable != 0)
+		*RCC_AHBRSTR |= rcc_AHB;
+	else
+		*RCC_AHBRSTR &= ~rcc_AHB;
 
 #endif
 }
