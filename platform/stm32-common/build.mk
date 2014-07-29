@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 common-y =  \
-	gpio.o \
+	gpio-$(STM32_VARIANT).o \
 	rcc.o \
 	mpu.o \
 	nvic.o \
