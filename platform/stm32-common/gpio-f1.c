@@ -19,7 +19,7 @@ inline static void gpio_cr(uint8_t port, uint8_t pin, uint8_t mode, uint8_t ospe
 	} else {
 		reg = *GPIO_CRH(port);
 		reg &= ~(GPIO_CR_M(pin));
-		reg |= (((mode << 2) | ospeed) << GPIO_CR_PIN(pin));
+		reg |= (((mode << 2) | ospeed) << GPIO_CR_PIN((pin-8)));
 		*GPIO_CRH(port) = reg;
 	}
 }
