@@ -111,11 +111,6 @@ __USER_TEXT int pthread_mutex_destroy(pthread_mutex_t *mutex)
 
 __USER_TEXT int pthread_mutex_lock(pthread_mutex_t *mutex)
 {
-	return 0;
-}
-
-__USER_TEXT int pthread_mutex_trylock(pthread_mutex_t *mutex)
-{
 	register int result = 1;
 
 	/* Busy trying */
@@ -133,6 +128,26 @@ __USER_TEXT int pthread_mutex_trylock(pthread_mutex_t *mutex)
 		    : [mutex] "r"(mutex)
 		    : "r0", "r1", "r2");
 	}
+
+	return result == 0;
+}
+
+__USER_TEXT int pthread_mutex_trylock(pthread_mutex_t *mutex)
+{
+	register int result = 1;
+
+	__asm__ __volatile__(
+	    "mov r1, #1\n"
+	    "mov r2, %[mutex]\n"
+	    "ldrex r0, [r2]\n"	/* Load value [r2] */
+	    "cmp r0, #0\n"	/* Checking is word set to 1 */
+
+	    "itt eq\n"
+	    "strexeq r0, r1, [r2]\n"
+	    "moveq %[result], r0\n"
+	    : [result] "=r"(result)
+	    : [mutex] "r"(mutex)
+	    : "r0", "r1", "r2");
 
 	return result == 0;
 }
