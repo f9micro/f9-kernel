@@ -7,6 +7,7 @@
 #include <l4/kip.h>
 #include <l4/utcb.h>
 #include <l4/ipc.h>
+#include <l4io.h>
 #include <types.h>
 #include <user_runtime.h>
 
@@ -77,6 +78,8 @@ static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
 
 #define STACK_SIZE 0x200
 
+extern void _pthread_create(L4_ThreadId_t tid, L4_Word_t free_mem);
+
 void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 {
 	L4_ThreadId_t myself = {.raw = utcb_ptr->t_globalid};
@@ -113,6 +116,7 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 			free_mem += fpage->size;
 			fpage++;
 		}
+		_pthread_create(tid, ptr->fpages[0].base);
 
 		/* start thread */
 		start_thread(tid, (L4_Word_t)ptr->entry, stack, STACK_SIZE);
