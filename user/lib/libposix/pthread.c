@@ -72,8 +72,8 @@ __USER_TEXT int pthread_create(pthread_t *restrict thread,
 	/* TODO: pthread_sigmask, sigpending, sigaltstack */
 	/* TODO: fenv */
 	/* TODO: Initilize cpu clock to 0(pthread_getcpuclockid) */
-	/* TODO: Update thread structure, fill in new thread id */
 
+	// XXX: L4_ThreadControl may fail but can not check it here.
 	L4_ThreadControl(child, myself, L4_nilthread, myself, (void *)*parray[index].free_mem);
 	*parray[index].free_mem += UTCB_SIZE + STACK_SIZE;
 
