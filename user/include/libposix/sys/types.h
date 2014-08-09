@@ -10,6 +10,7 @@ struct timespec {
 
 /* FIXME: Define proper type for pthread type */
 typedef uint32_t pthread_mutex_t;
+typedef uint32_t pthread_mutexattr_t;
 typedef uint32_t pthread_t;
 typedef uint32_t pthread_attr_t;
 
