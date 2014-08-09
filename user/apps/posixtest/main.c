@@ -22,6 +22,8 @@ __USER_TEXT void *child_thread(void *args)
 static __USER_TEXT void main(user_struct *user)
 {
 	printf("\nPosix Layer test starts\n");
+	L4_ThreadId_t pager = L4_Pager();
+	printf("Pager = %x\n", pager);
 	pthread_create(NULL, NULL, child_thread, NULL);
 	pthread_create(NULL, NULL, child_thread, NULL);
 

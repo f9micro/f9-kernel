@@ -9,7 +9,7 @@
 
 struct pthread_i {
 	L4_ThreadId_t tid;
-	L4_Word_t free_mem;
+	L4_Word_t *free_mem;
 	int last_thread;
 };
 
@@ -30,7 +30,8 @@ static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
 	L4_Send(t);
 }
 
-__USER_TEXT void _pthread_create(L4_ThreadId_t tid, L4_Word_t free_mem)
+
+__USER_TEXT void _pthread_create(L4_ThreadId_t tid, L4_Word_t *free_mem)
 {
 	parray[current_thread].tid = tid;
 	parray[current_thread].free_mem = free_mem;
@@ -67,10 +68,10 @@ __USER_TEXT int pthread_create(pthread_t *restrict thread,
 	/* TODO: Initilize cpu clock to 0(pthread_getcpuclockid) */
 	/* TODO: Update thread structure, fill in new thread id */
 
-	L4_ThreadControl(child, myself, L4_nilthread, myself, (void *) parray[index].free_mem);
-	parray[index].free_mem += UTCB_SIZE + STACK_SIZE;
+	L4_ThreadControl(child, myself, L4_nilthread, myself, (void *)*parray[index].free_mem);
+	*parray[index].free_mem += UTCB_SIZE + STACK_SIZE;
 
-	start_thread(child, (L4_Word_t)start_routine, parray[index].free_mem, STACK_SIZE);
+	start_thread(child, (L4_Word_t)start_routine, *parray[index].free_mem, STACK_SIZE);
 
 	/* TODO: Error tag return */
 	return 0;
