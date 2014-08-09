@@ -59,6 +59,12 @@ __USER_TEXT int pthread_create(pthread_t *restrict thread,
 
 	child.raw = myself.raw + (++parray[index].last_thread << 14);
 
+	/* Add new pthread */
+	parray[current_thread].tid = child;
+	parray[current_thread].free_mem = parray[index].free_mem;
+	parray[current_thread].last_thread = 0;
+	current_thread++;
+
 	/* TODO: Handle attr */
 	if(!attr) {
 	}
