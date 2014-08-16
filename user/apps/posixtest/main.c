@@ -13,32 +13,26 @@ __USER_DATA pthread_mutex_t mutex;
 
 __USER_DATA int shared = 0;
 
-__USER_TEXT void *child_thread1(void *args)
+__USER_TEXT void *child_thread2(void *args)
 {
-	printf("child task 1 start\n");
+	printf("child task 2 start\n");
 
 	while(1) {
-		pthread_mutex_trylock(&mutex);
 		shared = shared + 1;
-		L4_Sleep(L4_TimePeriod(1000));
-		printf("task 1: %d\n", shared);
-		pthread_mutex_unlock(&mutex);
+		printf("task 2: %d\n", shared);
 		L4_Sleep(L4_TimePeriod(1000));
 	}
 
 	return 0;
 }
 
-__USER_TEXT void *child_thread2(void *args)
+__USER_TEXT void *child_thread1(void *args)
 {
-	printf("child task 2 start\n");
+	printf("child task 1 start\n");
+	pthread_create(NULL, NULL, child_thread2, NULL);
 
 	while(1) {
-		pthread_mutex_trylock(&mutex);
-		shared = shared + 1;
-		printf("task 2: %d\n", shared);
-		pthread_mutex_unlock(&mutex);
-		L4_Sleep(L4_TimePeriod(1000));
+		L4_Sleep(L4_Never);
 	}
 
 	return 0;
@@ -49,7 +43,6 @@ static __USER_TEXT void main(user_struct *user)
 	printf("\nPosix Layer test starts\n");
 	mutex = 0;
 	pthread_create(NULL, NULL, child_thread1, NULL);
-	pthread_create(NULL, NULL, child_thread2, NULL);
 
 	while(1)
 		L4_Sleep(L4_Never);
