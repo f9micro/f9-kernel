@@ -31,6 +31,14 @@ __USER_TEXT void *child_thread1(void *args)
 	printf("child task 1 start\n");
 	pthread_create(NULL, NULL, child_thread2, NULL);
 
+	for(int i = 0; i <= 10; i++) {
+		printf("%d\n", 10 - i);
+		L4_Sleep(L4_TimePeriod(500));
+	}
+
+	printf("suicide\n");
+	pthread_exit(0);
+
 	while(1) {
 		L4_Sleep(L4_Never);
 	}

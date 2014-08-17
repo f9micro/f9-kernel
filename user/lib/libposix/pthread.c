@@ -136,12 +136,36 @@ __USER_TEXT static pthread_i *_find_user_root(void)
 	return NULL;
 }
 
-/*
-__USER_TEXT static void _pthread_remove(pthread_i *node)
+__USER_TEXT static void _pthread_remove(L4_ThreadId_t myself)
 {
+	int i;
+	pthread_i *node = NULL;
 
+	for(i = 0; i < MAX_THREAD; i++) {
+		if(flag[i] && parray[i].tid.raw == myself.raw) {
+			node = &parray[i];
+			break;
+		}
+	}
+
+	if(node->child != NULL) {
+		_pthread_remove(node->child->tid);
+	}
+
+	if(node->parent->child == node && node->next != NULL) {
+		if(node->next != NULL) {
+			node->parent->child = node->next;
+			node->next->prev = NULL;
+		}
+		else {
+			node->parent->child = NULL;
+		}
+	}
+
+	flag[i] = 0;
+
+	_pthread_dump();
 }
-*/
 
 __USER_TEXT static void _pthread_insert(pthread_i *child)
 {
@@ -236,7 +260,15 @@ __USER_TEXT int pthread_detach(pthread_t thread)
 
 __USER_TEXT void pthread_exit(void *value_ptr) 
 {
+	L4_ThreadId_t myself = L4_MyGlobalId();
 
+	_pthread_remove(myself);
+
+	// FIXME:
+	//   1. L4_ThreadControl has bug, it won't terminate task. It just removes
+	//      the task from task list.
+	//   2. We should traverse the pthread list and kill the child task
+	L4_ThreadControl(myself, L4_nilthread, L4_nilthread, myself, NULL);
 }
 
 __USER_TEXT int pthread_join(pthread_t thread, void **value_ptr)
