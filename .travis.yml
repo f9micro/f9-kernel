@@ -3,7 +3,8 @@ language: c
 compiler: gcc
 env: 
   - BOARD=discoveryf4
-  - BOARD=discoveryf429	
+  - BOARD=discoveryf429
+  - BOARD=stm32p103
 
 before_install:
   - sudo apt-get install build-essential
