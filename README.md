@@ -84,8 +84,10 @@ Quick Start
 F9 Microkernel supports the following boards:
 * [STM32F4DISCOVERY](http://www.st.com/web/en/catalog/tools/FM116/SC959/SS1532/PF252419)
 * [32F429IDISCOVERY](http://www.st.com/web/catalog/tools/FM116/SC959/SS1532/PF259090)
-Both are based on ARM Cortex-M4F core, but F9 should work well on any STM32F40x/STM32F429/STM32F439
+  - Both are based on ARM Cortex-M4F core, but F9 should work well on any STM32F40x/STM32F429/STM32F439
 microcontroller.
+* [STM32-P103](https://www.olimex.com/Products/ARM/ST/STM32-P103/)
+  - Powered by Cortex-M3 based microcontroller, STM32F103RBT6
 
 Building F9 Microkernel requires an arm-none-eabi- toolchain with Cortex-M4F support. The known working toolchains are as following
 * [Sourcery CodeBench](http://www.mentor.com/embedded-software/sourcery-tools/sourcery-codebench/editions/lite-edition/)
