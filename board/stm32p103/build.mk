@@ -2,11 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-common-y =  \
-	gpio-$(STM32_VARIANT).o \
-	rcc.o \
-	mpu.o \
-	nvic.o \
-	systick.o \
-	hwtimer.o \
-	usart.o
+CHIP := stm32f1
+PLATFORM := stm32
+STM32_VARIANT := f1
+
+board-y = board.o
+loader-board-y = board.loader.o

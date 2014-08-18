@@ -14,8 +14,10 @@ unconfigured_error:
 	@$(MAKE) -s UNKNOWN 2>/dev/null
 endif
 
-ifdef CONFIG_BOARD_STM32F429DISCOVERY
+ifeq "$(CONFIG_BOARD_STM32F429DISCOVERY)" "y"
 BOARD ?= discoveryf429
+else ifeq "$(CONFIG_BOARD_STM32P103)" "y"
+BOARD ?= stm32p103
 else
 BOARD ?= discoveryf4
 endif

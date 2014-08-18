@@ -9,45 +9,60 @@
 
 #define HSE_STARTUP_TIMEOUT \
 	(uint16_t) (0x0500)	/*!< Time out for HSE start up */
-#define PLL_M	8	/*!< PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) *
-PLL_N */
-#define PLL_N	336
-#define PLL_P	2	/*!< SYSCLK = PLL_VCO / PLL_P */
-#define PLL_Q	7	/*!< USB OTG FS, SDIO and RNG Clock =
-PLL_VCO / PLLQ */
+
+#if defined(STM32F4X)
+	#define PLL_M	8	/*!< PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
+	#define PLL_N	336
+	#define PLL_P	2	/*!< SYSCLK = PLL_VCO / PLL_P */
+	#define PLL_Q	7	/*!< USB OTG FS, SDIO and RNG Clock = PLL_VCO / PLLQ */
+
+static __USER_DATA uint8_t APBAHBPrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9};
+#elif defined(STM32F1X)
+	#define PLL_MUL	6
+#endif
 
 /* RCC Flag Mask */
 #define FLAG_MASK                 ((uint8_t)0x1F)
 
-static __USER_DATA uint8_t APBAHBPrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9};
 
 void sys_clock_init(void)
 {
 	volatile uint32_t startup_count, HSE_status;
 
+#if defined(STM32F4X)
 	/* Enable the FPU */
 	*SCB_CPACR |= (0xf << 20);
 	/* Enable floating point state preservation */
 	*FPU_CCR |= FPU_CCR_ASPEN;
-
+#endif
 	/* Reset clock registers */
 	/* Set HSION bit */
 	*RCC_CR |= (uint32_t) 0x00000001;
 
+#if defined(STM32F1X)
+	*RCC_CFGR &= (uint32_t)0xF0FF0000;
+#else
 	/* Reset CFGR register */
 	*RCC_CFGR = 0x00000000;
-
+#endif
 	/* Reset HSEON, CSSON and PLLON bits */
 	*RCC_CR &= (uint32_t) 0xFEF6FFFF;
 
+#if defined(STM32F4X)
 	/* Reset PLLCFGR register */
 	*RCC_PLLCFGR = 0x24003010;
-
+#elif defined(STM32F1X)
+	*RCC_CFGR &= (uint32_t)0xFF80FFFF;
+#endif
 	/* Reset HSEBYP bit */
 	*RCC_CR &= (uint32_t) 0xFFFBFFFF;
 
 	/* Disable all interrupts */
+#if defined(STM32F4X)
 	*RCC_CIR = 0x00000000;
+#elif defined(STM32F1X)
+	*RCC_CIR = 0x009F0000;
+#endif
 
 	/* Set up the clock */
 	startup_count = 0;
@@ -72,8 +87,9 @@ void sys_clock_init(void)
 		/* Enable high performance mode:
 		   system frequency is up to 168 MHz */
 		*RCC_APB1ENR |= RCC_APB1ENR_PWREN;
+#if defined(STM32F4X)
 		*PWR_CR |= PWR_CR_VOS;
-
+#endif
 		/* HCLK = SYSCLK / 1 */
 		*RCC_CFGR |= RCC_CFGR_HPRE_DIV1;
 
@@ -84,13 +100,15 @@ void sys_clock_init(void)
 		*RCC_CFGR |= RCC_CFGR_PPRE1_DIV4;
 
 		/* Configure the main PLL */
+#if defined(STM32F4X)
 		/* PLL Options - See RM0090 Reference Manual pg. 95 */
 		*RCC_PLLCFGR = PLL_M | (PLL_N << 6) |
 		               (((PLL_P >> 1) - 1) << 16) |
 		               (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24);
-
+#elif defined(STM32F1X)
+		*RCC_CFGR |= PLL_MUL << 18;
+#endif
 		/* Enable the main PLL */
-
 		*RCC_CR |= RCC_CR_PLLON;
 
 		/* Wait till the main PLL is ready */
@@ -104,8 +122,11 @@ void sys_clock_init(void)
 		*FLASH_ACR = FLASH_ACR_ICEN | FLASH_ACR_DCEN |
 		             FLASH_ACR_LATENCY_5WS;
 #endif
+#if defined(STM32F4X)
 		*FLASH_ACR = FLASH_ACR_LATENCY(5);
-
+#elif defined(STM32F1X)
+		*FLASH_ACR = FLASH_ACR_LATENCY(1);
+#endif
 		/* Select the main PLL as system clock source */
 		*RCC_CFGR &= (uint32_t)((uint32_t) ~(RCC_CFGR_SW_M));
 		*RCC_CFGR |= RCC_CFGR_SW_PLL;
@@ -120,15 +141,16 @@ void sys_clock_init(void)
 		 */
 		panic("Time out for waiting HSE Ready");
 	}
-
+#if defined(STM32F4X)
 	/* Enable the CCM RAM clock */
 	*RCC_AHB1ENR |= (1 << 20);
-
+#endif
 	/* Enable Bus and Usage Faults */
 	*SCB_SHCSR |= SCB_SHCSR_BUSFAULTENA;
 	*SCB_SHCSR |= SCB_SHCSR_USEFAULTENA;
 }
 
+#if defined(STM32F4X)
 void __USER_TEXT RCC_AHB1PeriphClockCmd(uint32_t rcc_AHB1, uint8_t enable)
 {
 	/* TODO: assertion */
@@ -137,8 +159,21 @@ void __USER_TEXT RCC_AHB1PeriphClockCmd(uint32_t rcc_AHB1, uint8_t enable)
 		*RCC_AHB1ENR |= rcc_AHB1;
 	else
 		*RCC_AHB1ENR &= ~rcc_AHB1;
+
+#elif defined(STM32F1X)
+void __USER_TEXT RCC_AHBPeriphClockCmd(uint32_t rcc_AHB, uint8_t enable)
+{
+	/* TODO: assertion */
+
+	if (enable != 0)
+		*RCC_AHBENR |= rcc_AHB;
+	else
+		*RCC_AHBENR &= ~rcc_AHB;
+
+#endif
 }
 
+#if defined(STM32F4X)
 void __USER_TEXT RCC_AHB1PeriphResetCmd(uint32_t rcc_AHB1, uint8_t enable)
 {
 	/* TODO: assertion */
@@ -147,6 +182,18 @@ void __USER_TEXT RCC_AHB1PeriphResetCmd(uint32_t rcc_AHB1, uint8_t enable)
 		*RCC_AHB1RSTR |= rcc_AHB1;
 	else
 		*RCC_AHB1RSTR &= ~rcc_AHB1;
+
+#elif defined(STM32F1X)
+void __USER_TEXT RCC_AHBPeriphResetCmd(uint32_t rcc_AHB, uint8_t enable)
+{
+	/* TODO: assertion */
+
+	if (enable != 0)
+		*RCC_AHBRSTR |= rcc_AHB;
+	else
+		*RCC_AHBRSTR &= ~rcc_AHB;
+
+#endif
 }
 
 void __USER_TEXT RCC_APB1PeriphClockCmd(uint32_t rcc_APB1, uint8_t enable)
@@ -216,6 +263,7 @@ uint8_t __USER_TEXT RCC_GetFlagStatus(uint8_t flag)
 
 void __USER_TEXT RCC_GetClocksFreq(struct rcc_clocks *clock)
 {
+#if defined(STM32F4X)
 	uint32_t tmp = 0, presc = 0, pllvco = 0, pllp = 2, pllsource = 0, pllm = 2;
 
 	tmp = *RCC_CFGR & RCC_CFGR_SWS_M;
@@ -261,4 +309,5 @@ void __USER_TEXT RCC_GetClocksFreq(struct rcc_clocks *clock)
 	presc = APBAHBPrescTable[tmp];
 
 	clock->pclk2_freq = clock->hclk_freq >> presc;
+#endif
 }
