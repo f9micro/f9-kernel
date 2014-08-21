@@ -36,8 +36,13 @@ __USER_TEXT void *child_thread1(void *args)
 		L4_Sleep(L4_TimePeriod(500));
 	}
 
-	printf("suicide\n");
+	printf("task 1: suicide\n");
 	pthread_exit(0);
+
+	for(int i = 0; i <= 10; i++) {
+		printf("%d\n", 10 - i);
+		L4_Sleep(L4_TimePeriod(500));
+	}
 
 	while(1) {
 		L4_Sleep(L4_Never);

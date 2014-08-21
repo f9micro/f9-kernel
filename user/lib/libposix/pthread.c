@@ -148,7 +148,11 @@ __USER_TEXT static void _pthread_remove(L4_ThreadId_t myself)
 		}
 	}
 
+
 	if(node->child != NULL) {
+		while(node->child->next != NULL) {
+			_pthread_remove(node->child->next->tid);
+		}
 		_pthread_remove(node->child->tid);
 	}
 
@@ -165,6 +169,15 @@ __USER_TEXT static void _pthread_remove(L4_ThreadId_t myself)
 	flag[i] = 0;
 
 	_pthread_dump();
+
+	// FIXME:
+	//   L4_ThreadControl maybe has bug. It can not kill thread otherwise 
+	//   current thread.
+	//   Ex. Assume t1 has child t2 and then invoke pthread_exit(0) in t1.
+	//   t1 will be terminated(another issue here) and t2 will keep running.
+	//   However t1 and t2 in thread list in KDB are remove both.
+	L4_ThreadControl(myself, L4_nilthread, L4_nilthread,
+	                 L4_nilthread, (void *) - 1);
 }
 
 __USER_TEXT static void _pthread_insert(pthread_i *child)
@@ -263,12 +276,6 @@ __USER_TEXT void pthread_exit(void *value_ptr)
 	L4_ThreadId_t myself = L4_MyGlobalId();
 
 	_pthread_remove(myself);
-
-	// FIXME:
-	//   1. L4_ThreadControl has bug, it won't terminate task. It just removes
-	//      the task from task list.
-	//   2. We should traverse the pthread list and kill the child task
-	L4_ThreadControl(myself, L4_nilthread, L4_nilthread, myself, NULL);
 }
 
 __USER_TEXT int pthread_join(pthread_t thread, void **value_ptr)
