@@ -59,6 +59,9 @@ extern uint32_t bitmap_bitband_end;
 
 extern uint32_t symtab_start;
 extern uint32_t symtab_end;
+
+extern uint32_t mem0_start;
+extern uint32_t mem1_start;
 #endif
 
 #define __BSS 			__attribute__ ((section(".bss")))
