@@ -144,6 +144,7 @@ SECTIONS {
 		*(.bitmap*)
 		bitmap_end = .;
 		kernel_ahb_end = .;
+		mem0_start = .;
 	} > RamLoc
 
 }
