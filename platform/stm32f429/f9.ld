@@ -137,6 +137,7 @@ SECTIONS {
 		*(.user_bss*)
 		. = ALIGN (256);
 		user_bss_end = .;
+		mem0_start = .;
 	} > RamLoc
 
 	.data_AHB (NOLOAD) :
@@ -146,6 +147,7 @@ SECTIONS {
 		*(.bitmap*)
 		bitmap_end = .;
 		kernel_ahb_end = .;
+		mem1_start = .;
 	} > RamCCM
 
 }

@@ -142,6 +142,7 @@ SECTIONS {
 		*(.bitmap*)
 		bitmap_end = .;
 		kernel_ahb_end = .;
+		mem0_start = .;
 	} > RamLoc
 
 	.sym_tab ( 0x800c000 + SIZEOF(.user_text) + SIZEOF(.user_data) ) :

@@ -59,7 +59,7 @@ static mempool_t memmap[] = {
 		MP_UR | MP_UW | MP_MEMPOOL | MP_MAP_ALWAYS, MPT_USER_DATA),
 	DECLARE_MEMPOOL_2("UBSS",  user_bss,
 		MP_UR | MP_UW | MP_MEMPOOL  | MP_MAP_ALWAYS, MPT_USER_DATA),
-	DECLARE_MEMPOOL("MEM0",  &user_bss_end, 0x2001c000,
+	DECLARE_MEMPOOL("MEM0",  &mem0_start, 0x2001c000,
 		MP_UR | MP_UW | MP_SRAM, MPT_AVAILABLE),
 #ifdef CONFIG_BITMAP_BITBAND
 	DECLARE_MEMPOOL("KBITMAP",  &bitmap_bitband_start, &bitmap_bitband_end,
@@ -68,8 +68,10 @@ static mempool_t memmap[] = {
 	DECLARE_MEMPOOL("KBITMAP",  &bitmap_start, &bitmap_end,
 		MP_KR | MP_KW | MP_NO_FPAGE, MPT_KERNEL_DATA),
 #endif
-	DECLARE_MEMPOOL("MEM1",   &kernel_ahb_end, 0x10010000,
+#ifndef CONFIG_BOARD_STM32P103
+	DECLARE_MEMPOOL("MEM1",   &mem1_start, 0x10010000,
 		MP_UR | MP_UW | MP_AHB_RAM, MPT_AVAILABLE),
+#endif
 	DECLARE_MEMPOOL("APB1DEV", 0x40000000, 0x40007800,
 		MP_UR | MP_UW | MP_DEVICES, MPT_DEVICES),
 	DECLARE_MEMPOOL("APB2_1DEV", 0x40010000, 0x40013400,
