@@ -18,3 +18,4 @@ core
 .config
 .config.old
 include/autoconf.h
+mylog
