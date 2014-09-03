@@ -27,6 +27,11 @@ config FPU
 	bool "Floating point support"
 	default n
 
+config SEMIHOST
+	bool "Semihosting enable"
+	default n
+	depends on BOARD_STM32P103
+
 choice
 	prompt "Standard I/O device"
 	default STDIO_USE_DBGPORT

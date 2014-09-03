@@ -4,3 +4,8 @@
 
 user-lib-io-y = \
 	l4io.o
+
+ifeq "$(CONFIG_SEMIHOST)" "y"
+user-lib-io-y += \
+	semihost-io.o
+endif
