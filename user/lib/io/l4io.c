@@ -33,3 +33,9 @@ void __USER_TEXT putc(int c)
 {
 	printf("%c", c);
 }
+
+int __USER_TEXT __attribute((weak, alias("semihost_puts"))) 
+semihost_puts(char *log)
+{
+	return 0;
+}

@@ -88,6 +88,11 @@ distclean: clean
 	-rm -rf $(out_host)
 	-rm -f $(CONFIG) $(CONFIG).old include/autoconf.h
 
+.PHONY: qemu
+qemu: $(out)/$(PROJECT).bin
+	-killall -q qemu-system-arm
+	$(QEMU_DIR)qemu-system-arm -M stm32-p103 -kernel $(out)/$(PROJECT).bin -serial stdio -semihosting
+
 $(out_host)/mconf:
 	$(call quiet,kconfig,CONFIG )
 $(MCONF_INPUT): $(KCONFIG_FILES)

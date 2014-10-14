@@ -30,6 +30,9 @@ out ?= build/$(BOARD)
 # output directory for host build targets
 out_host ?= build/host
 
+# qemu directory location
+QEMU_DIR ?= ../qemu_stm32/arm-softmmu/
+
 includes-user = user/include
 # toolchain specific configurations; common cflags and ldflags
 include mk/toolchain.mk
