@@ -7,13 +7,17 @@
 #include <user_runtime.h>
 #include <l4/ipc.h>
 #include <l4/utcb.h>
+#include <l4/pager.h>
+#include <l4io.h>
 #include INC_PLAT(lcd.h)
 #include INC_PLAT(ltdc.h)
 
-#define STACK_SIZE 256
-
-static void __USER_TEXT main(user_struct *user)
+#define STACK_SIZE 512
+__USER_TEXT
+static void *main(void *arg)
 {
+
+	printf("lcd main\n");
 	/* testing lcd */
 	lcd_init();
 	lcd_layer_init();
@@ -28,14 +32,16 @@ static void __USER_TEXT main(user_struct *user)
 	lcd_set_text_color(LCD_COLOR_BLACK);
 	lcd_draw_rect(20, 30, 20, 40);
 
-	while (1);
+	while (1)
+		L4_Sleep(L4_Never);
 }
 
 DECLARE_USER(
 	4,
 	lcd_test,
 	main,
-	DECLARE_FPAGE(0x0, UTCB_SIZE + STACK_SIZE)
+	DECLARE_FPAGE(0x0, 2 * (UTCB_SIZE + STACK_SIZE))
+	DECLARE_FPAGE(0x0, 512)
 	DECLARE_FPAGE(0x40005000, 0x1000)
 	DECLARE_FPAGE(0x40015000, 0x0c00)
 	DECLARE_FPAGE(0x40020000, 0x3c00)

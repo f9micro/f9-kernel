@@ -306,7 +306,7 @@ void thread_free_space(tcb_t *thr)
 	as_destroy(thr->as);
 }
 
-void thread_init_ctx(void *sp, void *pc, tcb_t *thr)
+void thread_init_ctx(void *sp, void *pc, void *regs, tcb_t *thr)
 {
 	/* Reserve 8 words for fake context */
 	sp -= RESERVED_STACK;
@@ -318,23 +318,28 @@ void thread_init_ctx(void *sp, void *pc, tcb_t *thr)
 	if (GLOBALID_TO_TID(thr->t_globalid) >= THREAD_ROOT) {
 		thr->ctx.ret = 0xFFFFFFFD;
 		thr->ctx.ctl = 0x3;
-
-		((uint32_t *) sp)[REG_R0] = (uint32_t) &kip;
-		((uint32_t *) sp)[REG_R1] = (uint32_t) thr->utcb;
 	} else {
 		thr->ctx.ret = 0xFFFFFFF9;
 		thr->ctx.ctl = 0x0;
-
-		((uint32_t *) sp)[REG_R0] = 0x0;
-		((uint32_t *) sp)[REG_R1] = 0x0;
 	}
 
-	((uint32_t *) sp)[REG_R2] = 0x0;
-	((uint32_t *) sp)[REG_R3] = 0x0;
+	if (regs == NULL) {
+		((uint32_t *) sp)[REG_R0] = 0x0;
+		((uint32_t *) sp)[REG_R1] = 0x0;
+		((uint32_t *) sp)[REG_R2] = 0x0;
+		((uint32_t *) sp)[REG_R3] = 0x0;
+	} else {
+		((uint32_t *)sp)[REG_R0] = ((uint32_t *)regs)[0];
+		((uint32_t *)sp)[REG_R1] = ((uint32_t *)regs)[1];
+		((uint32_t *)sp)[REG_R2] = ((uint32_t *)regs)[2];
+		((uint32_t *)sp)[REG_R3] = ((uint32_t *)regs)[3];
+	}
+
 	((uint32_t *) sp)[REG_R12] = 0x0;
 	((uint32_t *) sp)[REG_LR] = 0xFFFFFFFF;
 	((uint32_t *) sp)[REG_PC] = (uint32_t) pc;
 	((uint32_t *) sp)[REG_xPSR] = 0x1000000; /* Thumb bit on */
+
 }
 
 /* Kernel has no fake context, instead of that we rewind

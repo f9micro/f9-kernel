@@ -25,11 +25,20 @@ static void idle_thread(void);
 
 void create_root_thread(void)
 {
+	uint32_t regs[4];
+
 	root = thread_init(TID_TO_GLOBALID(THREAD_ROOT), &root_utcb);
 	thread_space(root, TID_TO_GLOBALID(THREAD_ROOT), &root_utcb);
 	as_map_user(root->as);
 
-	thread_init_ctx((void *) &root_stack_end, root_thread, root);
+	regs[REG_R0] = (uint32_t)&kip;
+	regs[REG_R1] = (uint32_t)root->utcb;
+	regs[REG_R2] = 0;
+	regs[REG_R3] = 0;
+
+	thread_init_ctx((void *) &root_stack_end, root_thread, regs, root);
+
+
 	root->stack_base = (memptr_t)&root_stack_start;
 	root->stack_size = (uint32_t)&root_stack_end - (uint32_t)&root_stack_start;
 
@@ -53,7 +62,7 @@ void create_kernel_thread(void)
 void create_idle_thread(void)
 {
 	idle = thread_init(TID_TO_GLOBALID(THREAD_IDLE), NULL);
-	thread_init_ctx((void *) &idle_stack_end, idle_thread, idle);
+	thread_init_ctx((void *) &idle_stack_end, idle_thread, NULL, idle);
 
 	sched_slot_dispatch(SSI_IDLE, idle);
 	idle->state = T_RUNNABLE;

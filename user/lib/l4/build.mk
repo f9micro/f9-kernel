@@ -6,4 +6,5 @@ user-lib-l4-dirs = \
 	platform
 
 user-lib-l4-y = \
-	platform/syscalls.o
+	platform/syscalls.o \
+	pager.o

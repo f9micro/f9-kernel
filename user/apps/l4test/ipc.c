@@ -9,7 +9,9 @@
 #include <l4/thread.h>
 #include <l4/arch.h>
 #include <l4/kdebug.h>
+#include <l4/pager.h>
 #include <l4io.h>
+#include <platform/cortex_m.h>
 
 #include "arch.h"
 #include "config.h"
@@ -62,96 +64,21 @@ const char *ipc_errorphase(L4_Word_t errcode)
 
 
 __USER_TEXT
-void setup_ipc_threads(void (*f1)(void), void (*f2)(void),
+void setup_ipc_threads(void *(*f1)(void *), void *(*f2)(void *),
                        bool rcv_same_space, bool snd_same_space,
                        bool xcpu)
 {
-	int threads_to_kill;
-
-	ipc_pf_block_address = 0;
-
-	ipc_t1 = create_thread(NULL, !rcv_same_space, -1, 0);
-	ipc_t2 = create_thread(NULL, !snd_same_space,
-	                       xcpu ? ((L4_ProcessorNo() + 1) % 2) : (L4_Word_t) - 1, 0);
-
-	/* Do not start threads unless both threads have been created */
-	start_thread(ipc_t1, f1);
-	start_thread(ipc_t2, f2);
-
-	threads_to_kill = 2;
-
-	for (;;) {
-		L4_Msg_t msg;
-		L4_ThreadId_t tid;
-		L4_MsgTag_t tag = L4_Wait(&tid);
-
-		for (;;) {
-			L4_Fpage_t fp;
-
-			L4_MsgStore(tag, &msg);
-
-			if (L4_UntypedWords(tag) != 2 || L4_TypedWords(tag) != 0 ||
-			    !L4_IpcSucceeded(tag)) {
-				kill_thread(tid);
-				if (--threads_to_kill == 0)
-					return;
-				break;
-			}
-
-			/*
-			 * Check if we should abort thread doing pagefault on
-			 * current address.
-			 */
-			if (L4_MsgWord(&msg, 0) == ipc_pf_abort_address) {
-				L4_Word_t dw;
-				L4_ThreadId_t dt;
-				L4_ExchangeRegisters(tid, (3 << 1), 0, 0, 0, 0, L4_nilthread,
-				                     &dw, &dw, &dw, &dw, &dw, &dt);
-				ipc_pf_abort_address = 0;
-				break;
-			}
-
-			/*
-			 * Check if we should not serve the pagefault at this
-			 * address.
-			 */
-			if (L4_MsgWord(&msg, 0) == ipc_pf_block_address)
-				break;
-
-			L4_MsgClear(&msg);
-			fp.raw = L4_MsgWord(&msg, 0);
-
-#if defined(L4_ARCH_IA32) || defined(L4_ARCH_AMD64)
-#define L4_IO_PAGEFAULT		(-8UL << 20)
-#define L4_REQUEST_MASK		( ~((~0UL) >> ((sizeof (L4_Word_t) * 8) - 20)))
-			// If pagefault is an IO-Page, return that IO Fpage
-			if ((tag.raw & L4_REQUEST_MASK) != L4_IO_PAGEFAULT || !L4_IsIoFpage(fp))
-#endif
-			{
-				// Touch memory
-				volatile L4_Word_t * mem = (L4_Word_t *)
-				                           (L4_MsgWord(&msg, 0) & ~(sizeof(L4_Word_t) - 1));
-				*mem = *mem;
-
-				fp = L4_FpageAddRights(
-				         L4_FpageLog2(L4_MsgWord(&msg, 0), PAGE_BITS),
-				         L4_FullyAccessible);
-			}
-
-			if ((tid.raw == ipc_t1.raw && !rcv_same_space) ||
-			    (tid.raw == ipc_t2.raw && !snd_same_space))
-				L4_MsgAppendMapItem(&msg, L4_MapItem(fp, L4_MsgWord(&msg, 0)));
-			L4_MsgLoad(&msg);
-			tag = L4_ReplyWait(tid, &tid);
-		}
-	}
+	ipc_t1 = pager_create_thread();
+	ipc_t2 = pager_create_thread();
+	pager_start_thread(ipc_t1, f1, NULL);
+	pager_start_thread(ipc_t2, f2, NULL);
 }
 
 /*
  ** IPC test with only untyped words
  */
 __USER_TEXT
-static void simple_ipc_t1_l(void)
+static void *simple_ipc_t1_l(void *arg)
 {
 	L4_Msg_t msg;
 	L4_MsgTag_t tag;
@@ -369,9 +296,7 @@ static void simple_ipc_t1_l(void)
 	L4_Set_MsgTag(L4_Niltag);
 	L4_Send(ipc_t2);
 
-	/* Get oneself killed */
-	L4_Set_MsgTag(L4_Niltag);
-	L4_Call(L4_Pager());
+	return NULL;
 }
 
 #if 0	/* UNIMPLEMENTED */
@@ -393,7 +318,7 @@ __USER_TEXT static void simple_ipc_t1_g(void)
 #endif
 
 __USER_TEXT
-static void simple_ipc_t2_l(void)
+static void *simple_ipc_t2_l(void *arg)
 {
 	L4_Msg_t msg;
 #if 0
@@ -479,9 +404,7 @@ static void simple_ipc_t2_l(void)
 	L4_Send(ipc_t1);
 	L4_Receive(ipc_t1);
 
-	/* Get oneself killed */
-	L4_Set_MsgTag(L4_Niltag);
-	L4_Call(L4_Pager());
+	return NULL;
 }
 
 #if 0	/* UNIMPLEMENTED */

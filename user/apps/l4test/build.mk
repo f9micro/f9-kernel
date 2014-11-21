@@ -4,7 +4,6 @@
 
 user-apps-l4test-y = \
 	string.o \
-	threads.o \
 	ipc.o \
 	assert.o \
 	main.o \

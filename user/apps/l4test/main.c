@@ -13,13 +13,14 @@
 
 /* for the current arch */
 #include "platform/arch.h"
+#include <platform/cortex_m.h>
 
 /* generic stuff */
 #include "config.h"
 #include "l4test.h"
 #include "assert.h"
 
-#define STACK_SIZE 256
+#define STACK_SIZE 512
 
 /* where to start allocating RAM */
 __USER_BSS static char *free_page;
@@ -175,12 +176,12 @@ __USER_TEXT void all_tests(void)
 #endif
 }
 
-static void main(user_struct *user)
+__USER_TEXT
+static void *main(void *user)
 {
 	printf("\nL4/Pistachio test suite starts\n");
-	free_page = (void *) user->fpages[0].base;
 	all_tests();
-	return;
+	return NULL;
 }
 
 DECLARE_USER(
@@ -188,4 +189,5 @@ DECLARE_USER(
 	l4test,
 	main,
 	DECLARE_FPAGE(0x0, 4 * (UTCB_SIZE + STACK_SIZE))
+	DECLARE_FPAGE(0x0, 512)
 );

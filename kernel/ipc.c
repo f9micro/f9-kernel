@@ -161,18 +161,27 @@ void sys_ipc(uint32_t *param1)
 			return;
 		} else if (to_thr && to_thr->state == T_INACTIVE &&
 		           GLOBALID_TO_TID(to_thr->utcb->t_pager) == GLOBALID_TO_TID(caller->t_globalid)) {
-			if (ipc_read_mr(caller, 0) == 0x00000003) {
+			if (ipc_read_mr(caller, 0) == 0x00000005) {
+				/* mr1: thread func, mr2: stack addr, mr3: stack size*/
+				/* mr4: thread entry, mr5: thread args */
 				/* thread start protocol */
 
 				memptr_t sp = ipc_read_mr(caller, 2);
 				size_t stack_size = ipc_read_mr(caller, 3);
+				uint32_t regs[4];	/* r0, r1, r2, r3 */
 
 				dbg_printf(DL_IPC, "IPC: %t thread start\n", to_tid);
 
 				to_thr->stack_base = sp - stack_size;
 				to_thr->stack_size = stack_size;
 
-				thread_init_ctx((void *) sp, (void *) ipc_read_mr(caller, 1), to_thr);
+				regs[REG_R0] = (uint32_t)&kip;
+				regs[REG_R1] = (uint32_t)to_thr->utcb;
+				regs[REG_R2] = ipc_read_mr(caller, 4);
+				regs[REG_R3] = ipc_read_mr(caller, 5);
+				thread_init_ctx((void *) sp, (void *) ipc_read_mr(caller, 1),
+				                regs, to_thr);
+
 				caller->state = T_RUNNABLE;
 
 				/* Start thread */
