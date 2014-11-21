@@ -227,7 +227,12 @@ int ktimer_event_create(uint32_t ticks, ktimer_event_handler_t handler, void *da
 	kte->handler = handler;
 	kte->data = data;
 
-	return ktimer_event_schedule(ticks, kte);
+	if (ktimer_event_schedule(ticks, kte) == -1) {
+		ktable_free(&ktimer_event_table, kte);
+		return -1;
+	}
+
+	return 0;
 }
 
 void ktimer_event_handler()
