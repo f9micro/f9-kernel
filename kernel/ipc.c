@@ -37,6 +37,31 @@ static void ipc_write_mr(tcb_t *to, int i, uint32_t data)
 		to->ctx.regs[i] = data;
 }
 
+static void user_ipc_error(tcb_t *thr, enum user_error_t error)
+{
+	ipc_msg_tag_t tag;
+
+	/* Set ipc unsuccessful */
+	tag.raw = ipc_read_mr(thr, 0);
+	tag.s.flags |= 0x8;
+	ipc_write_mr(thr, 0, tag.raw);
+
+	set_user_error(thr, error);
+}
+
+static inline void do_ipc_error(tcb_t *from, tcb_t *to,
+                                enum user_error_t from_err,
+                                enum user_error_t to_err,
+                                thread_state_t from_state,
+                                thread_state_t to_state)
+{
+	user_ipc_error(from, from_err);
+	user_ipc_error(to, to_err);
+	from->state = from_state;
+	to->state = to_state;
+}
+
+
 static void do_ipc(tcb_t *from, tcb_t *to)
 {
 	ipc_msg_tag_t tag;
@@ -52,8 +77,11 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 	typed_last = untyped_last + tag.s.n_typed;
 
 	if (typed_last > IPC_MR_COUNT) {
-		set_user_error(from, UE_IPC_MSG_OVERFLOW | UE_IPC_PHASE_SEND);
-		set_user_error(to, UE_IPC_MSG_OVERFLOW | UE_IPC_PHASE_RECV);
+		do_ipc_error(from, to,
+		             UE_IPC_MSG_OVERFLOW | UE_IPC_PHASE_SEND,
+		             UE_IPC_MSG_OVERFLOW | UE_IPC_PHASE_RECV,
+		             T_RUNNABLE,
+		             T_RUNNABLE);
 		return;
 	}
 
@@ -79,21 +107,35 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 			++typed_item_idx;
 		} else if (typed_item.s.header & IPC_TI_MAP_GRANT) {
 			/* MapItem / GrantItem have 1xxx in header */
+			int ret;
 			typed_data = mr_data;
 
-			map_area(from->as, to->as,
+			ret = map_area(from->as, to->as,
 			         typed_item.raw & 0xFFFFFFC0,
 			         typed_data & 0xFFFFFFC0,
 			         (typed_item.s.header & IPC_TI_GRANT) ? GRANT : MAP,
 			         thread_ispriviliged(from));
 			typed_item_idx = -1;
+
+			if (ret < 0) {
+				do_ipc_error(from, to,
+				             UE_IPC_ABORTED | UE_IPC_PHASE_SEND,
+				             UE_IPC_ABORTED | UE_IPC_PHASE_RECV,
+				             T_RUNNABLE,
+				             T_RUNNABLE);
+				return;
+			}
 		}
 
 		/* TODO: StringItem support */
 	}
 
 	if (!to->ctx.sp || !from->ctx.sp) {
-		caller->state = T_RUNNABLE;
+		do_ipc_error(from, to,
+		             UE_IPC_ABORTED | UE_IPC_PHASE_SEND,
+		             UE_IPC_ABORTED | UE_IPC_PHASE_RECV,
+		             T_RUNNABLE,
+		             T_RUNNABLE);
 		return;
 	}
 
