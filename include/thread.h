@@ -92,6 +92,7 @@ struct tcb {
 	struct tcb *t_parent;
 	struct tcb *t_child;
 
+	uint32_t timeout_event;
 };
 typedef struct tcb tcb_t;
 

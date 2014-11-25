@@ -182,6 +182,8 @@ tcb_t *thread_init(l4_thread_t globalid, utcb_t *utcb)
 	thr->utcb = utcb;
 	thr->state = T_INACTIVE;
 
+	thr->timeout_event = 0;
+
 	dbg_printf(DL_THREAD, "T: New thread: %t @[%p] \n", globalid, thr);
 
 	return thr;

@@ -8,6 +8,8 @@
 #include <l4/ipc.h>
 #include <l4/utcb.h>
 #include <l4/pager.h>
+#include <l4/thread.h>
+#include <l4io.h>
 
 #define STACK_SIZE 512
 
@@ -19,23 +21,37 @@ __USER_TEXT
 void *ping_thread(void *arg)
 {
 	L4_Msg_t msg;
+	L4_MsgTag_t tag;
 
 	L4_MsgClear(&msg);
 	L4_MsgLoad(&msg);
 
-	while (1)
-		L4_Send(threads[PONG_THREAD]);
+	while (1) {
+		tag = L4_Send_Timeout(threads[PONG_THREAD],
+		                      L4_TimePeriod(1000 * 1000));
+
+		if (!L4_IpcSucceeded(tag)) {
+			printf("%p: send ipc fails\n", L4_MyGlobalId());
+			printf("%p: ErrorCode = 0x%x\n", L4_MyGlobalId(), L4_ErrorCode());
+		}
+	}
 }
 
 __USER_TEXT
 void *pong_thread(void *arg)
 {
-	L4_MsgTag_t msgtag;
+	L4_MsgTag_t tag;
 	L4_Msg_t msg;
 
 	while (1) {
-		msgtag = L4_Receive(threads[PING_THREAD]);
-		L4_MsgStore(msgtag, &msg);
+		tag = L4_Receive_Timeout(threads[PING_THREAD],
+		                         L4_TimePeriod(1000 * 1000));
+		L4_MsgStore(tag, &msg);
+
+		if (!L4_IpcSucceeded(tag)) {
+			printf("%p: recv ipc fails\n", L4_MyGlobalId());
+			printf("%p: ErrorCode = 0x%x\n", L4_MyGlobalId(), L4_ErrorCode());
+		}
 	}
 }
 
@@ -46,7 +62,6 @@ static void *main(void *user)
 	threads[PONG_THREAD] = pager_create_thread();
 	pager_start_thread(threads[PING_THREAD], ping_thread, NULL);
 	pager_start_thread(threads[PONG_THREAD], pong_thread, NULL);
-
 	return 0;
 }
 

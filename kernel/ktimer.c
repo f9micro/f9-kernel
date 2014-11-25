@@ -210,18 +210,20 @@ int ktimer_event_schedule(uint32_t ticks, ktimer_event_t *kte)
 	return 0;
 }
 
-int ktimer_event_create(uint32_t ticks, ktimer_event_handler_t handler, void *data)
+ktimer_event_t *ktimer_event_create(uint32_t ticks,
+	                                ktimer_event_handler_t handler,
+	                                void *data)
 {
-	ktimer_event_t *kte;
+	ktimer_event_t *kte = NULL;
 
 	if (!handler)
-		return -1;
+		goto ret;
 
 	kte = (ktimer_event_t *) ktable_alloc(&ktimer_event_table);
 
 	/* No available slots */
 	if (kte == NULL)
-		return -1;
+		goto ret;
 
 	kte->next = NULL;
 	kte->handler = handler;
@@ -229,10 +231,11 @@ int ktimer_event_create(uint32_t ticks, ktimer_event_handler_t handler, void *da
 
 	if (ktimer_event_schedule(ticks, kte) == -1) {
 		ktable_free(&ktimer_event_table, kte);
-		return -1;
+		kte = NULL;
 	}
 
-	return 0;
+ret:
+	return kte;
 }
 
 void ktimer_event_handler()

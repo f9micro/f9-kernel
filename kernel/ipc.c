@@ -71,6 +71,10 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 	uint32_t typed_data;		/* typed item extra word */
 	l4_thread_t from_recv_tid;
 
+	/* Clear timeout event when ipc is established. */
+	from->timeout_event = 0;
+	to->timeout_event = 0;
+
 	/* Copy tag of message */
 	tag.raw = ipc_read_mr(from, 0);
 	untyped_last = tag.s.n_untyped + 1;
@@ -167,10 +171,36 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 uint32_t ipc_timeout(void *data)
 {
 	ktimer_event_t *event = (ktimer_event_t *) data;
-	tcb_t* from_thr = (tcb_t*) event->data;
-	from_thr->state = T_RUNNABLE;
-	sched_slot_dispatch(SSI_NORMAL_THREAD, from_thr);
+	tcb_t* thr = (tcb_t*) event->data;
+
+	if (thr->timeout_event == (uint32_t)data) {
+
+		if (thr->state == T_RECV_BLOCKED)
+			user_ipc_error(thr, UE_IPC_TIMEOUT | UE_IPC_PHASE_RECV);
+
+		if (thr->state == T_SEND_BLOCKED)
+			user_ipc_error(thr, UE_IPC_TIMEOUT | UE_IPC_PHASE_SEND);
+
+		thr->state = T_RUNNABLE;
+		thr->timeout_event = 0;
+	}
+
 	return 0;
+}
+
+static void sys_ipc_timeout(uint32_t timeout)
+{
+	ktimer_event_t *kevent;
+	ipc_time_t t = { .raw = timeout };
+	uint32_t ticks;
+
+	/* millisec to ticks */
+	ticks = (t.period.m << t.period.e) /
+	        ((1000000)/(CORE_CLOCK/CONFIG_KTIMER_HEARTBEAT));
+
+	kevent = ktimer_event_create(ticks, ipc_timeout, caller);
+
+	caller->timeout_event = (uint32_t)kevent;
 }
 
 void sys_ipc(uint32_t *param1)
@@ -180,12 +210,11 @@ void sys_ipc(uint32_t *param1)
 	l4_thread_t to_tid = param1[REG_R0], from_tid = param1[REG_R1];
 	uint32_t timeout = param1[REG_R2];
 
-	if (to_tid == L4_NILTHREAD && timeout) { /* Timeout/Sleep */
-		ipc_time_t t = { .raw = timeout };
+	if (to_tid == L4_NILTHREAD &&
+		from_tid == L4_NILTHREAD) {
 		caller->state = T_INACTIVE;
-		ktimer_event_create((t.period.m << t.period.e) /
-					((1000000)/(CORE_CLOCK/CONFIG_KTIMER_HEARTBEAT)), /* millisec to ticks */
-					ipc_timeout, caller);
+		if (timeout)
+			sys_ipc_timeout(timeout);
 		return;
 	}
 
@@ -240,8 +269,10 @@ void sys_ipc(uint32_t *param1)
 			/* No waiting, block myself */
 			caller->state = T_SEND_BLOCKED;
 			caller->utcb->intended_receiver = to_tid;
-
 			dbg_printf(DL_IPC, "IPC: %t sending\n", caller->t_globalid);
+
+			if (timeout)
+				sys_ipc_timeout(timeout);
 
 			return;
 		}
@@ -251,6 +282,9 @@ void sys_ipc(uint32_t *param1)
 		/* Only receive phases, simply lock myself */
 		caller->state = T_RECV_BLOCKED;
 		caller->ipc_from = from_tid;
+
+		if (timeout)
+			sys_ipc_timeout(timeout);
 
 		dbg_printf(DL_IPC, "IPC: %t receiving\n", caller->t_globalid);
 
