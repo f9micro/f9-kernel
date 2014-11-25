@@ -115,13 +115,13 @@ void kdb_show_tickless_verify(void)
 
 static void ktimer_event_recalc(ktimer_event_t* event, uint32_t new_delta)
 {
-	while (event) {
+	if (event) {
 		dbg_printf(DL_KTIMER,
 		           "KTE: Recalculated event %p D=%d -> %d\n",
 		           event, event->delta, event->delta - new_delta);
 		event->delta -= new_delta;
-		event = event->next;
 	}
+
 }
 
 int ktimer_event_schedule(uint32_t ticks, ktimer_event_t *kte)
