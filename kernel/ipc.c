@@ -279,6 +279,29 @@ void sys_ipc(uint32_t *param1)
 	}
 
 	if (from_tid != L4_NILTHREAD) {
+		tcb_t *thr = NULL;
+
+		if (from_tid == L4_ANYTHREAD) {
+			int i;
+			/* Find out if there is any sending thread waiting for caller */
+			for (i = 1; i < thread_count; ++i) {
+				thr = thread_map[i];
+				if (thr->state == T_SEND_BLOCKED &&
+				    thr->utcb->intended_receiver == caller->t_globalid) {
+					do_ipc(thr, caller);
+					return;
+				}
+			}
+		} else {
+			thr = thread_by_globalid(from_tid);
+
+			if (thr->state == T_SEND_BLOCKED &&
+			    thr->utcb->intended_receiver == caller->t_globalid) {
+				do_ipc(thr, caller);
+				return;
+			}
+		}
+
 		/* Only receive phases, simply lock myself */
 		caller->state = T_RECV_BLOCKED;
 		caller->ipc_from = from_tid;
