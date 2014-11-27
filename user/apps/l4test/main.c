@@ -66,10 +66,6 @@ __USER_TEXT void
 print_result(const char *str, bool test)
 {
 	printf("  %s: ", str);
-#if 0
-	for (int __i = 60 - strlen(str); __i > 0; __i--)
-		putc(' ');
-#endif
 	printf("  %s\n", (test) ? STR_OK : STR_FAILED);
 	if (! test)
 		L4_KDB_Enter("test failed");
@@ -153,27 +149,9 @@ msec_sleep(L4_Word_t msec)
 
 __USER_TEXT void all_tests(void)
 {
-	extern void all_kip_tests(void);
-	extern void all_arch_tests(void);
-	extern void all_mem_tests(void);
 	extern void all_ipc_tests(void);
-	extern void all_s0_tests(void);
-	extern void all_exreg_tests(void);
-	extern void all_tc_tests(void);
-	extern void all_schedule_tests(void);
 
-#if 0
-	all_kip_tests();
-	all_arch_tests();
-	all_mem_tests();
-#endif
 	all_ipc_tests();
-#if 0
-	all_s0_tests();
-	all_exreg_tests();
-	all_tc_tests();
-	all_schedule_tests();
-#endif
 }
 
 __USER_TEXT
