@@ -25,7 +25,9 @@ typedef struct ktimer_event {
 void ktimer_event_init(void);
 
 int ktimer_event_schedule(uint32_t ticks, ktimer_event_t *kte);
-int ktimer_event_create(uint32_t ticks, ktimer_event_handler_t handler, void *data);
+ktimer_event_t *ktimer_event_create(uint32_t ticks,
+                                    ktimer_event_handler_t handler,
+                                    void *data);
 void ktimer_event_handler(void);
 
 #ifdef CONFIG_KTIMER_TICKLESS

@@ -105,7 +105,7 @@ L4_INLINE L4_MsgTag_t L4_Send_Timeout(
 		L4_ThreadId_t to, L4_Time_t SndTimeout)
 {
 	return L4_Ipc (to, L4_nilthread,
-			(L4_Word_t) SndTimeout.raw << 16,
+			(L4_Word_t) SndTimeout.raw,
 			(L4_ThreadId_t *) 0);
 }
 
@@ -194,7 +194,7 @@ L4_INLINE L4_MsgTag_t L4_ReplyWait(L4_ThreadId_t to, L4_ThreadId_t *from)
 
 L4_INLINE void L4_Sleep(L4_Time_t t)
 {
-	L4_LoadMR(0, L4_Receive_Timeout(L4_MyGlobalId(), t).raw);
+	L4_Ipc(L4_nilthread, L4_nilthread, (L4_Word_t) t.raw, NULL);
 }
 
 L4_INLINE L4_MsgTag_t L4_Lcall(L4_ThreadId_t to)

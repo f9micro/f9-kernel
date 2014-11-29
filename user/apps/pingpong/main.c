@@ -7,78 +7,68 @@
 #include <user_runtime.h>
 #include <l4/ipc.h>
 #include <l4/utcb.h>
+#include <l4/pager.h>
+#include <l4/thread.h>
+#include <l4io.h>
 
-#define STACK_SIZE 256
+#define STACK_SIZE 512
 
 enum { PING_THREAD, PONG_THREAD };
 
 static L4_ThreadId_t threads[2] __USER_DATA;
 
-static L4_Word_t last_thread __USER_DATA;
-static L4_Word_t free_mem __USER_DATA;
-
-void __USER_TEXT ping_thread(void)
+__USER_TEXT
+void *ping_thread(void *arg)
 {
 	L4_Msg_t msg;
+	L4_MsgTag_t tag;
 
 	L4_MsgClear(&msg);
 	L4_MsgLoad(&msg);
 
-	while (1)
-		L4_Send(threads[PONG_THREAD]);
-}
-
-void __USER_TEXT pong_thread(void)
-{
-	L4_MsgTag_t msgtag;
-	L4_Msg_t msg;
-
 	while (1) {
-		msgtag = L4_Receive(threads[PING_THREAD]);
-		L4_MsgStore(msgtag, &msg);
+		tag = L4_Send_Timeout(threads[PONG_THREAD],
+		                      L4_TimePeriod(1000 * 1000));
+
+		if (!L4_IpcSucceeded(tag)) {
+			printf("%p: send ipc fails\n", L4_MyGlobalId());
+			printf("%p: ErrorCode = 0x%x\n", L4_MyGlobalId(), L4_ErrorCode());
+		}
 	}
 }
 
-static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
-                                     L4_Word_t sp, L4_Word_t stack_size)
+__USER_TEXT
+void *pong_thread(void *arg)
 {
+	L4_MsgTag_t tag;
 	L4_Msg_t msg;
 
-	L4_MsgClear(&msg);
-	L4_MsgAppendWord(&msg, ip);
-	L4_MsgAppendWord(&msg, sp);
-	L4_MsgAppendWord(&msg, stack_size);
-	L4_MsgLoad(&msg);
+	while (1) {
+		tag = L4_Receive_Timeout(threads[PING_THREAD],
+		                         L4_TimePeriod(1000 * 1000));
+		L4_MsgStore(tag, &msg);
 
-	L4_Send(t);
+		if (!L4_IpcSucceeded(tag)) {
+			printf("%p: recv ipc fails\n", L4_MyGlobalId());
+			printf("%p: ErrorCode = 0x%x\n", L4_MyGlobalId(), L4_ErrorCode());
+		}
+	}
 }
 
-static L4_ThreadId_t __USER_TEXT create_thread(user_struct *user, void (*func)(void))
+__USER_TEXT
+static void *main(void *user)
 {
-	L4_ThreadId_t myself = L4_MyGlobalId();
-	L4_ThreadId_t child;
-
-	child.raw = myself.raw + (++last_thread << 14);
-
-	L4_ThreadControl(child, myself, L4_nilthread, myself, (void *) free_mem);
-	free_mem += UTCB_SIZE + STACK_SIZE;
-
-	start_thread(child, (L4_Word_t)func, free_mem, STACK_SIZE);
-
-	return child;
-}
-
-static void __USER_TEXT main(user_struct *user)
-{
-	free_mem = user->fpages[0].base;
-
-	threads[PING_THREAD] = create_thread(user, ping_thread);
-	threads[PONG_THREAD] = create_thread(user, pong_thread);
+	threads[PING_THREAD] = pager_create_thread();
+	threads[PONG_THREAD] = pager_create_thread();
+	pager_start_thread(threads[PING_THREAD], ping_thread, NULL);
+	pager_start_thread(threads[PONG_THREAD], pong_thread, NULL);
+	return 0;
 }
 
 DECLARE_USER(
 	0,
 	pingpong,
 	main,
-	DECLARE_FPAGE(0x0, 2 * UTCB_SIZE + 2 * STACK_SIZE)
+	DECLARE_FPAGE(0x0, 4 * UTCB_SIZE + 4 * STACK_SIZE)
+	DECLARE_FPAGE(0x0, 512)
 );

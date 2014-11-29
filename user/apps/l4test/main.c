@@ -13,13 +13,14 @@
 
 /* for the current arch */
 #include "platform/arch.h"
+#include <platform/cortex_m.h>
 
 /* generic stuff */
 #include "config.h"
 #include "l4test.h"
 #include "assert.h"
 
-#define STACK_SIZE 256
+#define STACK_SIZE 512
 
 /* where to start allocating RAM */
 __USER_BSS static char *free_page;
@@ -65,10 +66,6 @@ __USER_TEXT void
 print_result(const char *str, bool test)
 {
 	printf("  %s: ", str);
-#if 0
-	for (int __i = 60 - strlen(str); __i > 0; __i--)
-		putc(' ');
-#endif
 	printf("  %s\n", (test) ? STR_OK : STR_FAILED);
 	if (! test)
 		L4_KDB_Enter("test failed");
@@ -152,35 +149,17 @@ msec_sleep(L4_Word_t msec)
 
 __USER_TEXT void all_tests(void)
 {
-	extern void all_kip_tests(void);
-	extern void all_arch_tests(void);
-	extern void all_mem_tests(void);
 	extern void all_ipc_tests(void);
-	extern void all_s0_tests(void);
-	extern void all_exreg_tests(void);
-	extern void all_tc_tests(void);
-	extern void all_schedule_tests(void);
 
-#if 0
-	all_kip_tests();
-	all_arch_tests();
-	all_mem_tests();
-#endif
 	all_ipc_tests();
-#if 0
-	all_s0_tests();
-	all_exreg_tests();
-	all_tc_tests();
-	all_schedule_tests();
-#endif
 }
 
-static void main(user_struct *user)
+__USER_TEXT
+static void *main(void *user)
 {
 	printf("\nL4/Pistachio test suite starts\n");
-	free_page = (void *) user->fpages[0].base;
 	all_tests();
-	return;
+	return NULL;
 }
 
 DECLARE_USER(
@@ -188,4 +167,5 @@ DECLARE_USER(
 	l4test,
 	main,
 	DECLARE_FPAGE(0x0, 4 * (UTCB_SIZE + STACK_SIZE))
+	DECLARE_FPAGE(0x0, 512)
 );

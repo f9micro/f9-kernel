@@ -67,6 +67,9 @@ static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
 	L4_MsgAppendWord(&msg, ip);
 	L4_MsgAppendWord(&msg, sp);
 	L4_MsgAppendWord(&msg, stack_size);
+	L4_MsgAppendWord(&msg, 0);
+	L4_MsgAppendWord(&msg, 0);
+
 	L4_MsgLoad(&msg);
 
 	L4_Send(t);
