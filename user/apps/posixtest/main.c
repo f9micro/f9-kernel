@@ -7,7 +7,7 @@
 /* posix layer */
 #include <libposix/pthread.h>
 
-#define STACK_SIZE 256
+#define STACK_SIZE 512
 
 __USER_DATA pthread_mutex_t mutex;
 
@@ -36,9 +36,6 @@ __USER_TEXT void *child_thread1(void *args)
 		L4_Sleep(L4_TimePeriod(500));
 	}
 
-	printf("task 1: suicide\n");
-	pthread_exit(0);
-
 	for(int i = 0; i <= 10; i++) {
 		printf("%d\n", 10 - i);
 		L4_Sleep(L4_TimePeriod(500));
@@ -51,7 +48,7 @@ __USER_TEXT void *child_thread1(void *args)
 	return 0;
 }
 
-static __USER_TEXT void main(user_struct *user)
+static __USER_TEXT void *main(void *user)
 {
 	printf("\nPosix Layer test starts\n");
 	mutex = 0;
@@ -60,7 +57,7 @@ static __USER_TEXT void main(user_struct *user)
 	while(1)
 		L4_Sleep(L4_Never);
 
-	return;
+	return NULL;
 }
 
 DECLARE_USER(
@@ -68,4 +65,5 @@ DECLARE_USER(
 	posixtest,
 	main,
 	DECLARE_FPAGE(0x0, 4 * (UTCB_SIZE + STACK_SIZE))
+	DECLARE_FPAGE(0x0, 512)
 );
