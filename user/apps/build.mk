@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 
 user-apps-dirs = \
-	posixtest \
+	l4test \
+	pingpong
 
 ifdef CONFIG_BOARD_STM32F429DISCOVERY
 user-apps-dirs += \

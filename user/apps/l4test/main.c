@@ -20,7 +20,7 @@
 #include "l4test.h"
 #include "assert.h"
 
-#define STACK_SIZE 256
+#define STACK_SIZE 512
 
 /* where to start allocating RAM */
 __USER_BSS static char *free_page;
