@@ -78,15 +78,11 @@ static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
 
 #define STACK_SIZE 0x200
 
-extern void _pthread_init(void);
-extern void _pthread_add_user(L4_ThreadId_t tid, L4_Word_t free_mem);
-
 void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 {
 	L4_ThreadId_t myself = {.raw = utcb_ptr->t_globalid};
 	char *free_mem = (char *) get_free_base(kip_ptr);
 
-	_pthread_init();
 	for (user_struct *ptr = user_runtime_start; ptr != user_runtime_end; ++ptr) {
 		L4_ThreadId_t tid;
 		L4_Word_t stack;
@@ -118,7 +114,6 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 			free_mem += fpage->size;
 			fpage++;
 		}
-		_pthread_add_user(tid, ptr->fpages[0].base);
 
 		/* start thread */
 		start_thread(tid, (L4_Word_t)ptr->entry, stack, STACK_SIZE);
