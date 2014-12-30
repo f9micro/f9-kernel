@@ -1,3 +1,8 @@
+/* Copyright (c) 2014 The F9 Microkernel Project. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 #include <libposix/pthread.h>
 #include <l4/ipc.h>
 #include <l4/utcb.h>
@@ -13,7 +18,7 @@ int __USER_TEXT pthread_create(pthread_t *restrict thread,
 
 	pager_start_thread(tid, start_routine, NULL);
 
-	return *(int *)&tid;
+	return *(int *) &tid;
 }
 
 __USER_TEXT int pthread_detach(pthread_t thread)
@@ -45,7 +50,7 @@ __USER_TEXT int pthread_mutex_destroy(pthread_mutex_t *mutex)
 __USER_TEXT int pthread_mutex_lock(pthread_mutex_t *mutex)
 {
 	/* Busy trying */
-	while(pthread_mutex_trylock(mutex));
+	while (pthread_mutex_trylock(mutex));
 
 	return 0;
 }
