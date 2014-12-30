@@ -1,3 +1,8 @@
+/* Copyright (c) 2014 The F9 Microkernel Project. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 #include <l4io.h>
 #include <l4/ipc.h>
 #include <l4/utcb.h>
@@ -106,7 +111,6 @@ static L4_Word_t fetch_free_thread_index(struct thread_pool *pool)
 	return i;
 }
 
-
 __USER_TEXT
 static struct thread_node *find_thread_node(struct thread_pool *pool,
         L4_ThreadId_t tid)
@@ -155,7 +159,6 @@ void thread_container(kip_t *kip_ptr, utcb_t *utcb_ptr,
 	L4_Call(L4_Pager());
 }
 
-
 __USER_TEXT
 static void start_thread(L4_ThreadId_t t,
                          L4_Word_t entry, L4_Word_t entry_arg,
@@ -173,7 +176,6 @@ static void start_thread(L4_ThreadId_t t,
 
 	L4_Send(t);
 }
-
 
 __USER_TEXT
 static L4_ThreadId_t __thread_create(struct thread_pool *pool)
@@ -320,7 +322,6 @@ void pager_thread(user_struct *user,
 		switch (req) {
 		case THREAD_CREATE: {
 				L4_ThreadId_t tid;
-
 				tid = __thread_create(pool);
 
 				/* return tid back */
@@ -356,5 +357,4 @@ void pager_thread(user_struct *user,
 			break;
 		}
 	}
-
 }
