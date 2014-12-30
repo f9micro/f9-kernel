@@ -7,6 +7,7 @@
 #define USER_RUNTIME_H
 
 #include <l4/types.h>
+#include <l4/ipc.h>
 
 typedef struct user_struct user_struct;
 typedef void (*user_entry)(user_struct *);

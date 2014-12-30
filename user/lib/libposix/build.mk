@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-user-lib-dirs = \
-	l4 \
-	io \
-	libposix \
+user-lib-libposix-y = \
+	fork.o \
+	pthread.o

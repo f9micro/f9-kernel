@@ -7,6 +7,7 @@
 #include <l4/kip.h>
 #include <l4/utcb.h>
 #include <l4/ipc.h>
+#include <l4io.h>
 #include <types.h>
 #include <user_runtime.h>
 
