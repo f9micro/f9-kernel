@@ -88,6 +88,7 @@ distclean: clean
 	-rm -rf $(out_host)
 	-rm -f $(CONFIG) $(CONFIG).old include/autoconf.h
 
+# FIXME: validate the target machine and check its availability
 .PHONY: qemu
 qemu: $(out)/$(PROJECT).bin
 	-killall -q qemu-system-arm

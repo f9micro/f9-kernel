@@ -30,6 +30,7 @@ out ?= build/$(BOARD)
 # output directory for host build targets
 out_host ?= build/host
 
+# FIXME: use smarter way to detect QEMU
 # qemu directory location
 QEMU_DIR ?= ../qemu_stm32/arm-softmmu/
 
