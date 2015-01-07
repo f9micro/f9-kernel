@@ -15,8 +15,8 @@ void dbg_printf(dbg_layer_t layer, char* fmt, ...)
 {
 	va_list va;
 	va_start(va, fmt);
-
 	dbg_vprintf(layer, fmt, va);
+	va_end(va);
 }
 
 void dbg_vprintf(dbg_layer_t layer, char *fmt, va_list va)

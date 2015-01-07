@@ -83,8 +83,8 @@ void __l4_printf(char *fmt, ...)
 {
 	va_list va;
 	va_start(va, fmt);
-
 	__l4_vprintf(fmt, va);
+	va_end(va);
 }
 
 void __l4_vprintf(char *fmt, va_list va)

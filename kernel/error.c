@@ -77,6 +77,8 @@ void panic_impl(char *fmt, ...)
 	panic_dump_stack();
 #endif
 
+	va_end(va);
+
 	while (1)
 		/* */ ;
 }
