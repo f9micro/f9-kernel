@@ -22,14 +22,14 @@ extern tcb_t *caller;
 extern tcb_t *thread_map[];
 extern int thread_count;
 
-static uint32_t ipc_read_mr(tcb_t *from, int i)
+uint32_t ipc_read_mr(tcb_t *from, int i)
 {
 	if (i >= 8)
 		return from->utcb->mr[i - 8];
 	return from->ctx.regs[i];
 }
 
-static void ipc_write_mr(tcb_t *to, int i, uint32_t data)
+void ipc_write_mr(tcb_t *to, int i, uint32_t data)
 {
 	if (i >= 8)
 		to->utcb->mr[i - 8] = data;
