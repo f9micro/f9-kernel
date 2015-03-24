@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 
 user-lib-io-y = \
-	l4io.o
+	l4io.o \
+	user_interrupt.o
 
 ifeq "$(CONFIG_SEMIHOST)" "y"
 user-lib-io-y += \
