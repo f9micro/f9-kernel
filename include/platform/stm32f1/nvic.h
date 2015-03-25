@@ -67,6 +67,7 @@ typedef enum IRQn {
 	EXTI15_10_IRQn		= 40,	/*!< External Line[15:10] Interrupts */
 	RTC_Alarm_IRQn		= 41,	/*!< RTC Alarm (A and B) through EXTI Line Interrupt */
 	OTG_FS_WKUP_IRQn	= 42,	/*!< USB OTG FS Wakeup through EXTI line interrupt */
+	IRQn_NUM,
 } IRQn_Type;
 
 #define MAX_IRQn FPU_IRQn

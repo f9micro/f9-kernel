@@ -52,6 +52,7 @@ void *pong_thread(void *arg)
 			printf("%p: recv ipc fails\n", L4_MyGlobalId());
 			printf("%p: ErrorCode = 0x%x\n", L4_MyGlobalId(), L4_ErrorCode());
 		}
+		L4_Sleep(L4_TimePeriod(500 * 1000));
 	}
 }
 

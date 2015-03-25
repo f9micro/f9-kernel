@@ -15,6 +15,7 @@
 #include <sched.h>
 #include <user-log.h>
 #include <ktimer.h>
+#include <interrupt.h>
 
 extern tcb_t *caller;
 
@@ -22,14 +23,14 @@ extern tcb_t *caller;
 extern tcb_t *thread_map[];
 extern int thread_count;
 
-static uint32_t ipc_read_mr(tcb_t *from, int i)
+uint32_t ipc_read_mr(tcb_t *from, int i)
 {
 	if (i >= 8)
 		return from->utcb->mr[i - 8];
 	return from->ctx.regs[i];
 }
 
-static void ipc_write_mr(tcb_t *to, int i, uint32_t data)
+void ipc_write_mr(tcb_t *to, int i, uint32_t data)
 {
 	if (i >= 8)
 		to->utcb->mr[i - 8] = data;
@@ -225,6 +226,12 @@ void sys_ipc(uint32_t *param1)
 			user_log(caller);
 			caller->state = T_RUNNABLE;
 			return;
+#ifdef CONFIG_BOARD_STM32F4DISCOVERY
+		} else if (to_tid == TID_TO_GLOBALID(THREAD_IRQ_REQUEST)) {
+			user_interrupt_config(caller);
+			caller->state = T_RUNNABLE;
+			return;
+#endif
 		} else if ((to_thr && to_thr->state == T_RECV_BLOCKED)
 		           || to_tid == caller->t_globalid) {
 			/* To thread who is waiting for us or sends to myself */
@@ -292,7 +299,11 @@ void sys_ipc(uint32_t *param1)
 					return;
 				}
 			}
+#ifdef CONFIG_BOARD_STM32F4DISCOVERY
+		} else if (from_tid != TID_TO_GLOBALID(THREAD_INTERRUPT)) {
+#else
 		} else {
+#endif
 			thr = thread_by_globalid(from_tid);
 
 			if (thr->state == T_SEND_BLOCKED &&
@@ -305,6 +316,13 @@ void sys_ipc(uint32_t *param1)
 		/* Only receive phases, simply lock myself */
 		caller->state = T_RECV_BLOCKED;
 		caller->ipc_from = from_tid;
+
+#ifdef CONFIG_BOARD_STM32F4DISCOVERY
+		if (from_tid == TID_TO_GLOBALID(THREAD_INTERRUPT)) {
+			/* Threaded interrupt is ready */
+			user_interrupt_handler_update(caller);
+		}
+#endif
 
 		if (timeout)
 			sys_ipc_timeout(timeout);
@@ -328,7 +346,8 @@ uint32_t ipc_deliver(void *data)
 		switch (thr->state) {
 		case T_RECV_BLOCKED:
 			if (thr->ipc_from != L4_NILTHREAD &&
-				thr->ipc_from != L4_ANYTHREAD) {
+				thr->ipc_from != L4_ANYTHREAD &&
+				thr->ipc_from != TID_TO_GLOBALID(THREAD_INTERRUPT)) {
 				from_thr = thread_by_globalid(thr->ipc_from);
 				if (from_thr->state == T_SEND_BLOCKED)
 					do_ipc(from_thr, thr);

@@ -28,6 +28,12 @@ void _undefined_handler(void)
 #include "platform/stm32f4/nvic_private.h"
 #undef IRQ_VEC_N_OP
 
+extern void (* const g_pfnVectors[])(void);
+int nvic_is_setup(int irq)
+{
+	return !(g_pfnVectors[irq + 16] == _undefined_handler);
+}
+
 void NVIC_PriorityGroupConfig(uint32_t NVIC_PriorityGroup)
 {
 	if (!(NVIC_PriorityGroup == NVIC_PriorityGroup_0 ||

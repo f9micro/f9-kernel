@@ -12,4 +12,7 @@
 void sys_ipc(uint32_t *param1);
 uint32_t ipc_deliver(void *data);
 
+uint32_t ipc_read_mr(tcb_t *from, int i);
+void ipc_write_mr(tcb_t *to, int i, uint32_t data);
+
 #endif /* IPC_H_ */
