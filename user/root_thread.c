@@ -109,9 +109,9 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 			} else {
 				L4_Map(tid, (L4_Word_t)free_mem, fpage->size);
 				fpage->base = (L4_Word_t)free_mem;
+				free_mem += fpage->size;
 			}
 
-			free_mem += fpage->size;
 			fpage++;
 		}
 
