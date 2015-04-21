@@ -19,7 +19,7 @@ kernel-y = \
 	thread.o \
 	user-log.o
 
-ifdef CONFIG_BOARD_STM32F4DISCOVERY
+ifeq ($(call ifdef_any_of,CONFIG_BOARD_STM32F4DISCOVERY CONFIG_BOARD_STM32F429DISCOVERY),)
 kernel-y += \
 	interrupt.o
 endif

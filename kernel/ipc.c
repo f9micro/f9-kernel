@@ -226,7 +226,7 @@ void sys_ipc(uint32_t *param1)
 			user_log(caller);
 			caller->state = T_RUNNABLE;
 			return;
-#ifdef CONFIG_BOARD_STM32F4DISCOVERY
+#if defined(CONFIG_BOARD_STM32F4DISCOVERY) || defined(CONFIG_BOARD_STM32F429DISCOVERY)
 		} else if (to_tid == TID_TO_GLOBALID(THREAD_IRQ_REQUEST)) {
 			user_interrupt_config(caller);
 			caller->state = T_RUNNABLE;
@@ -317,7 +317,7 @@ void sys_ipc(uint32_t *param1)
 		caller->state = T_RECV_BLOCKED;
 		caller->ipc_from = from_tid;
 
-#ifdef CONFIG_BOARD_STM32F4DISCOVERY
+#if defined(CONFIG_BOARD_STM32F4DISCOVERY) || defined(CONFIG_BOARD_STM32F429DISCOVERY)
 		if (from_tid == TID_TO_GLOBALID(THREAD_INTERRUPT)) {
 			/* Threaded interrupt is ready */
 			user_interrupt_handler_update(caller);
