@@ -106,6 +106,7 @@ typedef enum IRQn {
 	CRYP_IRQn		= 79,	/*!< CRYP crypto global interrupt */
 	HASH_RNG_IRQn		= 80,	/*!< Hash and Rng global interrupt */
 	FPU_IRQn		= 81,	/*!< FPU global interrupt */
+	IRQn_NUM,
 } IRQn_Type;
 
 #define MAX_IRQn FPU_IRQn
@@ -268,4 +269,5 @@ inline static uint32_t NVIC_GetActive(IRQn_Type IRQn)
 	                  (1 << ((uint32_t)(IRQn) & 0x1F))) ? 1 : 0);
 }
 
+int nvic_is_setup(int irq);
 #endif /* __PLATFORM_STM32F4_NVIC_H__ */
