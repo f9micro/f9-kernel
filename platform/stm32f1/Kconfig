@@ -1,0 +1,175 @@
+menu "User Interrupt Config"
+
+config WWDG_USER_IRQ
+	bool "User WWDG IRQ"
+	default n
+
+config PVD_USER_IRQ
+	bool "User PVD IRQ"
+	default n
+
+config TAMP_STAMP_USER_IRQ
+	bool "User TAMP_STAMP IRQ"
+	default n
+
+config RTC_WKUP_USER_IRQ
+	bool "User RTC_WKUP IRQ"
+	default n
+
+config FLASH_USER_IRQ
+	bool "User FLASH_USER IRQ"
+	default n
+
+config RCC_USER_IRQ
+	bool "User RCC IRQ"
+	default n
+
+config EXTI0_USER_IRQ
+	bool "User EXTI0 IRQ"
+	default n
+
+config EXTI1_USER_IRQ
+	bool "User EXIT1 IRQ"
+	default n
+
+config EXTI2_USER_IRQ
+	bool "User EXIT2 IRQ"
+	default n
+
+config EXTI3_USER_IRQ
+	bool "User EXIT3 IRQ"
+	default n
+
+config EXTI4_USER_IRQ
+	bool "User EXIT4 IRQ"
+	default n
+
+config DMA_Stream0_USER_IRQ
+	bool "User DMA_Stream0 IRQ"
+	default n
+
+config DMA_Stream1_USER_IRQ
+	bool "User DMA_Stream1 IRQ"
+	default n
+
+config DMA_Stream2_USER_IRQ
+	bool "User DMA_Stream2 IRQ"
+	default n
+
+config DMA_Stream3_USER_IRQ
+	bool "User DMA_Stream3 IRQ"
+	default n
+
+config DMA_Stream4_USER_IRQ
+	bool "User DMA_Stream4 IRQ"
+	default n
+
+config DMA_Stream5_USER_IRQ
+	bool "User DMA_Stream5 IRQ"
+	default n
+
+config DMA_Stream6_USER_IRQ
+	bool "User DMA_Stream6 IRQ"
+	default n
+
+config ADC_USER_IRQ
+	bool "User ADC IRQ"
+	default n
+
+config CAN1_TX_USER_IRQ
+	bool "CAN1 TX User IRQ"
+	default n
+
+config CAN1_RX_USER_IRQ
+	bool "CAN1 RX User IRQ"
+	default n
+
+config CAN1_RX1_USER_IRQ
+	bool "CAN1 RX1 User IRQ"
+	default n
+
+config CAN1_SCE_USER_IRQ
+	bool "CAN1 SEC User IRQ"
+	default n
+
+config EXTI9_5_USER_IRQ
+	bool "EXTI9_5 User IRQ"
+	default n
+
+config TIM1_BRK_USER_IRQ
+ 	bool "TIM1_BRK User IRQ"
+	default n
+
+config TIM1_UP_USER_IRQ
+	bool "TIM1_UP User IRQ"
+	default n
+
+config TIM1_TRG_COM_USER_IRQ
+	bool "TIM1_TRG_COM User IRQ"
+	default n
+
+config TIM1_CC_USER_IRQ
+	bool "TIM1_CC User IRQ"
+	default n
+
+config TIM2_USER_IRQ       
+	bool "TIM2 User IRQ"
+	default n
+
+config TIM3_USER_IRQ
+	bool "TIM3 User IRQ"
+	default n
+
+config TIM4_USER_IRQ
+	bool "TIM4 User IRQ"
+	default n
+
+config I2C1_EV_USER_IRQ
+	bool "I2C1_EV User IRQ"
+	default n
+
+config I2C1_ER_USER_IRQ
+	bool "I2C1_ER User IRQ"
+	default n
+
+config I2C2_EV_USER_IRQ
+	bool "I2C2_EV User IRQ"
+	default n
+
+config I2C2_ER_USER_IRQ
+	bool "I2C2_ER User IRQ"
+	default n
+
+config SPI1_USER_IRQ
+	bool "SPI1 User IRQ"
+	default n
+
+config SPI2_USER_IRQ
+	bool "SPI2 User IRQ"
+	default n
+
+config USART1_USER_IRQ
+	bool "USART1 User IRQ"
+	default n
+
+config USART2_USER_IRQ
+	bool "USART2 User IRQ"
+	default n
+
+config USART3_USER_IRQ
+	bool "USART3 User IRQ"
+	default n
+
+config EXTI15_10_USER_IRQ
+	bool "EXTI15_10 User IRQ"
+	default n
+
+config RTC_Alarm_USER_IRQ
+	bool "RTC Alarm User IRQ"
+	default n
+
+config OTG_FS_WKUP_USER_IRQ
+	bool "OTG_FS_WKUP User IRQ"
+	default n
+
+endmenu

@@ -68,4 +68,8 @@ endif
 if BOARD_STM32F429DISCOVERY
 source platform/stm32f429/Kconfig
 endif
+if BOARD_STM32P103
+source platform/stm32f1/Kconfig
+endif
+
 endmenu
