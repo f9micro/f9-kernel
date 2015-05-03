@@ -190,4 +190,5 @@ inline static uint32_t NVIC_GetActive(IRQn_Type IRQn)
 	                  (1 << ((uint32_t)(IRQn) & 0x1F))) ? 1 : 0);
 }
 
+int nvic_is_setup(int irq);
 #endif /* __PLATFORM_STM32F1_NVIC_H__ */
