@@ -17,12 +17,8 @@ kernel-y = \
 	syscall.o \
 	systhread.o \
 	thread.o \
-	user-log.o
-
-ifdef CONFIG_BOARD_STM32F4DISCOVERY
-kernel-y += \
+	user-log.o \
 	interrupt.o
-endif
 
 KDB-$(CONFIG_KDB) = \
 	kdb.o

@@ -10,9 +10,9 @@ user-apps-dirs = \
 ifdef CONFIG_EXTI_INTERRUPT_TEST
 user-apps-dirs += \
 	irq_test
-endif
-
+else
 ifdef CONFIG_BOARD_STM32F429DISCOVERY
 user-apps-dirs += \
 	lcd_test
+endif
 endif

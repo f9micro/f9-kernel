@@ -25,7 +25,7 @@ void _undefined_handler(void)
 		__attribute__((weak, alias("_undefined_handler")));
 
 #define IRQ_VEC_N_OP	DEFAULT_IRQ_VEC
-#include "platform/stm32f4/nvic_private.h"
+#include INC_PLAT(nvic_private.h)
 #undef IRQ_VEC_N_OP
 
 extern void (* const g_pfnVectors[])(void);
