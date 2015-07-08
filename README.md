@@ -132,10 +132,19 @@ or USART1 of STM32F4DISCOVERY depending on the selected option when you execute
 * USART2: PA2 (TX), PA3  (RX)
 * USART1: PA9 (TX), PX10 (RX)
 
+For 32F429IDISCOVERY, the pins are as follows:
+* USART4: PC11 (TX), PC10 (RX) (default config)
+* USART2: PD5 (TX), PD6 (RX)
+* USART1: PA9 (TX), PA10 (RX)
+
 You can established serial connection with the board using a serial to USB
-converter:
+converter (for STM32F4DISCOVERY):
 * USB2TTL RX ---> PA0 / PA2 / PA9
 * USB2TTL TX ---> PA1 / PA3 / PA10
+
+or (for 32F429IDISCOVERY):
+* USB2TTL RX ---> PC11 / PD5 / PA9
+* USB2TTL TX ---> PC10 / PD6 / PA10
 
 Select the appropriate terminal emulator and configure it for 115200 baud,
 8 data bits, no parity, one stop bit. For GNU/Linux, program `screen` can be
