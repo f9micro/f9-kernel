@@ -7,7 +7,7 @@ ldflags()
 	for ext in so a dylib ; do
 		for lib in ncursesw ncurses curses ; do
 			$cc -print-file-name=lib${lib}.${ext} | grep -q /
-			if [ $? -eq 0 ]; then
+			if [ $? -eq 0 ] || [ -f /usr/lib/lib${lib}.${ext} ]; then
 				echo "-l${lib}"
 				exit
 			fi
@@ -33,7 +33,7 @@ ccflags()
 }
 
 # Temp file, try to clean up after us
-tmp=$(mktemp)
+tmp=$(mktemp tmp.XXXXXXXXXX)
 trap "rm -f $tmp" 0 1 2 3 15
 
 # Check if we can link to ncurses

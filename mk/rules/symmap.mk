@@ -7,7 +7,7 @@ ifeq "$(CONFIG_SYMMAP)" "y"
 
 
 cmd_elf_to_symmap = $(NM) $< | sort | cut -d' ' -f1,3 | \
-	sed -n "H;/kernel_text_start/h;/end_of_text/{x;p}"| \
+	sed -n "H;/kernel_text_start/h;/end_of_text/{x;p;}"| \
 	awk 'BEGIN { STRCOUNT = 0; COUNT = 0; } \
 	{ \
 		SYM = SYM "{ (void*) (0x"$$1"), "STRCOUNT" },\n"; \
