@@ -19,7 +19,7 @@ BUILDCC = $(HOST_COMPILE)gcc
 # Misc Information
 GIT_HEAD = $(shell git rev-parse HEAD)
 MACH_TYPE = $(shell uname -m)
-BUILD_TIME = $(shell date --iso=seconds)
+BUILD_TIME = $(shell date +%FT%T%z)
 
 CFLAGS_WARN = \
 	-Wall -Werror -Wundef -Wstrict-prototypes -Wno-trigraphs	\
