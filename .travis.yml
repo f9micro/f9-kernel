@@ -10,7 +10,7 @@ before_install:
   - sudo apt-get install build-essential
   - sudo add-apt-repository --yes ppa:terry.guo/gcc-arm-embedded
   - sudo apt-get update
-  - sudo apt-get install gcc-arm-none-eabi
+  - sudo apt-get install gcc-arm-none-eabi -y --force-yes
 
 script:
   - cp -f board/$BOARD/defconfig .config
