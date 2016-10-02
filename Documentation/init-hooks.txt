@@ -20,9 +20,10 @@ hooks is not guaranteed.
 2. Use Case for init hook
 
 #include <init_hook.h>
+#include <debug.h>
 
-void hook_test(unsigned int level)
+void hook_test(void)
 {
-        dbg_printf(DL_EMERG, "hook 1 level: %x\n", level);
+        dbg_printf(DL_EMERG, "hook test\n");
 }
-INIT_HOOK(test, hook_test, INIT_LEVEL_PLATFORM - 1)
+INIT_HOOK(hook_test, INIT_LEVEL_PLATFORM - 1)
