@@ -19,10 +19,9 @@ void irq_init(void)
 	NVIC_SetPriority(BusFault_IRQn, 0x1, 0);
 	NVIC_SetPriority(UsageFault_IRQn, 0x1, 0);
 
-	/* Priority 0x2 - debug_uart */
-
 	NVIC_SetPriority(SysTick_IRQn, 0x3, 0);
 
+	/* Priority 0xF - debug_uart */
 	NVIC_SetPriority(SVCall_IRQn, 0xF, 0);
 	NVIC_SetPriority(PendSV_IRQn, 0xF, 0);
 }
