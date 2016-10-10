@@ -71,6 +71,10 @@ menu "Thread tweaks"
 config INTR_THREAD_MAX
 	int "Maximum of interrupt threads"
 	default 256
+
+config THREAD_TIME_SLICE
+	int "Maximum timeslice for threads"
+	default 4096
 endmenu
 
 menu "KIP tweaks"

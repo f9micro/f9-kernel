@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
+/* Copyright (c) 2013, 2016 The F9 Microkernel Project. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -54,7 +54,9 @@ typedef enum {
 	T_RUNNABLE,
 	T_SVC_BLOCKED,
 	T_RECV_BLOCKED,
-	T_SEND_BLOCKED
+	T_SEND_BLOCKED,
+	T_WAIT_SCHEDULE,	/* Wait to append to scheduler */
+	T_PENDING_SCHED,	/* Wait for execute in scheculer */
 } thread_state_t;
 
 typedef struct {
@@ -95,6 +97,7 @@ struct tcb {
 	struct tcb *t_child;
 
 	uint32_t timeout_event;
+	uint32_t (*timeslice_event)(void *);
 };
 typedef struct tcb tcb_t;
 

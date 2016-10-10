@@ -328,6 +328,7 @@ void ktimer_enter_tickless()
 	uint32_t tickless_delta;
 	uint32_t reload;
 
+	dbg_printf(DL_KTIMER, "KTE: Handle ticklesss event\n");
 	irq_disable();
 
 	if (ktimer_enabled && ktimer_delta <= KTIMER_MAXTICKS) {
