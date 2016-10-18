@@ -23,7 +23,7 @@ void mpu_setup_region(int n, fpage_t *fp)
 		             0 :
 		             (1 << 28)) |	/* XN bit */
 		            (0x3 << 24) /* Full access */ |
-		            ((fp->fpage.shift - 1) << 1) /* Region */ |
+		            ((fp->fpage.shift - 1) << 1) /* Region size*/ |
 		            1 /* Enable */;
 	} else {
 		/* Clean MPU region */
