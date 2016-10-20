@@ -5,6 +5,7 @@
 lib-str-y += \
 	memcpy.o \
 	memset.o \
+	strcmp.o
 
 
 kernel-lib-y += \
