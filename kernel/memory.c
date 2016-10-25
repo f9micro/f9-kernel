@@ -503,12 +503,13 @@ void kdb_dump_mempool(void)
 	int i = 0;
 
 	dbg_printf(DL_KDB,
-	           "%10s %10s [%8s:%8s] %10s\n",
-	           "NAME", "SIZE", "START", "END", "FLAGS");
+	           "%2s %20s %10s [%8s:%8s] %10s\n",
+	           "ID", "NAME", "SIZE", "START", "END", "FLAGS");
 
 	for (i = 0; i < sizeof(memmap) / sizeof(mempool_t); ++i) {
 		dbg_printf(DL_KDB,
-		           "%10s %10d [%p:%p] %10s\n",
+		           "%2d %20s %10d [%p:%p] %10s\n",
+		           i,
 		           memmap[i].name, (memmap[i].end - memmap[i].start),
 		           memmap[i].start, memmap[i].end,
 		           kdb_mempool_prop(&(memmap[i])));
