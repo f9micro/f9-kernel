@@ -102,14 +102,15 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 	return 1;
 }
 
-void mpu_dump(void)
+void mpu_dump(int print_title)
 {
 	int i = 0;
 	uint32_t *mpu_rnr = (uint32_t *) MPU_RNR_ADDR;
 	uint32_t *mpu_base = (uint32_t *) MPU_BASE_ADDR;
 	uint32_t *mpu_attr = (uint32_t *) MPU_ATTR_ADDR;
 
-	dbg_printf(DL_EMERG, "-------MPU------\n");
+	if (print_title)
+		dbg_printf(DL_EMERG, "-------MPU------\n");
 	for (i = 0; i < 8; i++) {
 		*mpu_rnr = i;
 		if (*mpu_attr & 0x1) {
@@ -119,6 +120,13 @@ void mpu_dump(void)
 		}
 	}
 }
+
+#ifdef CONFIG_KDB
+void kdb_dump_mpu(void)
+{
+	mpu_dump(0);
+}
+#endif
 
 void __memmanage_handler(void)
 {
@@ -155,7 +163,7 @@ void __memmanage_handler(void)
 			goto ok;
 	}
 
-	mpu_dump();
+	mpu_dump(1);
 	panic("Memory fault mmsr:%p, mmar:%p,\n"
 	      "             current:%t, psp:%p, pc:%p\n",
 	      mmsr, mmar, current->t_globalid, PSP(), PSP()[REG_PC]);
