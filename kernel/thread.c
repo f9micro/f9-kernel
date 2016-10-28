@@ -1,4 +1,4 @@
-/* Copyright (c) 2013, 2014 The F9 Microkernel Project. All rights reserved.
+/* Copyright (c) 2013, 2014, 2016 The F9 Microkernel Project. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12,6 +12,7 @@
 #include <platform/armv7m.h>
 #include <fpage_impl.h>
 #include <init_hook.h>
+#include <sched-rr/sched_rr.h>
 
 /**
  * @file    thread.c
@@ -411,6 +412,9 @@ static tcb_t *thread_select(tcb_t *parent)
 	if (thr == NULL)
 		return NULL;
 
+	if ((thr = rr_select()) != NULL)
+		return thr;
+
 	while (1) {
 		if (thread_isrunnable(thr))
 			return thr;
@@ -467,7 +471,7 @@ void kdb_dump_threads(void)
 	tcb_t *thr;
 	int idx;
 
-	char *state[] = { "FREE", "RUN", "SVC", "RECV", "SEND" };
+	char *state[] = { "FREE", "RUN", "SVC", "RECV", "SEND", "SCHED", "PEND"};
 
 	dbg_printf(DL_KDB, "%5s %8s %8s %6s %s\n",
 	           "type", "global", "local", "state", "parent");

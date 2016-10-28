@@ -46,6 +46,7 @@ includes = \
 	board/$(BOARD) \
 	include \
 	include/platform \
+	include/sched-rr \
 	.\
 $(eval BOARD_$(BOARD)=y)
 
@@ -64,6 +65,7 @@ include platform/$(CHIP)/build.mk
 include platform/$(PLATFORM)-common/build.mk
 include platform/build.mk
 include kernel/lib/build.mk
+include kernel/sched-rr/build.mk
 include kernel/build.mk
 include user/build.mk
 include loader/build.mk
@@ -80,6 +82,7 @@ all-y += $(call objs_from_dir,platform/$(PLATFORM)-common,platform-common)
 all-y += $(call objs_from_dir,board/$(BOARD),board)
 all-y += $(call objs_from_dir,platform,platform)
 all-y += $(call objs_from_dir,kernel/lib,kernel-lib)
+all-y += $(call objs_from_dir,kernel/sched-rr,kernel-sched-rr)
 all-y += $(call objs_from_dir,kernel,kernel)
 all-y += $(call objs_from_dir,user,user)
 
@@ -93,6 +96,7 @@ loader-all-y += $(call objs_from_dir,kernel,loader-kernel)
 
 dirs = \
 	kernel/lib \
+	kernel/sched-rr \
 	kernel \
 	platform/$(CHIP) \
 	platform/$(PLATFORM)-common \

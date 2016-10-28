@@ -1,4 +1,4 @@
-/* Copyright (c) 2013, 2014 The F9 Microkernel Project. All rights reserved.
+/* Copyright (c) 2013, 2014, 2016 The F9 Microkernel Project. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -16,6 +16,7 @@
 #include <user-log.h>
 #include <ktimer.h>
 #include <interrupt.h>
+#include <sched-rr/sched_rr.h>
 
 extern tcb_t *caller;
 
@@ -241,7 +242,6 @@ void sys_ipc(uint32_t *param1)
 				/* mr1: thread func, mr2: stack addr, mr3: stack size*/
 				/* mr4: thread entry, mr5: thread args */
 				/* thread start protocol */
-
 				memptr_t sp = ipc_read_mr(caller, 2);
 				size_t stack_size = ipc_read_mr(caller, 3);
 				uint32_t regs[4];	/* r0, r1, r2, r3 */
@@ -260,8 +260,11 @@ void sys_ipc(uint32_t *param1)
 
 				caller->state = T_RUNNABLE;
 
-				/* Start thread */
-				to_thr->state = T_RUNNABLE;
+				/* make a timeslice for thread*/
+				dbg_printf(DL_IPC, "IPC: making timeslice for: %x @[%x]\n",
+									to_tid,
+									to_thr);
+				rr_init_thread(to_thr);
 
 				return;
 			} else {
