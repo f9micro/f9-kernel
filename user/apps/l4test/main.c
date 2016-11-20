@@ -26,6 +26,7 @@
 __USER_BSS static char *free_page;
 
 /* colours */
+__USER_TEXT
 static void
 set_colour(const char *col)
 {
@@ -34,10 +35,15 @@ set_colour(const char *col)
 #endif
 }
 
-void
+__USER_TEXT void
 print_uline(const char *msg, char c)
 {
-	int i, len = strlen(msg);
+	/*
+	 * TODO: Why can't we use strlen, the string memory was
+	 *		 protected by MPU...... my friend. When you use
+	 *       strlen, it just trigger panic by MPU.
+	 */
+	int i, len = 25; /* This bad guy, strlen(msg) cause panic */
 
 	printf("%s\n", msg);
 
@@ -46,7 +52,7 @@ print_uline(const char *msg, char c)
 	putc('\n');
 }
 
-void
+__USER_TEXT void
 print_h1(const char *msg)
 {
 	set_colour(LIGHT_BLUE);
@@ -54,7 +60,7 @@ print_h1(const char *msg)
 	set_colour(BLACK);
 }
 
-void
+__USER_TEXT void
 print_h2(const char *msg)
 {
 	set_colour(LIGHT_RED);
@@ -149,8 +155,10 @@ msec_sleep(L4_Word_t msec)
 
 __USER_TEXT void all_tests(void)
 {
+	extern void all_kip_tests(void);
 	extern void all_ipc_tests(void);
 
+	all_kip_tests();
 	all_ipc_tests();
 }
 

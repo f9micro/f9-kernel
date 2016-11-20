@@ -7,6 +7,7 @@
 
 #include <platform/link.h>
 #include <l4/types.h>
+#include <l4/kip.h>
 #include <syscall.h>
 #include __L4_INC_ARCH(syscalls.h)
 
@@ -15,6 +16,10 @@ void *L4_KernelInterface(L4_Word_t *ApiVersion,
                          L4_Word_t *ApiFlags,
                          L4_Word_t *KernelId)
 {
+  L4_KernelInterfacePage_t *skip = (L4_KernelInterfacePage_t *) &kip_start;
+  *ApiVersion = skip->ApiVersion.raw;
+  *ApiFlags = skip->ApiFlags.raw;
+  *KernelId = skip->magic;
 	return &kip_start;
 }
 
