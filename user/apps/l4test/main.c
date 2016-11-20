@@ -157,8 +157,10 @@ __USER_TEXT void all_tests(void)
 {
 	extern void all_kip_tests(void);
 	extern void all_ipc_tests(void);
+	extern void all_mem_tests(void);
 
 	all_kip_tests();
+	all_mem_tests();
 	all_ipc_tests();
 }
 

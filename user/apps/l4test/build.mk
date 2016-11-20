@@ -6,5 +6,6 @@ user-apps-l4test-y = \
 	string.o \
 	ipc.o \
 	kip.o \
+	mem.o \
 	assert.o \
 	main.o \
