@@ -14,7 +14,7 @@
 
 static inline void insert_bkpt(struct breakpoint *b)
 {
-	uint16_t breakpoint_instr = 0xbe11;		/* ARM BKPT instruction */
+	uint16_t breakpoint_instr = 0xbe11;	/* ARM BKPT instruction */
 
 	*(volatile uint16_t *) b->addr = breakpoint_instr;
 }

@@ -18,19 +18,19 @@
 DECLARE_KTABLE(fpage_t, fpage_table, CONFIG_MAX_FPAGES);
 
 #define remove_fpage_from_list(as, fpage, first, next) {	\
-	fpage_t *fpprev = (as)->first;	\
-	int end;	\
-	if (fpprev == (fpage)) {	\
-		(as)->first = fpprev->next;	\
-	}	\
-	else {	\
+	fpage_t *fpprev = (as)->first;				\
+	int end;						\
+	if (fpprev == (fpage)) {				\
+		(as)->first = fpprev->next;			\
+	}							\
+	else {							\
 		while (!end && fpprev->next != (fpage)) {	\
-			if (fpprev->next == NULL)	\
-				end = 1;	\
-			fpprev = fpprev->next;	\
-		}	\
-		fpprev->next = (fpage)->next;	\
-	}	\
+			if (fpprev->next == NULL)		\
+				end = 1;			\
+			fpprev = fpprev->next;			\
+		}						\
+		fpprev->next = (fpage)->next;			\
+	}							\
 }
 
 /*

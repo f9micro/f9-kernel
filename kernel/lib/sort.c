@@ -13,8 +13,8 @@
 #include <types.h>
 
 /* Qsort routine from Bentley & McIlroy's "Engineering a Sort Function" */
-#define swapcode(TYPE, parmi, parmj, n) \
-	{	\
+#define swapcode(TYPE, parmi, parmj, n)			\
+	{						\
 		long i = (n) / sizeof (TYPE);		\
 		TYPE *pi = (TYPE *) (parmi);		\
 		TYPE *pj = (TYPE *) (parmj);		\
@@ -25,10 +25,10 @@
 		} while (--i > 0);			\
 	}
 
-#define SWAPINIT(a, es) \
-	swaptype = ((char *) a - (char *) 0) % sizeof(long) || \
-		es % sizeof(long) ? \
-			2 : es == sizeof(long) ? \
+#define SWAPINIT(a, es)						\
+	swaptype = ((char *) a - (char *) 0) % sizeof(long) ||	\
+		es % sizeof(long) ?				\
+			2 : es == sizeof(long) ?		\
 				0 : 1;
 
 static inline void swapfunc(char *a, char *b, int n, int swaptype)
@@ -39,8 +39,8 @@ static inline void swapfunc(char *a, char *b, int n, int swaptype)
 		swapcode(char, a, b, n)
 }
 
-#define vecswap(a, b, n) \
-	if ((n) > 0) \
+#define vecswap(a, b, n)			\
+	if ((n) > 0)				\
 		swapfunc(a, b, n, swaptype)
 
 /**

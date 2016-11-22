@@ -18,7 +18,6 @@ void __attribute__((weak, alias("mpu_enable"))) mpu_enable(mpu_state_t i)
 {
 }
 
-
 void __attribute__((weak, alias("__memmanage_handler"))) __memmanage_handler(void)
 {
 }

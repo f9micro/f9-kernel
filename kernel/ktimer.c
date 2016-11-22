@@ -53,7 +53,7 @@ static void ktimer_enable(uint32_t delta)
 		ktimer_enabled = 1;
 
 #if defined(CONFIG_KDB) && \
-	defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
+    defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
 		tickless_verify_start(ktimer_now, ktimer_delta);
 #endif	/* CONFIG_KDB */
 	}
@@ -72,7 +72,7 @@ void __ktimer_handler(void)
 			ktimer_time = ktimer_delta = 0;
 
 #if defined(CONFIG_KDB) && \
-	defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
+    defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
 			tickless_verify_stop(ktimer_now);
 #endif	/* CONFIG_KDB */
 
@@ -347,7 +347,7 @@ void ktimer_enter_tickless()
 		init_systick(reload, CONFIG_KTIMER_HEARTBEAT);
 
 #if defined(CONFIG_KDB) && \
-	defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
+    defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
 		tickless_verify_count();
 #endif
 	}
@@ -373,7 +373,7 @@ void ktimer_enter_tickless()
 			}
 
 #if defined(CONFIG_KDB) && \
-	defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
+    defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
 			tickless_verify_count_int();
 #endif
 		}

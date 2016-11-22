@@ -64,11 +64,9 @@ int ksym_lookup(void *addr)
 		                           sizeof(__ksym_tbl[0]), cmp_key);
 	}
 
-	if (found == NULL) {
+	if (found == NULL)
 		return -1;
-	} else {
-		return prev_index = (found - __ksym_tbl);
-	}
+	return prev_index = (found - __ksym_tbl);
 }
 
 char *ksym_id2name(int symid)

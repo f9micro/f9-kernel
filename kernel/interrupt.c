@@ -13,14 +13,14 @@
 void __interrupt_handler(int n);
 
 /* user interrupt vector */
-#define USER_IRQ_VEC(n)							\
+#define USER_IRQ_VEC(n)						\
 	void nvic_handler##n(void) __NAKED;			\
-	void nvic_handler##n(void)					\
-	{											\
-		irq_enter();							\
-		__interrupt_handler(n);					\
-		request_schedule();						\
-		irq_return();							\
+	void nvic_handler##n(void)				\
+	{							\
+		irq_enter();					\
+		__interrupt_handler(n);				\
+		request_schedule();				\
+		irq_return();					\
 	}
 
 #undef USER_INTERRUPT_USED
@@ -110,7 +110,7 @@ static struct user_irq *user_irq_create_default(int irq)
 	if (IS_VALID_IRQ_NUM(irq)) {
 		struct user_irq *uirq;
 
-		uirq = (struct user_irq *)ktable_alloc(&user_irq_table);
+		uirq = (struct user_irq *) ktable_alloc(&user_irq_table);
 		uirq->thr = NULL;
 		uirq->irq = irq;
 		uirq->action = 0;
@@ -155,9 +155,9 @@ static void irq_handler_ipc(struct user_irq *uirq)
 	tag.s.label = USER_INTERRUPT_LABEL;
 	tag.s.n_untyped = IRQ_IPC_MSG_NUM;
 	ipc_write_mr(thr, 0, tag.raw);
-	ipc_write_mr(thr, IRQ_IPC_IRQN + 1, (uint32_t)uirq->irq);
-	ipc_write_mr(thr, IRQ_IPC_HANDLER + 1, (uint32_t)uirq->handler);
-	ipc_write_mr(thr, IRQ_IPC_ACTION + 1, (uint32_t)uirq->action);
+	ipc_write_mr(thr, IRQ_IPC_IRQN + 1, (uint32_t) uirq->irq);
+	ipc_write_mr(thr, IRQ_IPC_HANDLER + 1, (uint32_t) uirq->handler);
+	ipc_write_mr(thr, IRQ_IPC_ACTION + 1, (uint32_t) uirq->action);
 	thr->utcb->sender = TID_TO_GLOBALID(THREAD_INTERRUPT);
 	thr->ipc_from = L4_NILTHREAD;
 }
@@ -224,7 +224,7 @@ void __interrupt_handler(int irq)
 	uirq = user_irq_fetch(irq);
 
 	if (uirq == NULL ||
-		uirq->thr == NULL ||
+	    uirq->thr == NULL ||
 	    uirq->handler == NULL ||
 		uirq->action != USER_IRQ_ENABLE) {
 		return;

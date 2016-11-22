@@ -80,7 +80,7 @@ void (* const g_pfnVectors[])(void) = {
 #include INC_PLAT(nvic_table.h)
 };
 
-#define MAX(a, b) \
+#define MAX(a, b)			\
 	((a) > (b) ? (a) : (b))
 
 extern const init_struct init_hook_start[];

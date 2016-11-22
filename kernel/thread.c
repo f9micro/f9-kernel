@@ -331,10 +331,10 @@ void thread_init_ctx(void *sp, void *pc, void *regs, tcb_t *thr)
 		((uint32_t *) sp)[REG_R2] = 0x0;
 		((uint32_t *) sp)[REG_R3] = 0x0;
 	} else {
-		((uint32_t *)sp)[REG_R0] = ((uint32_t *)regs)[0];
-		((uint32_t *)sp)[REG_R1] = ((uint32_t *)regs)[1];
-		((uint32_t *)sp)[REG_R2] = ((uint32_t *)regs)[2];
-		((uint32_t *)sp)[REG_R3] = ((uint32_t *)regs)[3];
+		((uint32_t *) sp)[REG_R0] = ((uint32_t *) regs)[0];
+		((uint32_t *) sp)[REG_R1] = ((uint32_t *) regs)[1];
+		((uint32_t *) sp)[REG_R2] = ((uint32_t *) regs)[2];
+		((uint32_t *) sp)[REG_R3] = ((uint32_t *) regs)[3];
 	}
 
 	((uint32_t *) sp)[REG_R12] = 0x0;
@@ -396,7 +396,7 @@ void thread_switch(tcb_t *thr)
 	current_utcb = thr->utcb;
 	if (current->as)
 		as_setup_mpu(current->as, current->ctx.sp,
-		             ((uint32_t*)current->ctx.sp)[REG_PC],
+		             ((uint32_t *) current->ctx.sp)[REG_PC],
 		             current->stack_base, current->stack_size);
 }
 
@@ -473,7 +473,8 @@ void kdb_dump_threads(void)
 	           "type", "global", "local", "state", "parent");
 
 	for_each_in_ktable(thr, idx, (&thread_table)) {
-		dbg_printf(DL_KDB, "%5s %t %t %6s %t\n", kdb_get_thread_type(thr),
+		dbg_printf(DL_KDB, "%5s %t %t %6s %t\n",
+		           kdb_get_thread_type(thr),
 		           thr->t_globalid, thr->t_localid, state[thr->state],
 		           (thr->t_parent) ? thr->t_parent->t_globalid : 0);
 	}
