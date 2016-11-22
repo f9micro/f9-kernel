@@ -341,7 +341,9 @@ uint32_t ipc_deliver(void *data)
 				thr->ipc_from != L4_ANYTHREAD &&
 				thr->ipc_from != TID_TO_GLOBALID(THREAD_INTERRUPT)) {
 				from_thr = thread_by_globalid(thr->ipc_from);
-				if (from_thr->state == T_SEND_BLOCKED)
+				/* NOTE: Must check from_thr intend to send*/
+				if (from_thr->state == T_SEND_BLOCKED &&
+				    from_thr->utcb->intended_receiver == thr->t_globalid)
 					do_ipc(from_thr, thr);
 			}
 			break;
