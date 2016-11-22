@@ -26,6 +26,7 @@ config BITMAP_BITBAND
 config FPU
 	bool "Floating point support"
 	default n
+	depends on !BOARD_STM32P103
 
 config SEMIHOST
 	bool "Semihosting enable"
@@ -48,7 +49,6 @@ config STDIO_USE_DBGPORT
 endchoice
 
 choice
-
 	prompt "Debug serial IO uses"
 	default DBGPORT_USE_USART4
 	depends on STDIO_USE_DBGPORT
