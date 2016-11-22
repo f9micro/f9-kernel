@@ -65,10 +65,8 @@ static inline void do_ipc_error(tcb_t *from, tcb_t *to,
 
 static void do_ipc(tcb_t *from, tcb_t *to)
 {
-	ipc_msg_tag_t tag;
 	ipc_typed_item	typed_item;
 	int untyped_idx, typed_idx, typed_item_idx;
-	int typed_last, untyped_last;
 	uint32_t typed_data;		/* typed item extra word */
 	l4_thread_t from_recv_tid;
 
@@ -77,9 +75,9 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 	to->timeout_event = 0;
 
 	/* Copy tag of message */
-	tag.raw = ipc_read_mr(from, 0);
-	untyped_last = tag.s.n_untyped + 1;
-	typed_last = untyped_last + tag.s.n_typed;
+	ipc_msg_tag_t tag = { .raw = ipc_read_mr(from, 0) };
+	int untyped_last = tag.s.n_untyped + 1;
+	int typed_last = untyped_last + tag.s.n_typed;
 
 	if (typed_last > IPC_MR_COUNT) {
 		do_ipc_error(from, to,
@@ -116,10 +114,11 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 			typed_data = mr_data;
 
 			ret = map_area(from->as, to->as,
-			         typed_item.raw & 0xFFFFFFC0,
-			         typed_data & 0xFFFFFFC0,
-			         (typed_item.s.header & IPC_TI_GRANT) ? GRANT : MAP,
-			         thread_ispriviliged(from));
+			               typed_item.raw & 0xFFFFFFC0,
+			               typed_data & 0xFFFFFFC0,
+			               (typed_item.s.header & IPC_TI_GRANT) ?
+			                   GRANT : MAP,
+			               thread_ispriviliged(from));
 			typed_item_idx = -1;
 
 			if (ret < 0) {
@@ -148,10 +147,10 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 
 	to->state = T_RUNNABLE;
 	to->ipc_from = L4_NILTHREAD;
-	((uint32_t*)to->ctx.sp)[REG_R0] = from->t_globalid;
+	((uint32_t *) to->ctx.sp)[REG_R0] = from->t_globalid;
 
 	/* If from has receive phases, lock myself */
-	from_recv_tid = ((uint32_t*)from->ctx.sp)[REG_R1];
+	from_recv_tid = ((uint32_t *) from->ctx.sp)[REG_R1];
 	if (from_recv_tid == L4_NILTHREAD) {
 		from->state = T_RUNNABLE;
 	} else {
@@ -172,7 +171,7 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 uint32_t ipc_timeout(void *data)
 {
 	ktimer_event_t *event = (ktimer_event_t *) data;
-	tcb_t* thr = (tcb_t*) event->data;
+	tcb_t *thr = (tcb_t *) event->data;
 
 	if (thr->timeout_event == (uint32_t)data) {
 
@@ -193,15 +192,14 @@ static void sys_ipc_timeout(uint32_t timeout)
 {
 	ktimer_event_t *kevent;
 	ipc_time_t t = { .raw = timeout };
-	uint32_t ticks;
 
 	/* millisec to ticks */
-	ticks = (t.period.m << t.period.e) /
-	        ((1000000)/(CORE_CLOCK/CONFIG_KTIMER_HEARTBEAT));
+	uint32_t ticks = (t.period.m << t.period.e) /
+	                 ((1000000) / (CORE_CLOCK/CONFIG_KTIMER_HEARTBEAT));
 
 	kevent = ktimer_event_create(ticks, ipc_timeout, caller);
 
-	caller->timeout_event = (uint32_t)kevent;
+	caller->timeout_event = (uint32_t) kevent;
 }
 
 void sys_ipc(uint32_t *param1)
@@ -236,17 +234,20 @@ void sys_ipc(uint32_t *param1)
 			do_ipc(caller, to_thr);
 			return;
 		} else if (to_thr && to_thr->state == T_INACTIVE &&
-		           GLOBALID_TO_TID(to_thr->utcb->t_pager) == GLOBALID_TO_TID(caller->t_globalid)) {
+		           GLOBALID_TO_TID(to_thr->utcb->t_pager) ==
+		           GLOBALID_TO_TID(caller->t_globalid)) {
 			if (ipc_read_mr(caller, 0) == 0x00000005) {
-				/* mr1: thread func, mr2: stack addr, mr3: stack size*/
-				/* mr4: thread entry, mr5: thread args */
-				/* thread start protocol */
+				/* mr1: thread func, mr2: stack addr,
+				 * mr3: stack size
+			         * mr4: thread entry, mr5: thread args
+			         * thread start protocol */
 
 				memptr_t sp = ipc_read_mr(caller, 2);
 				size_t stack_size = ipc_read_mr(caller, 3);
 				uint32_t regs[4];	/* r0, r1, r2, r3 */
 
-				dbg_printf(DL_IPC, "IPC: %t thread start\n", to_tid);
+				dbg_printf(DL_IPC,
+				           "IPC: %t thread start\n", to_tid);
 
 				to_thr->stack_base = sp - stack_size;
 				to_thr->stack_size = stack_size;
@@ -255,7 +256,8 @@ void sys_ipc(uint32_t *param1)
 				regs[REG_R1] = (uint32_t)to_thr->utcb;
 				regs[REG_R2] = ipc_read_mr(caller, 4);
 				regs[REG_R3] = ipc_read_mr(caller, 5);
-				thread_init_ctx((void *) sp, (void *) ipc_read_mr(caller, 1),
+				thread_init_ctx((void *) sp,
+				                (void *) ipc_read_mr(caller, 1),
 				                regs, to_thr);
 
 				caller->state = T_RUNNABLE;
@@ -274,7 +276,8 @@ void sys_ipc(uint32_t *param1)
 			/* No waiting, block myself */
 			caller->state = T_SEND_BLOCKED;
 			caller->utcb->intended_receiver = to_tid;
-			dbg_printf(DL_IPC, "IPC: %t sending\n", caller->t_globalid);
+			dbg_printf(DL_IPC,
+			           "IPC: %t sending\n", caller->t_globalid);
 
 			if (timeout)
 				sys_ipc_timeout(timeout);
@@ -287,12 +290,14 @@ void sys_ipc(uint32_t *param1)
 		tcb_t *thr = NULL;
 
 		if (from_tid == L4_ANYTHREAD) {
-			int i;
-			/* Find out if there is any sending thread waiting for caller */
-			for (i = 1; i < thread_count; ++i) {
+			/* Find out if there is any sending thread waiting
+			 * for caller
+			 */
+			for (int i = 1; i < thread_count; ++i) {
 				thr = thread_map[i];
 				if (thr->state == T_SEND_BLOCKED &&
-				    thr->utcb->intended_receiver == caller->t_globalid) {
+				    thr->utcb->intended_receiver ==
+				    caller->t_globalid) {
 					do_ipc(thr, caller);
 					return;
 				}
@@ -301,7 +306,8 @@ void sys_ipc(uint32_t *param1)
 			thr = thread_by_globalid(from_tid);
 
 			if (thr->state == T_SEND_BLOCKED &&
-			    thr->utcb->intended_receiver == caller->t_globalid) {
+			    thr->utcb->intended_receiver ==
+			    caller->t_globalid) {
 				do_ipc(thr, caller);
 				return;
 			}
@@ -329,12 +335,11 @@ void sys_ipc(uint32_t *param1)
 
 uint32_t ipc_deliver(void *data)
 {
-	tcb_t *thr = NULL, *from_thr = NULL, *to_thr = NULL;
 	l4_thread_t receiver;
-	int i;
+	tcb_t *from_thr = NULL, *to_thr = NULL;
 
-	for (i = 1; i < thread_count; ++i) {
-		thr = thread_map[i];
+	for (int i = 1; i < thread_count; ++i) {
+		tcb_t *thr = thread_map[i];
 		switch (thr->state) {
 		case T_RECV_BLOCKED:
 			if (thr->ipc_from != L4_NILTHREAD &&
@@ -347,7 +352,8 @@ uint32_t ipc_deliver(void *data)
 			break;
 		case T_SEND_BLOCKED:
 			receiver = thr->utcb->intended_receiver;
-			if (receiver != L4_NILTHREAD && receiver != L4_ANYTHREAD) {
+			if (receiver != L4_NILTHREAD &&
+			    receiver != L4_ANYTHREAD) {
 				to_thr = thread_by_globalid(receiver);
 				if (to_thr->state == T_RECV_BLOCKED)
 					do_ipc(thr, to_thr);

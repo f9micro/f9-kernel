@@ -54,15 +54,13 @@ void kplist_del(struct kprobe *kp)
 
 int kprobe_register(struct kprobe *kp)
 {
-	int ret;
-	kp->addr = (void *)((uint32_t) kp->addr & ~(1UL));
+	kp->addr = (void *) ((uint32_t) kp->addr & ~(1UL));
 	if (is_thumb32(*(uint16_t *) kp->addr))
 		kp->step_addr = kp->addr + 4;
 	else
 		kp->step_addr = kp->addr + 2;
 
-	ret = kprobe_arch_add(kp);
-	if (ret < 0)
+	if (kprobe_arch_add(kp) < 0)
 		return -1;
 
 	kplist_add(kp);
@@ -131,7 +129,8 @@ void kprobe_postbreak(uint32_t *stack, uint32_t *kp_regs)
 {
 	struct kprobe *kp = kp_list;
 	while (kp != NULL) {
-		if ((uint32_t) kp->step_addr == stack[REG_PC] && kp->post_handler)
+		if ((uint32_t) kp->step_addr == stack[REG_PC] &&
+		    kp->post_handler)
 			kp->post_handler(kp, stack, kp_regs);
 		kp = kp->next;
 	}

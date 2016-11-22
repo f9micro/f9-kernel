@@ -36,10 +36,8 @@ static char *softirq_names[NR_SOFTIRQ] __attribute__((used)) = {
 int softirq_execute()
 {
 	uint32_t softirq_schedule = 0, executed = 0;
-	int i;
-
 retry:
-	for (i = 0; i < NR_SOFTIRQ; ++i) {
+	for (int i = 0; i < NR_SOFTIRQ; ++i) {
 		if (atomic_get(&(softirq[i].schedule)) != 0 &&
 		    softirq[i].handler) {
 			softirq[i].handler();
@@ -56,7 +54,7 @@ retry:
 	irq_disable();
 
 	softirq_schedule = 0;
-	for (i = 0; i < NR_SOFTIRQ; ++i) {
+	for (int i = 0; i < NR_SOFTIRQ; ++i) {
 		softirq_schedule |= softirq[i].schedule;
 	}
 
@@ -72,9 +70,7 @@ retry:
 #ifdef CONFIG_KDB
 void kdb_dump_softirq(void)
 {
-	int i;
-
-	for (i = 0; i < NR_SOFTIRQ; ++i) {
+	for (int i = 0; i < NR_SOFTIRQ; ++i) {
 		dbg_printf(DL_KDB, "%32s %s\n", softirq_names[i],
 		           atomic_get(&(softirq[i].schedule)) ?
 		           "scheduled" : "not scheduled");

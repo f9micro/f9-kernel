@@ -74,11 +74,10 @@ static void user_irq_queue_push(struct user_irq *uirq)
 
 static struct user_irq *user_irq_queue_pop(void)
 {
-	struct user_irq *uirq;
 	if (user_irq_queue_is_empty())
 		return NULL;
 
-	uirq = user_irq_queue.head;
+	struct user_irq *uirq = user_irq_queue.head;
 	user_irq_queue.head = uirq->next;
 	uirq->next = NULL;
 
@@ -87,10 +86,9 @@ static struct user_irq *user_irq_queue_pop(void)
 
 static void user_irq_queue_delete(int irq)
 {
-	struct user_irq **iter, *uirq;
-
-	uirq = user_irqs[irq];
-	for (iter = &user_irq_queue.head ; *iter != NULL ; iter = &(*iter)->next) {
+	struct user_irq *uirq = user_irqs[irq];
+	for (struct user_irq **iter = &user_irq_queue.head ; *iter != NULL ;
+	     iter = &(*iter)->next) {
 		if (*iter == uirq) {
 			*iter = uirq->next;
 			break;
@@ -100,17 +98,14 @@ static void user_irq_queue_delete(int irq)
 
 static inline void user_irq_reset_all(void)
 {
-	int i;
-	for (i = 0 ; i < IRQn_NUM ; i++)
+	for (int i = 0 ; i < IRQn_NUM ; i++)
 		user_irqs[i] = NULL;
 }
 
 static struct user_irq *user_irq_create_default(int irq)
 {
 	if (IS_VALID_IRQ_NUM(irq)) {
-		struct user_irq *uirq;
-
-		uirq = (struct user_irq *) ktable_alloc(&user_irq_table);
+		struct user_irq *uirq = ktable_alloc(&user_irq_table);
 		uirq->thr = NULL;
 		uirq->irq = irq;
 		uirq->action = 0;
@@ -144,16 +139,16 @@ static void user_irq_release(int irq)
 
 static void irq_handler_ipc(struct user_irq *uirq)
 {
-	tcb_t *thr;
-	ipc_msg_tag_t tag;
-
 	if (uirq == NULL || uirq->thr == NULL)
 		return;
 
 	/* Prepare ipc for user interrupt thread */
-	thr = uirq->thr;
-	tag.s.label = USER_INTERRUPT_LABEL;
-	tag.s.n_untyped = IRQ_IPC_MSG_NUM;
+	tcb_t *thr = uirq->thr;
+	ipc_msg_tag_t tag = {
+		.s.label = USER_INTERRUPT_LABEL,
+		.s.n_untyped = IRQ_IPC_MSG_NUM,
+	};
+
 	ipc_write_mr(thr, 0, tag.raw);
 	ipc_write_mr(thr, IRQ_IPC_IRQN + 1, (uint32_t) uirq->irq);
 	ipc_write_mr(thr, IRQ_IPC_HANDLER + 1, (uint32_t) uirq->handler);
@@ -164,7 +159,6 @@ static void irq_handler_ipc(struct user_irq *uirq)
 
 static int irq_handler_enable(int irq)
 {
-	tcb_t *thr;
 	struct user_irq *uirq = user_irqs[irq];
 
 	assert(uirq != NULL);
@@ -172,7 +166,7 @@ static int irq_handler_enable(int irq)
 	if (uirq->thr == NULL)
 		return -1;
 
-	thr = uirq->thr;
+	tcb_t *thr = uirq->thr;
 
 	if (thr->state != T_RECV_BLOCKED)
 		return -1;
@@ -188,9 +182,8 @@ static int irq_handler_enable(int irq)
 */
 static void irq_schedule(int irq)
 {
-	struct user_irq *uirq;
+	struct user_irq *uirq = user_irq_fetch(irq);
 
-	uirq = user_irq_fetch(irq);
 	irq_disable();
 	user_irq_queue_push(uirq);
 	irq_enable();
@@ -200,11 +193,10 @@ static void irq_schedule(int irq)
 
 static tcb_t *irq_handler_sched(struct sched_slot *slot)
 {
-	struct user_irq *uirq;
 	tcb_t *thr = NULL;
 
 	irq_disable();
-	uirq = user_irq_queue_pop();
+	struct user_irq *uirq = user_irq_queue_pop();
 
 	if (uirq != NULL && (thr = uirq->thr) != NULL &&
 	    thr->state == T_RECV_BLOCKED) {
@@ -219,14 +211,12 @@ static tcb_t *irq_handler_sched(struct sched_slot *slot)
 
 void __interrupt_handler(int irq)
 {
-	struct user_irq *uirq;
-
-	uirq = user_irq_fetch(irq);
+	struct user_irq *uirq = user_irq_fetch(irq);
 
 	if (uirq == NULL ||
 	    uirq->thr == NULL ||
 	    uirq->handler == NULL ||
-		uirq->action != USER_IRQ_ENABLE) {
+	    uirq->action != USER_IRQ_ENABLE) {
 		return;
 	}
 
@@ -244,31 +234,23 @@ INIT_HOOK(interrupt_init, INIT_LEVEL_KERNEL_EARLY);
 
 void user_interrupt_config(tcb_t *from)
 {
-	ipc_msg_tag_t tag;
-	l4_thread_t tid;
-	struct user_irq	*uirq;
-	int irq;
-	int  action, priority;
-	irq_handler_t handler;
-
-	tag.raw = ipc_read_mr(from, 0);
-
+	ipc_msg_tag_t tag = { .raw = ipc_read_mr(from, 0) };
 	if (tag.s.label != USER_INTERRUPT_LABEL)
 		return;
 
-	irq = (uint16_t)from->ctx.regs[IRQ_IPC_IRQN + 1];
-	tid = (l4_thread_t)from->ctx.regs[IRQ_IPC_TID + 1];
-	action = (uint16_t)from->ctx.regs[IRQ_IPC_ACTION + 1];
-	handler = (irq_handler_t)from->ctx.regs[IRQ_IPC_HANDLER + 1];
-	priority = (uint16_t)from->ctx.regs[IRQ_IPC_PRIORITY + 1];
-
+	int irq = (uint16_t) from->ctx.regs[IRQ_IPC_IRQN + 1];
+	l4_thread_t tid = (l4_thread_t) from->ctx.regs[IRQ_IPC_TID + 1];
+	int action = (uint16_t) from->ctx.regs[IRQ_IPC_ACTION + 1];
+	irq_handler_t handler = (irq_handler_t)
+	                        from->ctx.regs[IRQ_IPC_HANDLER + 1];
+	int priority = (uint16_t) from->ctx.regs[IRQ_IPC_PRIORITY + 1];
 
 	user_irq_disable(irq);
 
 	if (!IS_VALID_IRQ_NUM(irq))
 		return;
 
-	uirq = user_irq_fetch(irq);
+	struct user_irq *uirq = user_irq_fetch(irq);
 
 	if (uirq == NULL)
 		return;
@@ -277,7 +259,7 @@ void user_interrupt_config(tcb_t *from)
 	if (tid != L4_NILTHREAD)
 		uirq->thr = thread_by_globalid(tid);
 
-	uirq->action = (uint16_t)action;
+	uirq->action = (uint16_t) action;
 
 	if (handler != NULL)
 		uirq->handler = handler;
@@ -288,15 +270,11 @@ void user_interrupt_config(tcb_t *from)
 
 void user_interrupt_handler_update(tcb_t *thr)
 {
-	int irq;
-
 	if (thr == NULL)
 		return;
 
-	for (irq = 0 ; irq < IRQn_NUM ; irq++) {
-		struct user_irq *uirq;
-		uirq = user_irq_fetch(irq);
-
+	for (int irq = 0 ; irq < IRQn_NUM ; irq++) {
+		struct user_irq *uirq = user_irq_fetch(irq);
 		if (uirq == NULL)
 			continue;
 

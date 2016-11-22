@@ -99,10 +99,8 @@ struct kdb_t kdb_functions[] = {
 
 static void kdb_print_menu(void)
 {
-	int i;
-
 	dbg_printf(DL_KDB, "commands: \n");
-	for (i = 0; i < (sizeof(kdb_functions) / sizeof(struct kdb_t)); ++i) {
+	for (int i = 0; i < (sizeof(kdb_functions) / sizeof(struct kdb_t)); ++i) {
 		dbg_printf(DL_KDB, "%c: %s\n",
 		           kdb_functions[i].option, kdb_functions[i].menuentry);
 	}
@@ -111,10 +109,8 @@ static void kdb_print_menu(void)
 
 int kdb_handler(char c)
 {
-	int i;
-
 	dbg_printf(DL_KDB, "\n\n## KDB ##\n");
-	for (i = 0; i < (sizeof(kdb_functions) / sizeof(struct kdb_t)); ++i) {
+	for (int i = 0; i < (sizeof(kdb_functions) / sizeof(struct kdb_t)); ++i) {
 		if (c == kdb_functions[i].option) {
 			dbg_printf(DL_KDB, "-------%s------\n", kdb_functions[i].name);
 			kdb_functions[i].function();
@@ -136,9 +132,7 @@ ok:
 
 int kdb_dump_error()
 {
-	int i = 0;
-
-	for (i = 0; i < (sizeof(kdb_functions) / sizeof(struct kdb_t)); ++i) {
+	for (int i = 0; i < (sizeof(kdb_functions) / sizeof(struct kdb_t)); ++i) {
 		dbg_printf(DL_KDB, "-------%s------\n", kdb_functions[i].name);
 		kdb_functions[i].function();
 	}

@@ -27,12 +27,11 @@ void sampling_disable()
 
 void sampling_init()
 {
-	int i ;
 	if (ksym_total() > MAX_KSYM) {
 		dbg_printf(DL_KDB, "ksym %d > MAX_KSYM\n", ksym_total());
 		return;
 	}
-	for (i = 0; i < MAX_SAMPLING_COUNT; i++) {
+	for (int i = 0; i < MAX_SAMPLING_COUNT; i++) {
 		sampled_pc[i] = 0;
 	}
 	sampled_count = 0;
@@ -42,6 +41,7 @@ void sampled_pcpush(void *pc)
 {
 	if (__sampling_enabled == 0)
 		return;
+
 	if (sampled_count == MAX_SAMPLING_COUNT)
 		sampled_count = 0;
 	sampled_pc[sampled_count++] = pc;
@@ -61,19 +61,17 @@ static int cmp_symhit(const void *p1, const void *p2)
 
 void sampling_stats(int **hitcountp, int **symid_list)
 {
-	int i, symid;
-
 	/* init data */
 	sort(sampled_pc, MAX_SAMPLING_COUNT, sizeof(sampled_pc[0]), cmp_addr);
 
-	for (i = 0; i < MAX_KSYM; i++) {
+	for (int i = 0; i < MAX_KSYM; i++) {
 		ksym_hitcount[i] = 0;
 		ksymid_sortedlist[i] = i;
 	}
 
 	/* calculation total hit for each ksym */
-	for (i = 0; i < MAX_SAMPLING_COUNT; i++) {
-		symid = ksym_lookup(sampled_pc[i]);
+	for (int i = 0; i < MAX_SAMPLING_COUNT; i++) {
+		int symid = ksym_lookup(sampled_pc[i]);
 		if (symid < 0)
 			continue;
 		ksym_hitcount[symid]++;

@@ -70,11 +70,9 @@ static void sys_thread_control(uint32_t *param1, uint32_t *param2)
 
 void syscall_handler()
 {
-	uint32_t svc_num, *svc_param1, *svc_param2;
-
-	svc_param1 = (uint32_t *) caller->ctx.sp;
-	svc_num = ((char *) svc_param1[REG_PC])[-2];
-	svc_param2 = caller->ctx.regs;
+	uint32_t *svc_param1 = (uint32_t *) caller->ctx.sp;
+	uint32_t svc_num = ((char *) svc_param1[REG_PC])[-2];
+	uint32_t *svc_param2 = caller->ctx.regs;
 
 	if (svc_num == SYS_THREAD_CONTROL) {
 		/* Simply call thread_create

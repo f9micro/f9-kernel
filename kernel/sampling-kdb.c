@@ -35,8 +35,6 @@ static int sampling_handler(struct kprobe *kp, uint32_t *stack,
 extern void ktimer_handler(void);
 void kdb_show_sampling(void)
 {
-	int i;
-	int symid;
 	int *hitcount, *symid_list;
 	static int init = 0;
 	static struct kprobe k;
@@ -57,8 +55,8 @@ void kdb_show_sampling(void)
 	sampling_disable();
 	sampling_stats(&hitcount, &symid_list);
 
-	for (i = 0; i < ksym_total(); i++) {
-		symid = symid_list[i];
+	for (int i = 0; i < ksym_total(); i++) {
+		int symid = symid_list[i];
 		if (hitcount[symid] == 0)
 			break;
 		dbg_printf(DL_KDB, "%5d [ %24s ]\n", hitcount[symid],

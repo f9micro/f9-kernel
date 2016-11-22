@@ -19,9 +19,7 @@ static sched_slot_t slots[NUM_SCHED_SLOTS];
 
 void sched_init()
 {
-	int slot_id;
-
-	for (slot_id = 0; slot_id < NUM_SCHED_SLOTS; ++slot_id) {
+	for (int slot_id = 0; slot_id < NUM_SCHED_SLOTS; ++slot_id) {
 		slots[slot_id].ss_scheduled = NULL;
 		slots[slot_id].ss_handler =   NULL;
 	}
@@ -31,12 +29,9 @@ INIT_HOOK(sched_init, INIT_LEVEL_KERNEL_EARLY);
 
 tcb_t *schedule_select()
 {
-	int slot_id;
-	tcb_t *scheduled = NULL;
-
 	/* For each scheduler slot try to dispatch thread from it */
-	for (slot_id = 0; slot_id < NUM_SCHED_SLOTS; ++slot_id) {
-		scheduled = slots[slot_id].ss_scheduled;
+	for (int slot_id = 0; slot_id < NUM_SCHED_SLOTS; ++slot_id) {
+		tcb_t *scheduled = slots[slot_id].ss_scheduled;
 
 		if (scheduled && thread_isrunnable(scheduled)) {
 			/* Found thread, try to dispatch it */
@@ -62,9 +57,7 @@ tcb_t *schedule_select()
 
 int schedule()
 {
-	tcb_t *scheduled = NULL;
-
-	scheduled = schedule_select();
+	tcb_t *scheduled = schedule_select();
 	thread_switch(scheduled);
 	return 1;
 }
