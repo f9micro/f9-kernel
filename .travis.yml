@@ -12,6 +12,8 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y gcc-arm-embedded
 
+before_script: arm-none-eabi-gcc --version
+
 script:
   - cp -f board/$BOARD/defconfig .config
   - make build/host/Config.in
@@ -19,3 +21,7 @@ script:
   - build/host/conf --silentoldconfig build/host/Config.in
   - make
   - arm-none-eabi-size build/$BOARD/f9.elf
+
+cache:
+  - apt
+  - ccache
