@@ -29,7 +29,7 @@ void sys_clock_init(void)
 {
 	volatile uint32_t startup_count, HSE_status;
 
-#if defined(STM32F4X)
+#if defined(STM32F4X) && defined(CONFIG_FPU)
 	/* Enable the FPU */
 	*SCB_CPACR |= (0xf << 20);
 	/* Enable floating point state preservation */
