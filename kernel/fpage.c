@@ -25,7 +25,7 @@ DECLARE_KTABLE(fpage_t, fpage_table, CONFIG_MAX_FPAGES);
 	}							\
 	else {							\
 		while (!end && fpprev->next != (fpage)) {	\
-			if (fpprev->next == NULL)		\
+			if (fpprev->next == (void*)NULL)		\
 				end = 1;			\
 			fpprev = fpprev->next;			\
 		}						\
@@ -74,7 +74,7 @@ static void insert_fpage_chain_to_as(as_t *as, fpage_t *first, fpage_t *last)
 		as->first = first;
 	} else {
 		/* Search for chain in the middle */
-		while (fp->as_next != NULL) {
+		while (fp->as_next != (void*)NULL) {
 			if (FPAGE_BASE(last) < FPAGE_BASE(fp->as_next)) {
 				last->as_next = fp->as_next;
 				break;
@@ -121,11 +121,11 @@ static fpage_t *create_fpage(memptr_t base, size_t shift, int mpid)
 {
 	fpage_t *fpage = (fpage_t *) ktable_alloc(&fpage_table);
 
-	assert(fpage != NULL);
+	assert(fpage != (void*)NULL);
 
-	fpage->as_next = NULL;
+	fpage->as_next = (void*)NULL;
 	fpage->map_next = fpage; 	/* That is first fpage in mapping */
-	fpage->mpu_next = NULL;
+	fpage->mpu_next = (void*)NULL;
 	fpage->fpage.mpid = mpid;
 	fpage->fpage.flags = 0;
 	fpage->fpage.rwx = MP_USER_PERM(mempool_getbyid(mpid)->flags);
@@ -148,7 +148,7 @@ static void create_fpage_chain(memptr_t base, size_t size, int mpid,
                                fpage_t **pfirst, fpage_t **plast)
 {
 	int shift, sshift, bshift;
-	fpage_t *fpage = NULL;
+	fpage_t *fpage = (void*)NULL;
 
 	while (size) {
 		/* Select least of log2(base), log2(size).

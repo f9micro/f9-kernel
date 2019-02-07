@@ -22,7 +22,7 @@ MACH_TYPE = $(shell uname -m)
 BUILD_TIME = $(shell date +%FT%T%z)
 
 CFLAGS_WARN = \
-	-Wall -Werror -Wundef -Wstrict-prototypes -Wno-trigraphs	\
+	-Wall -Wundef -Wstrict-prototypes -Wno-trigraphs	\
 	-fno-strict-aliasing -fno-common				\
 	-Werror-implicit-function-declaration -Wno-format-security	\
 	-fno-delete-null-pointer-checks -Wno-pointer-sign 		\

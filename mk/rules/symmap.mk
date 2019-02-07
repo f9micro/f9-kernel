@@ -12,7 +12,8 @@ cmd_elf_to_symmap = $(NM) $< | sort | cut -d' ' -f1,3 | \
 	{ \
 		SYM = SYM "{ (void*) (0x"$$1"), "STRCOUNT" },\n"; \
 		STRCOUNT += length($$2) + 1;\
-		STRNAME = STRNAME "\"" $$2 "\\0" "\"" "\n"; \
+		MPOLIA = substr($$2, 1, length($$2)-1); \
+		STRNAME = STRNAME "\"" MPOLIA "\\0" "\"" "\n"; \
 		COUNT++; \
 	} \
 	END { \

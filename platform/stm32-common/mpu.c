@@ -65,7 +65,7 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 	int i;
 
 	/* Kernel fault? */
-	if (as == NULL)
+	if (as == (as_t *)NULL)
 		return 1;
 
 	if (addr_in_mpu(addr))
@@ -81,7 +81,7 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 
 			/* Get first avalible MPU index */
 			i = 0;
-			while (sfp != NULL) {
+			while (sfp != (fpage_t *)NULL) {
 				++i;
 				sfp = sfp->mpu_next;
 			}
@@ -89,7 +89,7 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 			/* Update MPU */
 			mpu_setup_region(i++, fp);
 
-			while (i < 8 && fp->mpu_next != NULL) {
+			while (i < 8 && fp->mpu_next != (void *)NULL) {
 				mpu_setup_region(i++, fp->mpu_next);
 				fp = fp->mpu_next;
 			}

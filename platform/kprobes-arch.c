@@ -28,9 +28,9 @@ int kprobe_arch_add(struct kprobe *kp)
 	 * otherwise share the existing bkpt.
 	 */
 
-	if (found == NULL) {
+	if (found == (void*)NULL) {
 		b = breakpoint_install((uint32_t) kp->addr);
-		if (b != NULL) {
+		if (b != (void*)NULL) {
 			kp->bkpt = b;
 			enable_breakpoint(b);
 		} else
@@ -50,7 +50,7 @@ int kprobe_arch_del(struct kprobe *kp)
 	struct kprobe *found = kplist_search(kp->addr);
 
 	/* Free bkpt when there is no kprobe at this addr */
-	if (found == NULL)
+	if (found == (void*)NULL)
 		breakpoint_uninstall(kp->bkpt);
 	return 0;
 }
