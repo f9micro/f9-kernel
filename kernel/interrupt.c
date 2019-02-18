@@ -59,7 +59,7 @@ static struct user_irq_queue user_irq_queue;
 
 static int user_irq_queue_is_empty(void)
 {
-	return (user_irq_queue.head == (void*)NULL);
+	return (user_irq_queue.head == NULL);
 }
 
 static void user_irq_queue_push(struct user_irq *uirq)
@@ -87,7 +87,7 @@ static struct user_irq *user_irq_queue_pop(void)
 static void user_irq_queue_delete(int irq)
 {
 	struct user_irq *uirq = user_irqs[irq];
-	for (struct user_irq **iter = &user_irq_queue.head ; *iter != (void*)NULL ;
+	for (struct user_irq **iter = &user_irq_queue.head ; *iter != NULL ;
 	     iter = &(*iter)->next) {
 		if (*iter == uirq) {
 			*iter = uirq->next;
@@ -130,7 +130,7 @@ static void user_irq_release(int irq)
 	if (IS_VALID_IRQ_NUM(irq)) {
 		struct user_irq *uirq = user_irqs[irq];
 
-		if (uirq != (void*)NULL) {
+		if (uirq != NULL) {
 			ktable_free(&user_irq_table, uirq);
 			user_irqs[irq] = NULL;
 		}
@@ -139,7 +139,7 @@ static void user_irq_release(int irq)
 
 static void irq_handler_ipc(struct user_irq *uirq)
 {
-	if (uirq == (void*)NULL || uirq->thr == (void*)NULL)
+	if (uirq == NULL || uirq->thr == NULL)
 		return;
 
 	/* Prepare ipc for user interrupt thread */
@@ -161,9 +161,9 @@ static int irq_handler_enable(int irq)
 {
 	struct user_irq *uirq = user_irqs[irq];
 
-	assert(uirq != (void*)NULL);
+	assert(uirq != NULL);
 
-	if (uirq->thr == (void*)NULL)
+	if (uirq->thr == NULL)
 		return -1;
 
 	tcb_t *thr = uirq->thr;
@@ -198,7 +198,7 @@ static tcb_t *irq_handler_sched(struct sched_slot *slot)
 	irq_disable();
 	struct user_irq *uirq = user_irq_queue_pop();
 
-	if (uirq != (void*)NULL && (thr = uirq->thr) != (void*)NULL &&
+	if (uirq != NULL && (thr = uirq->thr) != NULL &&
 	    thr->state == T_RECV_BLOCKED) {
 		thr->state = T_RUNNABLE;
 		sched_slot_dispatch(SSI_INTR_THREAD, thr);
@@ -213,9 +213,9 @@ void __interrupt_handler(int irq)
 {
 	struct user_irq *uirq = user_irq_fetch(irq);
 
-	if (uirq == (void*)NULL ||
-	    uirq->thr == (void*)NULL ||
-	    uirq->handler == (void*)NULL ||
+	if (uirq == NULL ||
+	    uirq->thr == NULL ||
+	    uirq->handler == NULL ||
 	    uirq->action != USER_IRQ_ENABLE) {
 		return;
 	}
@@ -252,7 +252,7 @@ void user_interrupt_config(tcb_t *from)
 
 	struct user_irq *uirq = user_irq_fetch(irq);
 
-	if (uirq == (void*)NULL)
+	if (uirq == NULL)
 		return;
 
 	/* update user irq config */
@@ -261,7 +261,7 @@ void user_interrupt_config(tcb_t *from)
 
 	uirq->action = (uint16_t) action;
 
-	if (handler != (void*)NULL)
+	if (handler != NULL)
 		uirq->handler = handler;
 
 	if (priority > 0)
@@ -270,12 +270,12 @@ void user_interrupt_config(tcb_t *from)
 
 void user_interrupt_handler_update(tcb_t *thr)
 {
-	if (thr == (void*)NULL)
+	if (thr == NULL)
 		return;
 
 	for (int irq = 0 ; irq < IRQn_NUM ; irq++) {
 		struct user_irq *uirq = user_irq_fetch(irq);
-		if (uirq == (void*)NULL)
+		if (uirq == NULL)
 			continue;
 
 		if (uirq->thr == thr) {

@@ -134,7 +134,7 @@ int ktimer_event_schedule(uint32_t ticks, ktimer_event_t *kte)
 	ticks -= ktimer_time;
 	kte->next = NULL;
 
-	if (event_queue == (void*)NULL) {
+	if (event_queue == NULL) {
 		/* All other events are already handled, so simply schedule
 		 * and enable timer
 		 */
@@ -222,7 +222,7 @@ ktimer_event_t *ktimer_event_create(uint32_t ticks,
 	kte = (ktimer_event_t *) ktable_alloc(&ktimer_event_table);
 
 	/* No available slots */
-	if (kte == (void*)NULL)
+	if (kte == NULL)
 		goto ret;
 
 	kte->next = NULL;

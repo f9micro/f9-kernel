@@ -148,7 +148,6 @@ void debug_kdb_handler(void)
 void kdb_init(void)
 {
 	softirq_register(KDB_SOFTIRQ, debug_kdb_handler);
-	dbg_puts("kdb_init() invoked.\n");
 	dbg_puts("Press '?' to print KDB menu\n");
 }
 

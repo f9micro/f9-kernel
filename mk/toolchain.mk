@@ -22,20 +22,14 @@ MACH_TYPE = $(shell uname -m)
 BUILD_TIME = $(shell date +%FT%T%z)
 
 CFLAGS_WARN = \
-	-Wall -Wundef -Wstrict-prototypes -Wno-trigraphs	\
+	-Wall -Werror -Wundef -Wstrict-prototypes -Wno-trigraphs	\
 	-fno-strict-aliasing -fno-common				\
 	-Werror-implicit-function-declaration -Wno-format-security	\
 	-fno-delete-null-pointer-checks -Wno-pointer-sign 		\
 	-fno-strict-overflow -fconserve-stack
-
-#CFLAGS_OPT = \
-#	-O1 -fno-toplevel-reorder \
-#	-fdata-sections -ffunction-sections
-
 CFLAGS_OPT = \
-	-O0 -fno-toplevel-reorder \
+	-O1 -fno-toplevel-reorder \
 	-fdata-sections -ffunction-sections
-
 CFLAGS_DEBUG = -g3
 CFLAGS_INCLUDE = $(foreach i,$(includes),-I$(i) )
 CFLAGS_INCLUDE_USER = $(foreach i,$(includes-user),-I$(i) )

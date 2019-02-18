@@ -97,7 +97,7 @@ L4_MsgTag_t L4_Ipc(L4_ThreadId_t to,
 
 	result.raw = __L4_MR0;
 
-	if (from != (void*)NULL)
+	if (from != NULL)
 		*from = from_ret;
 
 	return result;
