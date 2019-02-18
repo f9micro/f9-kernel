@@ -27,9 +27,15 @@ CFLAGS_WARN = \
 	-Werror-implicit-function-declaration -Wno-format-security	\
 	-fno-delete-null-pointer-checks -Wno-pointer-sign 		\
 	-fno-strict-overflow -fconserve-stack
+
+#CFLAGS_OPT = \
+#	-O1 -fno-toplevel-reorder \
+#	-fdata-sections -ffunction-sections
+
 CFLAGS_OPT = \
-	-O1 -fno-toplevel-reorder \
+	-O0 -fno-toplevel-reorder \
 	-fdata-sections -ffunction-sections
+
 CFLAGS_DEBUG = -g3
 CFLAGS_INCLUDE = $(foreach i,$(includes),-I$(i) )
 CFLAGS_INCLUDE_USER = $(foreach i,$(includes-user),-I$(i) )
