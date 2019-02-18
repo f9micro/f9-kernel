@@ -42,6 +42,7 @@ void *pong_thread(void *arg)
 {
 	L4_MsgTag_t tag;
 	L4_Msg_t msg;
+	int count = 0;
 
 	while (1) {
 		tag = L4_Receive_Timeout(threads[PING_THREAD],
@@ -54,6 +55,7 @@ void *pong_thread(void *arg)
 		}
 		/* FIXME: workaround solution to avoid scheduler starvation */
 		L4_Sleep(L4_TimePeriod(500 * 1000));
+		printf("pong_thread(%d)\n", count++);
 	}
 }
 

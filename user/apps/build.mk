@@ -3,8 +3,10 @@
 # found in the LICENSE file.
 
 user-apps-dirs = \
-	l4test \
-	pingpong
+	pingpong \
+
+#	l4test \
+#	pingpong
 
 
 ifdef CONFIG_EXTI_INTERRUPT_TEST
