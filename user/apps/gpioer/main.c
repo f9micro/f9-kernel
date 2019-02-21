@@ -143,11 +143,16 @@ static L4_ThreadId_t create_thread(user_struct *user, void (*func)(void))
 __USER_TEXT 
 static void *main(void *p)
 {
+    printf("ping_thread(): built-in leds blinking\n");
 	user_struct *user = (user_struct *)p;
+    printf("ping_thread(): built-in leds blinking\n");
     free_mem = user->fpages[0].base;
 
+    printf("ping_thread(): built-in leds blinking\n");
     threads[GPIOER_THREAD] = create_thread(user, gpioer_thread);
+    printf("ping_thread(): built-in leds blinking\n");
     threads[BUTTON_MONITOR_THREAD] = create_thread(user, button_monitor_thread);
+    printf("ping_thread(): built-in leds blinking\n");
 	
 	return 0;
 }
