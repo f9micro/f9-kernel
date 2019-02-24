@@ -3,11 +3,13 @@
 # found in the LICENSE file.
 
 user-apps-dirs = \
-	pingpong
+	3ping
 
 #	gpioer \
 #	l4test \
 #	pingpong
+#	altpingpong
+#	3ping
 
 
 ifdef CONFIG_EXTI_INTERRUPT_TEST
