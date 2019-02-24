@@ -16,7 +16,12 @@
 
 enum { PING_THREAD, PONG_THREAD, PUNG_THREAD };
 
-static L4_ThreadId_t threads[3] __USER_DATA;
+typedef struct thread_info_s {
+	L4_ThreadId_t thread_id;
+	char *name;
+} thread_info_t;
+
+static thread_info_t thread_info[3] __USER_DATA;
 
 #define LABEL 0x1
 
@@ -41,10 +46,10 @@ void *ping_thread(void *arg)
 	L4_Msg_t msg;
 	L4_Word_t count = 0;
 
-    printf("start ping_thread()\n");
+    printf("start %s()\n", thread_info[PING_THREAD].name);
 
 	while (1) {
-		tag = L4_Receive_Timeout(threads[PUNG_THREAD],
+		tag = L4_Receive_Timeout(thread_info[PUNG_THREAD].thread_id,
 		                         L4_TimePeriod(1000 * 1000));
 		L4_MsgStore(tag, &msg);
 		count = L4_MsgWord(&msg, 0);
@@ -56,13 +61,13 @@ void *ping_thread(void *arg)
 		/* FIXME: workaround solution to avoid scheduler starvation */
 		L4_Sleep(L4_TimePeriod(500 * 1000));
 
-		printf("\nping_thread(%d)\t", count);
+		printf("\%s(%d)\t", thread_info[PING_THREAD].name, count);
 		L4_MsgClear(&msg);
 		L4_Set_MsgLabel(&msg, LABEL);
 		L4_MsgAppendWord(&msg, ++count);
 		L4_MsgLoad(&msg);
 
-		tag = L4_Send_Timeout(threads[PONG_THREAD],
+		tag = L4_Send_Timeout(thread_info[PONG_THREAD].thread_id,
 		                      L4_TimePeriod(1000 * 1000));
 
 		if (!L4_IpcSucceeded(tag)) {
@@ -83,10 +88,10 @@ void *pong_thread(void *arg)
 	L4_Word_t count;
 	L4_Word_t u;
 
-    printf("start pong_thread()\n");
+    printf("start %s()\n", thread_info[PONG_THREAD].name);
 
 	while (1) {
-		tag = L4_Receive_Timeout(threads[PING_THREAD],
+		tag = L4_Receive_Timeout(thread_info[PING_THREAD].thread_id,
 		                         L4_TimePeriod(1000 * 1000));
 		L4_MsgStore(tag, &msg);
 		label = L4_Label(tag);
@@ -97,14 +102,14 @@ void *pong_thread(void *arg)
 			printf("%p: recv ipc fails\n", L4_MyGlobalId());
 			printf("%p: ErrorCode = 0x%x\n", L4_MyGlobalId(), L4_ErrorCode());
 		}
-		printf("pong_thread %d : %d : %d\t", label, u, count);
+		printf("%s %d : %d : %d\t", thread_info[PONG_THREAD].name, label, u, count);
 
 		L4_MsgClear(&msg);
 		L4_Set_MsgLabel(&msg, LABEL);
 		L4_MsgAppendWord(&msg, ++count);
 		L4_MsgLoad(&msg);
 
-		tag = L4_Send_Timeout(threads[PUNG_THREAD],
+		tag = L4_Send_Timeout(thread_info[PUNG_THREAD].thread_id,
 		                      L4_TimePeriod(1000 * 1000));
 
 		if (!L4_IpcSucceeded(tag)) {
@@ -125,10 +130,10 @@ void *pung_thread(void *arg)
 	L4_Word_t count;
 	L4_Word_t u;
 
-    printf("start pung_thread()\n");
+    printf("start %s()\n", thread_info[PUNG_THREAD].name);
 
 	while (1) {
-		tag = L4_Receive_Timeout(threads[PONG_THREAD],
+		tag = L4_Receive_Timeout(thread_info[PONG_THREAD].thread_id,
 		                         L4_TimePeriod(1000 * 1000));
 		L4_MsgStore(tag, &msg);
 		label = L4_Label(tag);
@@ -139,14 +144,14 @@ void *pung_thread(void *arg)
 			printf("%p: recv ipc fails\n", L4_MyGlobalId());
 			printf("%p: ErrorCode = 0x%x\n", L4_MyGlobalId(), L4_ErrorCode());
 		}
-		printf("pung_thread %d : %d : %d\n", label, u, count);
+		printf("%s %d : %d : %d\n", thread_info[PUNG_THREAD].name, label, u, count);
 
 		L4_MsgClear(&msg);
 		L4_Set_MsgLabel(&msg, LABEL);
 		L4_MsgAppendWord(&msg, ++count);
 		L4_MsgLoad(&msg);
 
-		tag = L4_Send_Timeout(threads[PING_THREAD],
+		tag = L4_Send_Timeout(thread_info[PING_THREAD].thread_id,
 		                      L4_TimePeriod(1000 * 1000));
 
 		if (!L4_IpcSucceeded(tag)) {
@@ -161,13 +166,19 @@ void *pung_thread(void *arg)
 __USER_TEXT
 static void *main(void *user)
 {
-	threads[PUNG_THREAD] = pager_create_thread();
-	threads[PONG_THREAD] = pager_create_thread();
-	threads[PING_THREAD] = pager_create_thread();
+	//  = { {PING_THREAD, "PING", 0}, {PONG_THREAD, "PONG", 0}, {PUNG_THREAD, "PUNG", 0} } 
 
-	pager_start_thread(threads[PUNG_THREAD], pung_thread, NULL);
-	pager_start_thread(threads[PONG_THREAD], pong_thread, NULL);
-	pager_start_thread(threads[PING_THREAD], ping_thread, NULL);
+	thread_info[PUNG_THREAD].thread_id = pager_create_thread();
+	thread_info[PONG_THREAD].thread_id = pager_create_thread();
+	thread_info[PING_THREAD].thread_id = pager_create_thread();
+
+	thread_info[PING_THREAD].name = "PING_THREAD";
+	thread_info[PONG_THREAD].name = "PONG_THREAD";
+	thread_info[PUNG_THREAD].name = "PUNG_THREAD";
+
+	pager_start_thread(thread_info[PUNG_THREAD].thread_id, pung_thread, NULL);
+	pager_start_thread(thread_info[PONG_THREAD].thread_id, pong_thread, NULL);
+	pager_start_thread(thread_info[PING_THREAD].thread_id, ping_thread, NULL);
 
 	// Prime the pump:
 	{
@@ -182,7 +193,7 @@ static void *main(void *user)
 		L4_MsgAppendWord(&msg, count);
 		L4_MsgLoad(&msg);
 
-		tag = L4_Send_Timeout(threads[PONG_THREAD],
+		tag = L4_Send_Timeout(thread_info[PONG_THREAD].thread_id,
 		                      L4_TimePeriod(1000 * 1000));
 
 		if (!L4_IpcSucceeded(tag)) {
