@@ -43,23 +43,6 @@ void *ping_thread(void *arg)
 
     printf("start ping_thread()\n");
 
-	// Prime the pump:
-	{
-		printf("ping_thread(%d)\t", count);
-		L4_MsgClear(&msg);
-		L4_Set_MsgLabel(&msg, LABEL);
-		L4_MsgAppendWord(&msg, count);
-		L4_MsgLoad(&msg);
-
-		tag = L4_Send_Timeout(threads[PONG_THREAD],
-		                      L4_TimePeriod(1000 * 1000));
-
-		if (!L4_IpcSucceeded(tag)) {
-			printf("%p: send ipc fails\n", L4_MyGlobalId());
-			printf("%p: ErrorCode = 0x%x\n", L4_MyGlobalId(), L4_ErrorCode());
-		}
-	}
-
 	while (1) {
 		tag = L4_Receive_Timeout(threads[PUNG_THREAD],
 		                         L4_TimePeriod(1000 * 1000));
@@ -186,9 +169,36 @@ static void *main(void *user)
 	pager_start_thread(threads[PONG_THREAD], pong_thread, NULL);
 	pager_start_thread(threads[PING_THREAD], ping_thread, NULL);
 
+	// Prime the pump:
+	{
+		L4_MsgTag_t tag;
+		L4_Msg_t msg;
+		L4_Word_t count = 0;
+
+		printf("\nPrime the pump %d\n", count);
+
+		L4_MsgClear(&msg);
+		L4_Set_MsgLabel(&msg, LABEL);
+		L4_MsgAppendWord(&msg, count);
+		L4_MsgLoad(&msg);
+
+		tag = L4_Send_Timeout(threads[PONG_THREAD],
+		                      L4_TimePeriod(1000 * 1000));
+
+		if (!L4_IpcSucceeded(tag)) {
+			printf("%p: send ipc fails\n", L4_MyGlobalId());
+			printf("%p: ErrorCode = 0x%x\n", L4_MyGlobalId(), L4_ErrorCode());
+		}
+		else {
+			printf("\nPump is primed %d\n", count);
+		}
+	}
+
+	printf("\nEXITING main()\n");
 	return 0;
 }
 
+// DECLARE_FPAGE(0x0, (number_of_threads * 2 * UTCB_SIZE) + (number_of_threads * 2 * STACK_SIZE))
 DECLARE_USER(
 	0,
 	3ping,
