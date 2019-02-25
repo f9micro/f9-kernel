@@ -86,8 +86,10 @@ void *ping_thread(void *arg)
 
 	L4_Word_t count = 0;
 
+    bool flag = true;
+
     printf("ping_thread(): built-in leds blinking\n");
-    //led_init();
+    led_init();
 
 	while (1) {
 		printf("ping_thread(%d)\t", count);
@@ -103,6 +105,10 @@ void *ping_thread(void *arg)
 			printf("%p: send ipc fails\n", L4_MyGlobalId());
 			printf("%p: ErrorCode = 0x%x\n", L4_MyGlobalId(), L4_ErrorCode());
 		}
+
+		leds_onoff(flag);
+		L4_Sleep(L4_TimePeriod(1000 * 1000));
+		flag=!flag;
 	}
 }
 
@@ -143,10 +149,14 @@ static void *main(void *user)
 	return 0;
 }
 
+#define DEV_SIZE 0x3c00
+#define AHB1_1DEV 0x40020000
+
 DECLARE_USER(
 	0,
 	pingpong,
 	main,
 	DECLARE_FPAGE(0x0, 4 * UTCB_SIZE + 4 * STACK_SIZE)
 	DECLARE_FPAGE(0x0, 512)
+    DECLARE_FPAGE(AHB1_1DEV, DEV_SIZE)
 );
