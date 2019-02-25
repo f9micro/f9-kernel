@@ -14,9 +14,9 @@
 
 #define STACK_SIZE 512
 
-enum { PING_THREAD, PONG_THREAD };
+enum { PING_THREAD, PONG_THREAD, BUTTON_MONITOR_THREAD };
 
-static L4_ThreadId_t threads[2] __USER_DATA;
+static L4_ThreadId_t threads[3] __USER_DATA;
 
 #define LABEL 0x1
 
@@ -54,11 +54,11 @@ static inline void led_init(void)
 }
 
 __USER_TEXT
-static inline void leds_onoff(bool on)
+static inline void leds_onoff(int count)
 {
     for (int i = 0; i < BOARD_LED_NUM; ++i)
     {
-        if (on)
+        if ((count % 4) == i)
             gpio_out_high(BOARD_LED_PORT, board_leds[i]);
         else
             gpio_out_low(BOARD_LED_PORT, board_leds[i]);
@@ -86,7 +86,7 @@ void *ping_thread(void *arg)
 
 	L4_Word_t count = 0;
 
-    bool flag = true;
+//    bool flag = true;
 
     printf("ping_thread(): built-in leds blinking\n");
     led_init();
@@ -106,10 +106,47 @@ void *ping_thread(void *arg)
 			printf("%p: ErrorCode = 0x%x\n", L4_MyGlobalId(), L4_ErrorCode());
 		}
 
-		leds_onoff(flag);
+		leds_onoff(count);
 		L4_Sleep(L4_TimePeriod(1000 * 1000));
-		flag=!flag;
+//		flag=!flag;
 	}
+}
+
+
+/* STM32F407-Discovery
+ * User Button connected on PA0 
+ * as result, for this demo app, 
+ * Because USART4 (PA0, PA1) is conflict, 
+ * choose USART1 (PA9,PA10) or USART2 (PA2,PA3) instead.
+ **/
+
+#define BUTTON_USER_PIN 0
+
+/* if you use external button, please 
+ * update the BUTTON_CUSTOM_PIN with your own number
+ **/
+
+#define BUTTON_CUSTOM_PIN BUTTON_USER_PIN
+
+__USER_TEXT
+void *button_monitor_thread(void *arg)
+{
+    int count = 1;
+
+    printf("button_monitor_thread(0): built-in user button detection\n");
+	L4_Sleep(L4_TimePeriod(500 * 1000));
+    printf("button_monitor_thread(1): built-in user button detection\n");
+    gpio_config_input(GPIOA, BUTTON_CUSTOM_PIN, GPIO_PUPDR_DOWN);
+    printf("button_monitor_thread(2): built-in user button detection\n");
+    while (1)
+    {
+            uint8_t state = gpio_input_bit(GPIOA, BUTTON_CUSTOM_PIN);
+            if (state != 0) {
+                printf("button %s %d times\n", state == 0 ? "open" : "pushed", count);
+                count++;
+            }
+            L4_Sleep(L4_TimePeriod(1000 * 200));
+    }
 }
 
 __USER_TEXT
@@ -144,8 +181,12 @@ static void *main(void *user)
 {
 	threads[PING_THREAD] = pager_create_thread();
 	threads[PONG_THREAD] = pager_create_thread();
+	threads[BUTTON_MONITOR_THREAD] = pager_create_thread();
+
 	pager_start_thread(threads[PING_THREAD], ping_thread, NULL);
 	pager_start_thread(threads[PONG_THREAD], pong_thread, NULL);
+//	pager_start_thread(threads[BUTTON_MONITOR_THREAD], button_monitor_thread, NULL);
+
 	return 0;
 }
 
@@ -156,7 +197,8 @@ DECLARE_USER(
 	0,
 	pingpong,
 	main,
-	DECLARE_FPAGE(0x0, 4 * UTCB_SIZE + 4 * STACK_SIZE)
+	DECLARE_FPAGE(0x0, 6 * UTCB_SIZE + 6 * STACK_SIZE)
 	DECLARE_FPAGE(0x0, 512)
+    /* map thread with AHB DEVICE for gpio accessing */
     DECLARE_FPAGE(AHB1_1DEV, DEV_SIZE)
 );
