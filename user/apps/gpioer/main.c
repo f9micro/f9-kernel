@@ -46,11 +46,11 @@ static inline void __USER_TEXT led_init(void)
 	}
 }
 
-static inline void __USER_TEXT leds_onoff(bool on)
+static inline void __USER_TEXT leds_onoff(int count)
 {
 	for (int i = 0; i < BOARD_LED_NUM; ++i)
 	{
-		if (on)
+        if ((count % 4) == i)
             gpio_out_high(BOARD_LED_PORT, board_leds[i]);
         else
             gpio_out_low(BOARD_LED_PORT, board_leds[i]);
@@ -61,15 +61,15 @@ static inline void __USER_TEXT leds_onoff(bool on)
 __USER_TEXT
 void *gpioer_thread(void *arg)
 {
-	bool flag = true;
+	int count = 0;
 
 	printf("gpioer thread: built-in leds blinking\n");
     led_init();
     while (1)
     {
-            leds_onoff(flag);
+			printf("gpioer thread: built-in leds blinking - count %d\n", count);
+            leds_onoff(count++);
             L4_Sleep(L4_TimePeriod(1000 * 1000));
-            flag=!flag;
     }
 }
 
