@@ -95,7 +95,7 @@ void *button_monitor_thread(void *arg)
 {
     int count = 1;
 
-    gpio_config_input(GPIOA, BUTTON_CUSTOM_PIN, GPIO_PUPDR_DOWN);
+//    gpio_config_input(GPIOA, BUTTON_CUSTOM_PIN, GPIO_PUPDR_DOWN);
 	printf("thread: built-in user button detection\n");
     while (1)
     {
@@ -116,7 +116,7 @@ static void *main(void *user)
 	threads[BUTTON_MONITOR_THREAD] = pager_create_thread();
 
 	pager_start_thread(threads[GPIOER_THREAD], gpioer_thread, NULL);
-//	pager_start_thread(threads[BUTTON_MONITOR_THREAD], button_monitor_thread, NULL);
+	pager_start_thread(threads[BUTTON_MONITOR_THREAD], button_monitor_thread, NULL);
 
 	/* Return statement required. */
 	return 0;
@@ -134,7 +134,7 @@ DECLARE_USER(
 	gpioer,
 	main,
 	/* was DECLARE_FPAGE(0x0, 2 * UTCB_SIZE + 2 * STACK_SIZE) */
-	DECLARE_FPAGE(0x0, 4 * UTCB_SIZE + 4 * STACK_SIZE)
+	DECLARE_FPAGE(0x0, 6 * UTCB_SIZE + 6 * STACK_SIZE)
 	/* Added this next line. */
 	DECLARE_FPAGE(0x0, 512)
     /* map thread with AHB DEVICE for gpio accessing */
