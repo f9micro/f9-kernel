@@ -28,6 +28,8 @@ static L4_ThreadId_t threads[2] __USER_DATA;
 #define BOARD_LED_PIN4 15 
 
 static uint8_t board_leds[BOARD_LED_NUM] __USER_DATA;
+static int count __USER_DATA;
+
 
 static inline void __USER_TEXT led_init(void)
 {
@@ -61,8 +63,6 @@ static inline void __USER_TEXT leds_onoff(int count)
 __USER_TEXT
 void *gpioer_thread(void *arg)
 {
-	int count = 0;
-
 	printf("gpioer thread: built-in leds blinking\n");
     led_init();
     while (1)
@@ -93,9 +93,7 @@ void *gpioer_thread(void *arg)
 __USER_TEXT
 void *button_monitor_thread(void *arg)
 {
-    int count = 1;
-
-//    gpio_config_input(GPIOA, BUTTON_CUSTOM_PIN, GPIO_PUPDR_DOWN);
+    gpio_config_input(GPIOA, BUTTON_CUSTOM_PIN, GPIO_PUPDR_DOWN);
 	printf("thread: built-in user button detection\n");
     while (1)
     {
@@ -112,6 +110,8 @@ void *button_monitor_thread(void *arg)
 __USER_TEXT
 static void *main(void *user)
 {
+	count = 0;
+
 	threads[GPIOER_THREAD] = pager_create_thread();
 	threads[BUTTON_MONITOR_THREAD] = pager_create_thread();
 
