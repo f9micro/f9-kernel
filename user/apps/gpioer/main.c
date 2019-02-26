@@ -10,15 +10,15 @@
 #include <l4/ipc.h>
 #include <l4/utcb.h>
 
-#define STACK_SIZE 256
+/* Changed stack size from 256 to 512. */
+#define STACK_SIZE 512
 
 enum { GPIOER_THREAD, BUTTON_MONITOR_THREAD };
 
 static L4_ThreadId_t threads[2] __USER_DATA;
 
-static L4_Word_t last_thread __USER_DATA;
-static L4_Word_t free_mem __USER_DATA;
-
+/* Remove last_thread and free_mem as they are no longer 
+   required to launch and manage the threads. */
 #define BOARD_LED_PORT GPIOD
 #define BOARD_LED_NUM  4
 
@@ -29,43 +29,41 @@ static L4_Word_t free_mem __USER_DATA;
 
 static uint8_t board_leds[BOARD_LED_NUM] __USER_DATA;
 
-__USER_TEXT
-static inline void led_init(void)
+static inline void __USER_TEXT led_init(void)
 {
 
-    board_leds[0] = BOARD_LED_PIN1;
-    board_leds[1] = BOARD_LED_PIN2;
-    board_leds[2] = BOARD_LED_PIN3;
-    board_leds[3] = BOARD_LED_PIN4;
+	board_leds[0] = BOARD_LED_PIN1;
+	board_leds[1] = BOARD_LED_PIN2;
+	board_leds[2] = BOARD_LED_PIN3;
+	board_leds[3] = BOARD_LED_PIN4;
 
-    for (int i = 0; i < BOARD_LED_NUM; ++i)
-    {
-        gpio_config_output(BOARD_LED_PORT,
-            board_leds[i],
-            GPIO_PUPDR_UP,
-            GPIO_OSPEEDR_50M);
-    }
+	for (int i = 0; i < BOARD_LED_NUM; ++i)
+	{
+		gpio_config_output(BOARD_LED_PORT,
+			board_leds[i],
+			GPIO_PUPDR_UP,
+			GPIO_OSPEEDR_50M);
+	}
 }
 
-__USER_TEXT
-static inline void leds_onoff(bool on)
+static inline void __USER_TEXT leds_onoff(bool on)
 {
-    for (int i = 0; i < BOARD_LED_NUM; ++i)
-    {
-        if (on)
+	for (int i = 0; i < BOARD_LED_NUM; ++i)
+	{
+		if (on)
             gpio_out_high(BOARD_LED_PORT, board_leds[i]);
         else
             gpio_out_low(BOARD_LED_PORT, board_leds[i]);
-    }
+	}
 }
 
-
+/* Thread function signature changed to confirm to pager_start_thread(). */
 __USER_TEXT
-void gpioer_thread(void)
+void *gpioer_thread(void *arg)
 {
-    bool flag = true;
+	bool flag = true;
 
-    printf("gpioer thread: built-in leds blinking\n");
+	printf("gpioer thread: built-in leds blinking\n");
     led_init();
     while (1)
     {
@@ -91,13 +89,14 @@ void gpioer_thread(void)
 
 #define BUTTON_CUSTOM_PIN BUTTON_USER_PIN
 
+/* Thread function signature changed to confirm to pager_start_thread(). */
 __USER_TEXT
-void button_monitor_thread(void)
+void *button_monitor_thread(void *arg)
 {
     int count = 1;
 
     gpio_config_input(GPIOA, BUTTON_CUSTOM_PIN, GPIO_PUPDR_DOWN);
-    printf("thread: built-in user button detection\n");
+	printf("thread: built-in user button detection\n");
     while (1)
     {
             uint8_t state = gpio_input_bit(GPIOA, BUTTON_CUSTOM_PIN);
@@ -109,62 +108,35 @@ void button_monitor_thread(void)
     }
 }
 
+/* main() signature changed. */
 __USER_TEXT
-static void start_thread(L4_ThreadId_t t, L4_Word_t ip,
-                                     L4_Word_t sp, L4_Word_t stack_size)
+static void *main(void *user)
 {
-    L4_Msg_t msg;
+	threads[GPIOER_THREAD] = pager_create_thread();
+	threads[BUTTON_MONITOR_THREAD] = pager_create_thread();
 
-    L4_MsgClear(&msg);
-    L4_MsgAppendWord(&msg, ip);
-    L4_MsgAppendWord(&msg, sp);
-    L4_MsgAppendWord(&msg, stack_size);
-    L4_MsgLoad(&msg);
+	pager_start_thread(threads[GPIOER_THREAD], gpioer_thread, NULL);
+//	pager_start_thread(threads[BUTTON_MONITOR_THREAD], button_monitor_thread, NULL);
 
-    L4_Send(t);
-}
-
-__USER_TEXT
-static L4_ThreadId_t create_thread(user_struct *user, void (*func)(void))
-{
-    L4_ThreadId_t myself = L4_MyGlobalId();
-    L4_ThreadId_t child;
-
-    child.raw = myself.raw + (++last_thread << 14);
-
-    L4_ThreadControl(child, myself, L4_nilthread, myself, (void *) free_mem);
-    free_mem += UTCB_SIZE + STACK_SIZE;
-
-    start_thread(child, (L4_Word_t)func, free_mem, STACK_SIZE);
-
-    return child;
-}
-
-__USER_TEXT 
-static void *main(void *p)
-{
-    printf("ping_thread(): built-in leds blinking\n");
-	user_struct *user = (user_struct *)p;
-    printf("ping_thread(): built-in leds blinking\n");
-    free_mem = user->fpages[0].base;
-
-    printf("ping_thread(): built-in leds blinking\n");
-    threads[GPIOER_THREAD] = create_thread(user, gpioer_thread);
-    printf("ping_thread(): built-in leds blinking\n");
-    threads[BUTTON_MONITOR_THREAD] = create_thread(user, button_monitor_thread);
-    printf("ping_thread(): built-in leds blinking\n");
-	
+	/* Return statement required. */
 	return 0;
 }
+
+/* Function start_thread() no longer required because we are using pager_start_thread(). */
+
+/* Function create_thread() no longer required because we are using pager_start_thread(). */
 
 #define DEV_SIZE 0x3c00
 #define AHB1_1DEV 0x40020000
 
 DECLARE_USER(
-    0,
-    gpioer,
-    main,
-    DECLARE_FPAGE(0x0, 2 * UTCB_SIZE + 2 * STACK_SIZE)
+	0,
+	gpioer,
+	main,
+	/* was DECLARE_FPAGE(0x0, 2 * UTCB_SIZE + 2 * STACK_SIZE) */
+	DECLARE_FPAGE(0x0, 4 * UTCB_SIZE + 4 * STACK_SIZE)
+	/* Added this next line. */
+	DECLARE_FPAGE(0x0, 512)
     /* map thread with AHB DEVICE for gpio accessing */
-    DECLARE_FPAGE(AHB1_1DEV, DEV_SIZE)
+	DECLARE_FPAGE(AHB1_1DEV, DEV_SIZE)
 );
