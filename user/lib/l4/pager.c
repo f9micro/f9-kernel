@@ -150,7 +150,9 @@ void thread_container(kip_t *kip_ptr, utcb_t *utcb_ptr,
                       L4_Word_t entry, L4_Word_t entry_arg)
 {
 	L4_Msg_t msg;
+	printf("\nthread_container(0) %p %p\n", entry, entry_arg);
 	((thr_handler_t *)entry)((void *)entry_arg);
+	printf("\nthread_container(1) %p %p\n", entry, entry_arg);
 
 	L4_MsgClear(&msg);
 	L4_Set_MsgLabel(&msg, PAGER_REQUEST_LABEL);
@@ -259,7 +261,7 @@ L4_Word_t pager_start_thread(L4_ThreadId_t tid, void * (*thr_routine)(void *),
 	L4_MsgAppendWord(&msg, THREAD_START);
 	L4_MsgAppendWord(&msg, (L4_Word_t)tid.raw);
 	L4_MsgAppendWord(&msg, (L4_Word_t)thr_routine);
-	/* TODO: Ignore arg now */
+	L4_MsgAppendWord(&msg, (L4_Word_t)arg);
 
 	L4_MsgLoad(&msg);
 	tag = L4_Call(L4_Pager());
@@ -334,14 +336,15 @@ void pager_thread(user_struct *user,
 			break;
 		case THREAD_START: {
 				L4_Word_t entry;
+				L4_Word_t entry_arg;
 				L4_ThreadId_t tid;
 				L4_Word_t ret;
 
 				tid.raw = L4_MsgWord(&msg, 1);
 				entry = L4_MsgWord(&msg, 2);
-				/* TODO : ignore entry argument now */
+				entry_arg = L4_MsgWord(&msg, 3);
 
-				ret = __thread_start(pool, tid, entry, 0);
+				ret = __thread_start(pool, tid, entry, entry_arg);
 
 				L4_MsgClear(&msg);
 				L4_Set_Label(&msg.tag, PAGER_REPLY_LABEL);

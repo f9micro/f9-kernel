@@ -63,6 +63,7 @@ static inline void __USER_TEXT leds_onoff(int count)
 __USER_TEXT
 void *gpioer_thread(void *arg)
 {
+	printf("\nENTER gpioer_thread(%p)\n", arg);
 	printf("gpioer thread: built-in leds blinking\n");
     led_init();
     while (1)
@@ -71,6 +72,7 @@ void *gpioer_thread(void *arg)
             leds_onoff(count++);
             L4_Sleep(L4_TimePeriod(500 * 1000));
     }
+	printf("\nEXIT gpioer_thread()\n");
 }
 
 
@@ -93,6 +95,7 @@ void *gpioer_thread(void *arg)
 __USER_TEXT
 void *button_monitor_thread(void *arg)
 {
+	printf("\nENTER button_monitor_thread(%p)\n", arg);
     gpio_config_input(GPIOA, BUTTON_CUSTOM_PIN, GPIO_PUPDR_DOWN);
 	printf("thread: built-in user button detection\n");
     while (1)
@@ -104,21 +107,24 @@ void *button_monitor_thread(void *arg)
             }
             L4_Sleep(L4_TimePeriod(1000 * 200));
     }
+	printf("\nEXIT button_monitor_thread()\n");
 }
 
 /* main() signature changed. */
 __USER_TEXT
 static void *main(void *user)
 {
+	printf("\nENTER main(%p)\n", user);
 	count = 0;
 
 	threads[GPIOER_THREAD] = pager_create_thread();
 	threads[BUTTON_MONITOR_THREAD] = pager_create_thread();
 
-	pager_start_thread(threads[GPIOER_THREAD], gpioer_thread, NULL);
-	pager_start_thread(threads[BUTTON_MONITOR_THREAD], button_monitor_thread, NULL);
+	pager_start_thread(threads[GPIOER_THREAD], gpioer_thread, gpioer_thread);
+	pager_start_thread(threads[BUTTON_MONITOR_THREAD], button_monitor_thread, button_monitor_thread);
 
 	/* Return statement required. */
+	printf("\nEXIT main()\n");
 	return 0;
 }
 
