@@ -69,7 +69,7 @@ void *gpioer_thread(void *arg)
     {
 			printf("gpioer thread: built-in leds blinking - count %d\n", count);
             leds_onoff(count++);
-            L4_Sleep(L4_TimePeriod(1000 * 1000));
+            L4_Sleep(L4_TimePeriod(500 * 1000));
     }
 }
 
