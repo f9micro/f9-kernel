@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 user-apps-dirs = \
-	gpioer
+	i2c
 
 #	gpioer \
 #	l4test \
@@ -11,6 +11,7 @@ user-apps-dirs = \
 #	altpingpong
 #	3ping
 #	generic_thread
+#	i2c
 
 
 ifdef CONFIG_EXTI_INTERRUPT_TEST
