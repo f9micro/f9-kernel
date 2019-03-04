@@ -74,6 +74,8 @@ void *ping_thread(void *arg)
 			continue;
 		}
 		else {
+			// Cannot call L4_MsgStore(tag, &msg) or L4_MsgWord(&msg, 0) 
+			// in the event of an IPC receive timeout condition.
 			L4_MsgStore(tag, &msg);
 			count = L4_MsgWord(&msg, 0);
 			prev_thread_id = L4_MsgWord(&msg, 1);
