@@ -65,15 +65,20 @@ void *ping_thread(void *arg)
 	// L4_Sleep(L4_TimePeriod(500 * 1000));
 
 	while (1) {
-		tag = L4_Receive(threads[prev_thread_id]);
-		L4_MsgStore(tag, &msg);
-		count = L4_MsgWord(&msg, 0);
-		prev_thread_id = L4_MsgWord(&msg, 1);
+		tag = L4_Receive_Timeout(threads[prev_thread_id], L4_TimePeriod(1000 * 1000));
 
 		if (!L4_IpcSucceeded(tag)) {
-			printf("\nping_thread - %p: recv ipc fails\n", L4_MyGlobalId());
+			printf("\nping_thread - %p, %d: recv ipc fails\n", L4_MyGlobalId(), my_thread_id);
 			printf("ping_thread - %p: ErrorCode = 0x%x %s\n", L4_MyGlobalId(), L4_ErrorCode(), L4_ErrorCode_String(L4_ErrorCode()));
+			// If there is no message for us then back to the top of this loop to wait again for a message.
+			continue;
 		}
+		else {
+			L4_MsgStore(tag, &msg);
+			count = L4_MsgWord(&msg, 0);
+			prev_thread_id = L4_MsgWord(&msg, 1);
+		}
+
 		/* FIXME: workaround solution to avoid scheduler starvation */
 		L4_Sleep(L4_TimePeriod(500 * 1000));
 
@@ -86,7 +91,8 @@ void *ping_thread(void *arg)
 		L4_MsgAppendWord(&msg, next_thread_id);
 		L4_MsgLoad(&msg);
 
-		tag = L4_Send(threads[next_thread_id]);
+		tag = L4_Send_Timeout(threads[next_thread_id],
+		                      L4_TimePeriod(1000 * 1000));
 
 		if (!L4_IpcSucceeded(tag)) {
 			printf("\nping_thread - %p: send ipc fails\n", L4_MyGlobalId());
@@ -149,14 +155,14 @@ void *boss_thread(void *arg)
 		}
 	}
 
-	printf("\nEXITING boot_thread()\n");
+	printf("\nEXITING boss_thread()\n");
 	return 0;
 }
 
 __USER_TEXT
 static void *main(void *user)
 {
-	printf("\nmain()\n");
+	printf("\nENTERING main()\n");
 
 	threads[BOSS_THREAD] = pager_create_thread();
 	pager_start_thread(threads[BOSS_THREAD], boss_thread, NULL);
