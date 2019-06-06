@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 user-apps-dirs = \
-	generic_thread_arg
+	pingpong
 
 #	gpioer \
 #	l4test \

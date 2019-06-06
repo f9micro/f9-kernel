@@ -23,10 +23,10 @@ static L4_ThreadId_t threads[3] __USER_DATA;
 #define BOARD_LED_PORT GPIOD
 #define BOARD_LED_NUM  4
 
-#define BOARD_LED_PIN1 12 
-#define BOARD_LED_PIN2 13 
-#define BOARD_LED_PIN3 14 
-#define BOARD_LED_PIN4 15 
+#define BOARD_LED_PIN1 12 // Grean
+#define BOARD_LED_PIN2 13 // Orange
+#define BOARD_LED_PIN3 14 // Red
+#define BOARD_LED_PIN4 15 // Blue
 
 static uint8_t board_leds[BOARD_LED_NUM] __USER_DATA;
 
