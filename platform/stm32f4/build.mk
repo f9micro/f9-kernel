@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-chip-y = 
+chip-y = \
+	i2c.o \
 
 loader-chip-y = \
 	gpio.loader.o \

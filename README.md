@@ -9,6 +9,8 @@ communications) for ARM Cortex-M series microprocessors with efficiency
 (performance + power consumption) and security (memory protection + isolated
 execution) in mind.
 
+Includes enhancements and modifications from master branch.
+
 
 Characteristics of F9 Microkernel
 =================================

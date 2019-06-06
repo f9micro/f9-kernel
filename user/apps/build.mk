@@ -3,8 +3,16 @@
 # found in the LICENSE file.
 
 user-apps-dirs = \
-	l4test \
 	pingpong
+
+#	gpioer \
+#	l4test \
+#	pingpong
+#	altpingpong
+#	3ping
+#	generic_thread
+#	i2c
+#	generic_thread_arg
 
 
 ifdef CONFIG_EXTI_INTERRUPT_TEST
