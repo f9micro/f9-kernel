@@ -112,6 +112,18 @@ CONFIG_PANIC_DUMP_STACK=y
 # CONFIG_LOADER is not set
 
 #
-# Test Case
+# User Space
+#
+CONFIG_BUILD_USER_APPS=y
+
+#
+# Apps
+#
+CONFIG_PINGPONG=y
+
+#
+# Test Cases
 #
 CONFIG_EXTI_INTERRUPT_TEST=y
+CONFIG_L4_TEST=y
+# CONFIG_LCD_TEST is not set

@@ -1,0 +1,21 @@
+# Copyright (c) 2016 The F9 Microkernel Project. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+menu "Test Cases"
+	depends on BUILD_USER_APPS
+
+config EXTI_INTERRUPT_TEST
+	bool "EXTI interrupt test case"
+	default n
+	depends on EXTI0_USER_IRQ && EXTI1_USER_IRQ
+
+config L4_TEST
+	bool "L4 Test Cases"
+	default n
+
+config LCD_TEST
+	bool "LCD Test Cases"
+	default n
+
+endmenu

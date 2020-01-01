@@ -148,3 +148,20 @@ CONFIG_PANIC_DUMP_STACK=y
 # CONFIG_CRYP_USER_IRQ is not set
 # CONFIG_HASH_RNG_USER_IRQ is not set
 # CONFIG_FPU_USER_IRQ is not set
+
+#
+# User Space
+#
+CONFIG_BUILD_USER_APPS=y
+
+#
+# Apps
+#
+CONFIG_PINGPONG=y
+
+#
+# Test Cases
+#
+# CONFIG_EXTI_INTERRUPT_TEST is not set
+CONFIG_L4_TEST=y
+# CONFIG_LCD_TEST is not set
