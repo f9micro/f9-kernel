@@ -8,8 +8,8 @@
 
 #include <types.h>
 
-void *memcpy (void *__restrict, const void *__restrict, size_t);
-void *memset (void *, int, size_t);
+void *memcpy(void *__restrict, const void *__restrict, size_t);
+void *memset(void *, int, size_t);
 int strcmp(const char *l, const char *r);
 
 #endif /* LIB_STRING_H_ */

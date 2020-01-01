@@ -22,7 +22,7 @@ INIT_HOOK(kprobe_init, INIT_LEVEL_KERNEL);
 struct kprobe *kplist_search(void *addr)
 {
 	struct kprobe *cur = kp_list;
-	while (cur != NULL) {
+	while (cur) {
 		if (cur->addr == addr)
 			return cur;
 		cur = cur->next;
@@ -43,7 +43,7 @@ void kplist_del(struct kprobe *kp)
 		kp_list = kp->next;
 		return;
 	}
-	while (cur != NULL) {
+	while (cur) {
 		if (cur->next == kp) {
 			cur->next = kp->next;
 			break;
@@ -118,7 +118,7 @@ int kretprobe_unregister(struct kretprobe *rp)
 void kprobe_prebreak(uint32_t *stack, uint32_t *kp_regs)
 {
 	struct kprobe *kp = kp_list;
-	while (kp != NULL) {
+	while (kp) {
 		if ((uint32_t) kp->addr == stack[REG_PC] && kp->pre_handler)
 			kp->pre_handler(kp, stack, kp_regs);
 		kp = kp->next;
@@ -128,7 +128,7 @@ void kprobe_prebreak(uint32_t *stack, uint32_t *kp_regs)
 void kprobe_postbreak(uint32_t *stack, uint32_t *kp_regs)
 {
 	struct kprobe *kp = kp_list;
-	while (kp != NULL) {
+	while (kp) {
 		if ((uint32_t) kp->step_addr == stack[REG_PC] &&
 		    kp->post_handler)
 			kp->post_handler(kp, stack, kp_regs);
@@ -139,7 +139,7 @@ void kprobe_postbreak(uint32_t *stack, uint32_t *kp_regs)
 void kprobe_breakpoint_enable(uint32_t *stack)
 {
 	struct kprobe *kp = kp_list;
-	while (kp != NULL) {
+	while (kp) {
 		if ((uint32_t) kp->step_addr == stack[REG_PC])
 			enable_breakpoint(kp->bkpt);
 		kp = kp->next;
@@ -149,7 +149,7 @@ void kprobe_breakpoint_enable(uint32_t *stack)
 void kprobe_breakpoint_disable(uint32_t *stack)
 {
 	struct kprobe *kp = kp_list;
-	while (kp != NULL) {
+	while (kp) {
 		if ((uint32_t) kp->addr == stack[REG_PC])
 			disable_breakpoint(kp->bkpt);
 		kp = kp->next;

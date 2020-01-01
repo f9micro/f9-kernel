@@ -98,7 +98,7 @@ L4_INLINE bool l4_has_feature( const char *feature_name )
 	void *kip = L4_GetKernelInterface();
 	char *name;
 
-	for (L4_Word_t i = 0; (name = L4_Feature(kip,i)) != '\0'; i++)
+	for (L4_Word_t i = 0; (name = L4_Feature(kip,i)); i++)
 		if (!strcmp(feature_name, name))
 			return true;
 	return false;

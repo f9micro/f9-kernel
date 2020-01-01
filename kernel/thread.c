@@ -197,7 +197,7 @@ tcb_t *thread_create(l4_thread_t globalid, utcb_t *utcb)
 {
 	int id = GLOBALID_TO_TID(globalid);
 
-	assert(caller != NULL);
+	assert((intptr_t) caller);
 
 	if (id < THREAD_SYS ||
 	    globalid == L4_ANYTHREAD ||
@@ -320,7 +320,7 @@ void thread_init_ctx(void *sp, void *pc, void *regs, tcb_t *thr)
 		thr->ctx.ctl = 0x0;
 	}
 
-	if (regs == NULL) {
+	if (!regs) {
 		((uint32_t *) sp)[REG_R0] = 0x0;
 		((uint32_t *) sp)[REG_R1] = 0x0;
 		((uint32_t *) sp)[REG_R2] = 0x0;
@@ -384,7 +384,7 @@ int thread_ispriviliged(tcb_t *thread)
 /* Switch context */
 void thread_switch(tcb_t *thr)
 {
-	assert(thr != NULL);
+	assert((intptr_t) thr);
 	assert(thread_isrunnable(thr));
 
 	current = thr;
@@ -402,19 +402,19 @@ void thread_switch(tcb_t *thr)
 static tcb_t *thread_select(tcb_t *parent)
 {
 	tcb_t *thr = parent->t_child;
-	if (thr == NULL)
+	if (!thr)
 		return NULL;
 
 	while (1) {
 		if (thread_isrunnable(thr))
 			return thr;
 
-		if (thr->t_child != NULL) {
+		if (thr->t_child) {
 			thr = thr->t_child;
 			continue;
 		}
 
-		if (thr->t_sibling != NULL) {
+		if (thr->t_sibling) {
 			thr = thr->t_sibling;
 			continue;
 		}
@@ -423,7 +423,7 @@ static tcb_t *thread_select(tcb_t *parent)
 			if (thr->t_parent == parent)
 				return NULL;
 			thr = thr->t_parent;
-		} while (thr->t_sibling == NULL);
+		} while (!thr->t_sibling);
 
 		thr = thr->t_sibling;
 	}

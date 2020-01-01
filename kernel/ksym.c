@@ -64,7 +64,7 @@ int ksym_lookup(void *addr)
 		                           sizeof(__ksym_tbl[0]), cmp_key);
 	}
 
-	if (found == NULL)
+	if (!found)
 		return -1;
 	return prev_index = (found - __ksym_tbl);
 }

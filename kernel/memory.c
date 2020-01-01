@@ -198,7 +198,7 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc,
 	/* Find stack fpages */
 	fp = as->first;
 	i = 0;
-	while (i < 8 && fp != NULL && start < end) {
+	while (i < 8 && fp && start < end) {
 		if (addr_in_fpage(start, fp, 0)) {
 			if (!mpu_stack_first)
 				mpu_stack_first = fp;
@@ -219,12 +219,12 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc,
 	 * mpu_fp[2] are others
 	 */
 	fp = as->mpu_first;
-	if (fp == NULL) {
+	if (!fp) {
 		fpage_t *mpu_first[3] = {NULL};
 		fpage_t *mpu_fp[3] = {NULL};
 
 		fp = as->first;
-		while (fp != NULL) {
+		while (fp) {
 			int priv = 2;
 
 			if (addr_in_fpage(pc, fp, 0)) {
@@ -233,7 +233,7 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc,
 				priv = 1;
 			}
 
-			if (mpu_first[priv] == NULL) {
+			if (!mpu_first[priv]) {
 				mpu_first[priv] = fp;
 				mpu_fp[priv] = fp;
 			} else {
@@ -258,7 +258,7 @@ void as_setup_mpu(as_t *as, memptr_t sp, memptr_t pc,
 	}
 
 	/* Prevent link to stack pages */
-	for (fp = as->mpu_first; i < 8 && fp != NULL; fp = fp->mpu_next) {
+	for (fp = as->mpu_first; i < 8 && fp; fp = fp->mpu_next) {
 		for (j = 0; j < mpu_first_i; j++) {
 			if (fp == mpu[j]) {
 				break;

@@ -25,7 +25,7 @@ DECLARE_KTABLE(fpage_t, fpage_table, CONFIG_MAX_FPAGES);
 	}							\
 	else {							\
 		while (!end && fpprev->next != (fpage)) {	\
-			if (fpprev->next == NULL)		\
+			if (!fpprev->next)			\
 				end = 1;			\
 			fpprev = fpprev->next;			\
 		}						\
@@ -74,7 +74,7 @@ static void insert_fpage_chain_to_as(as_t *as, fpage_t *first, fpage_t *last)
 		as->first = first;
 	} else {
 		/* Search for chain in the middle */
-		while (fp->as_next != NULL) {
+		while (fp->as_next) {
 			if (FPAGE_BASE(last) < FPAGE_BASE(fp->as_next)) {
 				last->as_next = fp->as_next;
 				break;
@@ -121,7 +121,7 @@ static fpage_t *create_fpage(memptr_t base, size_t shift, int mpid)
 {
 	fpage_t *fpage = (fpage_t *) ktable_alloc(&fpage_table);
 
-	assert(fpage != NULL);
+	assert((intptr_t) fpage);
 
 	fpage->as_next = NULL;
 	fpage->map_next = fpage; 	/* That is first fpage in mapping */

@@ -215,7 +215,7 @@ static L4_Word_t __thread_start(struct thread_pool *pool, L4_ThreadId_t tid,
 
 	node = find_thread_node(pool, tid);
 
-	if (node == NULL)
+	if (!node)
 		return (L4_Word_t) - 1;
 
 	stack = (L4_Word_t)THREAD_NODE_BASE(node) + UTCB_SIZE + STACK_SIZE;

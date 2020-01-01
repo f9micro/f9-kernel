@@ -33,7 +33,8 @@ L4_ThreadId_t L4_ExchangeRegisters(L4_ThreadId_t dest,
                                    L4_Word_t *old_UserDefhandle,
                                    L4_ThreadId_t *old_pager)
 {
-	L4_ThreadId_t	result;
+	L4_ThreadId_t	result = {0};
+	/* FIXME: unimplemented */
 	return result;
 }
 
@@ -59,7 +60,8 @@ L4_Word_t L4_ThreadControl(L4_ThreadId_t dest,
 __USER_TEXT
 L4_Clock_t L4_SystemClock(void)
 {
-	L4_Clock_t result;
+	L4_Clock_t result = {0};
+	/* FIXME: unimplemented */
 	return result;
 }
 
@@ -97,7 +99,7 @@ L4_MsgTag_t L4_Ipc(L4_ThreadId_t to,
 
 	result.raw = __L4_MR0;
 
-	if (from != NULL)
+	if (from)
 		*from = from_ret;
 
 	return result;

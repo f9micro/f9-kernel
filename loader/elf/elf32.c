@@ -53,7 +53,7 @@ char *elf32_getSectionName(struct Elf32_Header *elfFile, int i)
 {
 	struct Elf32_Shdr *sections = elf32_getSectionTable(elfFile);
 	char *str_table = elf32_getSegmentStringTable(elfFile);
-	if (str_table == NULL) {
+	if (!str_table) {
 		return "<corrupted>";
 	} else {
 		return str_table + sections[i].sh_name;

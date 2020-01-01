@@ -25,6 +25,7 @@ CFLAGS_WARN = \
 	-Wall -Werror -Wundef -Wstrict-prototypes -Wno-trigraphs	\
 	-fno-strict-aliasing -fno-common				\
 	-Werror-implicit-function-declaration -Wno-format-security	\
+	-Wno-error=maybe-uninitialized					\
 	-fno-delete-null-pointer-checks -Wno-pointer-sign 		\
 	-fno-strict-overflow -fconserve-stack
 CFLAGS_OPT = \
