@@ -61,6 +61,12 @@ struct kip {
 	uint32_t kernel_id;
 	kip_apiversion_t api_version;
 	kip_apiflags_t api_flags;
+
+	/*
+	 * TODO: Fixed kern desc ptr to L4 reference manual style.
+	 * 		 Also, fixed kenrel_id to magic, and change
+	 *		 L4_KernelInterface in userspace behavior.
+	 */
 	uint32_t kern_desc_ptr;
 
 	uint32_t reserved1[17];

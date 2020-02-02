@@ -74,7 +74,7 @@ void setup_ipc_threads(void *(*f1)(void *), void *(*f2)(void *),
 }
 
 /*
- ** IPC test with only untyped words
+ * IPC test with only untyped words
  */
 __USER_TEXT
 static void *simple_ipc_t1_l(void *arg)
@@ -172,6 +172,52 @@ static void *simple_ipc_t1_l(void *arg)
 	}
 
 	print_result("ReplyWait Message transfer", ipc_ok);
+
+	/* Send timeout */
+	L4_Set_MsgTag(L4_Niltag);
+	tag = L4_Send_Timeout(ipc_t2, L4_TimePeriod(1000 * 1000));
+	ipc_ok = true;
+
+	if (L4_IpcSucceeded(tag)) {
+		printf("SND: IPC send incorrectly succeeded\n");
+		ipc_ok = false;
+	} else {
+		if ((L4_ErrorCode() & 0x1) || ((L4_ErrorCode() >> 1) & 0x7) != 1) {
+			printf("SND: Incorrect error code: %s %s\n",
+				   ipc_errorcode(L4_ErrorCode()),
+				   ipc_errorphase(L4_ErrorCode()));
+			ipc_ok = false;
+		}
+	}
+	print_result("Send timeout", ipc_ok);
+	L4_Receive(ipc_t2);
+
+	/* Receive timeout */
+	tag = L4_Receive_Timeout(ipc_t2, L4_TimePeriod(1000 * 1000));
+	ipc_ok = true;
+
+	if (L4_IpcSucceeded(tag)) {
+		printf("RCV: IPC receive incorrectly succeeded\n");
+		ipc_ok = false;
+	} else {
+		if ((L4_ErrorCode() & 0x1) == 0 ||
+			((L4_ErrorCode() >> 1) & 0x7) != 1) {
+			printf ("RCV: Incorrect error code: %s %s\n",
+					ipc_errorcode (L4_ErrorCode ()),
+					ipc_errorphase (L4_ErrorCode ()));
+			ipc_ok = false;
+		}
+	}
+	print_result("Receive timeout", ipc_ok);
+	L4_Set_MsgTag(L4_Niltag);
+	L4_Send(ipc_t2);
+
+	/* Local destination Id */
+	tag = L4_Receive_Timeout(ipc_t2, L4_TimePeriod(5 * 1000 * 1000));
+	print_result("Local destination Id", L4_IpcSucceeded(tag));
+	L4_Set_MsgTag(L4_Niltag);
+	tag = L4_Send(ipc_t2);
+
 	/* From parameter (local) */
 	tag = L4_Wait(&from);
 	ipc_ok = true;
@@ -236,6 +282,18 @@ static void *simple_ipc_t2_l(void *arg)
 		}
 
 	}
+
+	/* Send timeout */
+	L4_Set_MsgTag(L4_Niltag);
+	L4_Send(ipc_t1);
+
+	/* Receive timeout */
+	L4_Receive(ipc_t1);
+
+	/* Local destination Id */
+	L4_Set_MsgTag(L4_Niltag);
+	L4_Send(L4_LocalIdOf(ipc_t1));
+	L4_Receive(ipc_t1);
 
 	// From parameter (local)
 	L4_Set_MsgTag(L4_Niltag);
