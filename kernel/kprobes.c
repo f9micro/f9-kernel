@@ -3,6 +3,7 @@
  * found in the LICENSE file.
  */
 
+#include <ksym.h>
 #include <kprobes.h>
 #include <platform/armv7m.h>
 #include <platform/breakpoint.h>
@@ -52,9 +53,38 @@ void kplist_del(struct kprobe *kp)
 	}
 }
 
+static void *kprobe_addr(struct kprobe *kp)
+{
+	void *addr = kp->addr;
+
+	/*
+	 * Cannot use address and symbol name at the same time.
+	 * And, you should provide at least one of them.
+	 */
+	if ((kp->addr && kp->symbol_name) ||
+	    (!kp->addr && !kp->symbol_name))
+		return NULL;
+
+	if (kp->symbol_name)
+		addr = ksym_lookup_name(kp->symbol_name);
+
+	addr = (void *)((uint32_t) addr & ~(1UL));
+	if (addr)
+		return addr;
+
+	/* Return NULL when can't found the address of symbol */
+	return NULL;
+}
+
 int kprobe_register(struct kprobe *kp)
 {
-	kp->addr = (void *) ((uint32_t) kp->addr & ~(1UL));
+	void *addr;
+
+	addr = kprobe_addr(kp);
+	if (!addr)
+		return -1;
+
+	kp->addr = addr;
 	if (is_thumb32(*(uint16_t *) kp->addr))
 		kp->step_addr = kp->addr + 4;
 	else

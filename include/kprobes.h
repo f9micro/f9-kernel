@@ -34,7 +34,12 @@ typedef int (*kretprobe_handler_t) (struct kprobe *kp, uint32_t *stack,
 				      uint32_t *kp_regs);
 
 struct kprobe {
+	/* location of the probe point */
 	void *addr;
+
+	/* Allow user to indicate symbol name of the probe point */
+	const char *symbol_name;
+
 	kprobe_pre_handler_t pre_handler;
 	kprobe_post_handler_t post_handler;
 	struct breakpoint *bkpt;

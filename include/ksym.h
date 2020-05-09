@@ -19,5 +19,6 @@ int ksym_total(void);
 int ksym_lookup(void *addr);
 char *ksym_id2name(int symid);
 void *ksym_id2addr(int symid);
+void *ksym_lookup_name(const char *name);
 
 #endif /* KSYM_H_ */

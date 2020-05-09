@@ -6,6 +6,7 @@
 #include <ksym.h>
 #include <types.h>
 #include <lib/stdlib.h>
+#include <lib/string.h>
 #include <init_hook.h>
 #include <platform/link.h>
 
@@ -77,4 +78,16 @@ char *ksym_id2name(int symid)
 void *ksym_id2addr(int symid)
 {
 	return __ksym_tbl[symid].addr;
+}
+
+/* Lookup the address for this symbol. Returns 0 if not found. */
+void *ksym_lookup_name(const char *name)
+{
+	for (int i = 0; i < __ksym_count; ++i) {
+		if (strcmp(name, ksym_id2name(i)) == 0) {
+			return ksym_id2addr(i);
+		}
+	}
+
+	return NULL;
 }
