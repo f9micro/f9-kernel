@@ -4,7 +4,7 @@
  */
 
 #ifndef LIB_STDIO_H_
-#define LIB_SDTIO_H_
+#define LIB_STDIO_H_
 
 #include <types.h>
 #include <lib/stdarg.h>

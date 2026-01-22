@@ -13,6 +13,7 @@
 *.swo
 *.out
 build/
+tools/kconfig/
 tags
 core
 .config

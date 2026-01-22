@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Configuration is now handled by Kconfiglib (tools/kconfig/).
-# The root Kconfig file sources all sub-Kconfigs directly.
-# See: https://github.com/sysprog21/Kconfiglib
+mainmenu "F9 Microkernel Configurations"
+
+source "board/Kconfig"
+source "platform/Kconfig"
+source "kernel/Kconfig"
+source "loader/Kconfig"
+source "user/Kconfig"

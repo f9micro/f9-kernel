@@ -1,0 +1,43 @@
+# Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+menu "Board"
+
+choice
+	prompt "Target Board"
+	default BOARD_STM32F4DISCOVERY
+	help
+	  Select the target board for F9 Microkernel.
+
+config BOARD_STM32F4DISCOVERY
+	bool "STM32F4 Discovery"
+	select PLATFORM_STM32F4
+	help
+	  STM32F4 Discovery board with STM32F407VGT6 MCU.
+
+config BOARD_STM32F429DISCOVERY
+	bool "STM32F429 Discovery"
+	select PLATFORM_STM32F429
+	help
+	  STM32F429 Discovery board with STM32F429ZIT6 MCU and LCD.
+
+config BOARD_STM32P103
+	bool "Olimex STM32-P103"
+	select PLATFORM_STM32F1
+	help
+	  Olimex STM32-P103 board with STM32F103RBT6 MCU.
+
+endchoice
+
+endmenu
+
+# Platform symbols (selected by board choice)
+config PLATFORM_STM32F4
+	bool
+
+config PLATFORM_STM32F429
+	bool
+
+config PLATFORM_STM32F1
+	bool

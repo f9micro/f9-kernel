@@ -86,7 +86,7 @@ config DEBUG
 	default y
 
 if DEBUG
-source platform/Kconfig.debug
+source "platform/Kconfig.debug"
 endif
 
 config KDB
