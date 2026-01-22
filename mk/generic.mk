@@ -34,16 +34,27 @@ cmd_c_to_build = $(BUILDCC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) \
 	         -MMD -MF $@.d $< -o $@
 cmd_bin = cat $^ > $@
 
-# commands to build Kconfig
-KCONFIG := external/kconfig
-MCONF_INPUT = $(out_host)/Config.in
-cmd_kconfig_prepare = \
-	mkdir -p $(out_host) $(out_host)/lxdialog && \
-	$(call init_mconf, $(MCONF_INPUT))
-cmd_kconfig = $(MAKE) --no-print-directory -C $(KCONFIG) -f Makefile.f9 mconf \
-		obj=$(shell pwd)/$(out_host) \
-		CC="$(BUILDCC)" HOSTCC="$(BUILDCC)"
-cmd_mconf = $(out_host)/mconf $(MCONF_INPUT)
+# Kconfiglib (Python-based Kconfig tools)
+KCONFIG_DIR := tools/kconfig
+KCONFIG := Kconfig
+KCONFIGLIB_REPO := https://github.com/sysprog21/Kconfiglib
+
+# Discover available boards (directories with defconfig)
+BOARDS := $(notdir $(patsubst %/defconfig,%,$(wildcard board/*/defconfig)))
+
+# Kconfiglib tool paths
+MENUCONFIG := $(KCONFIG_DIR)/menuconfig.py
+DEFCONFIG := $(KCONFIG_DIR)/defconfig.py
+GENCONFIG := $(KCONFIG_DIR)/genconfig.py
+OLDCONFIG := $(KCONFIG_DIR)/oldconfig.py
+SAVEDEFCONFIG := $(KCONFIG_DIR)/savedefconfig.py
+
+# Kconfiglib commands
+cmd_menuconfig = KCONFIG_CONFIG=$(CONFIG) python3 $(MENUCONFIG) $(KCONFIG)
+cmd_genconfig = KCONFIG_CONFIG=$(CONFIG) python3 $(GENCONFIG) --header-path include/autoconf.h $(KCONFIG)
+cmd_board_defconfig = KCONFIG_CONFIG=$(CONFIG) python3 $(DEFCONFIG) --kconfig $(KCONFIG) board/$*/defconfig
+cmd_oldconfig = KCONFIG_CONFIG=$(CONFIG) python3 $(OLDCONFIG) $(KCONFIG)
+cmd_savedefconfig = KCONFIG_CONFIG=$(CONFIG) python3 $(SAVEDEFCONFIG) --kconfig $(KCONFIG) --out board/$(BOARD)/defconfig
 
 .PHONY: bare
 bare: $(out)/$(PROJECT).bin
@@ -85,7 +96,7 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	-rm -rf $(out_host)
+	-rm -rf $(out_host) $(KCONFIG_DIR)
 	-rm -f $(CONFIG) $(CONFIG).old include/autoconf.h
 
 # FIXME: validate the target machine and check its availability
@@ -94,14 +105,48 @@ qemu: $(out)/$(PROJECT).bin
 	-killall -q qemu-system-arm
 	$(QEMU_DIR)qemu-system-arm -M stm32-p103 -kernel $(out)/$(PROJECT).bin -serial stdio -semihosting
 
-$(out_host)/mconf:
-	$(call quiet,kconfig,CONFIG )
-$(MCONF_INPUT): $(KCONFIG_FILES)
-	$(call quiet,kconfig_prepare,PREPARE)
+# Kconfiglib download target
+$(KCONFIG_DIR)/kconfiglib.py:
+	@echo "  CLONE   Kconfiglib"
+	@git clone --depth=1 $(KCONFIGLIB_REPO) $(KCONFIG_DIR)
 
-.PHONY: config
-config: $(MCONF_INPUT) $(out_host)/mconf
-	$(call quiet,mconf,EVAL   )
+$(MENUCONFIG) $(DEFCONFIG) $(GENCONFIG) $(OLDCONFIG) $(SAVEDEFCONFIG): $(KCONFIG_DIR)/kconfiglib.py
+
+.PHONY: config menuconfig
+config menuconfig: $(MENUCONFIG)
+	$(call quiet,menuconfig,MENUCONFIG)
+	$(call quiet,genconfig,GENCONFIG)
+
+# Board-specific defconfig targets (e.g., make discoveryf4_defconfig)
+.PHONY: $(addsuffix _defconfig,$(BOARDS))
+$(addsuffix _defconfig,$(BOARDS)): %_defconfig: $(DEFCONFIG) $(GENCONFIG)
+	@if [ ! -f board/$*/defconfig ]; then \
+		echo "Error: board/$*/defconfig not found"; exit 1; \
+	fi
+	@echo "  DEFCONFIG board/$*/defconfig"
+	@$(cmd_board_defconfig)
+	$(call quiet,genconfig,GENCONFIG)
+
+# Default defconfig (uses discoveryf4)
+.PHONY: defconfig
+defconfig: discoveryf4_defconfig
+
+.PHONY: oldconfig
+oldconfig: $(OLDCONFIG) $(GENCONFIG)
+	$(call quiet,oldconfig,OLDCONFIG)
+	$(call quiet,genconfig,GENCONFIG)
+
+# Save current config to board defconfig (requires BOARD to be set via .config)
+.PHONY: savedefconfig
+savedefconfig: $(SAVEDEFCONFIG)
+	@echo "  SAVEDEFCONFIG board/$(BOARD)/defconfig"
+	@$(cmd_savedefconfig)
+
+# List available boards
+.PHONY: list-boards
+list-boards:
+	@echo "Available boards:"
+	@for b in $(BOARDS); do echo "  make $${b}_defconfig"; done
 
 .SECONDARY:
 

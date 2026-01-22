@@ -51,6 +51,7 @@ $(eval BOARD_$(BOARD)=y)
 
 # Kconfig files to use
 KCONFIG_FILES = \
+	board/Kconfig \
 	platform/Kconfig \
 	kernel/Kconfig \
 	loader/Kconfig \

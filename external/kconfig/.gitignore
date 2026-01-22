@@ -1,6 +1,0 @@
-.depend
-lex.zconf.c
-*.o
-mconf
-zconf.hash.c
-zconf.tab.c
