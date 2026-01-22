@@ -8,7 +8,7 @@ F9_LD_FILE = f9_sram.ld
 
 loader-objs := $(loader-all-y)
 kernel-obj := $(out)/kernel.loader.o
-CFLAGS_INCLUDE_LOADER = -I loader/include
+CFLAGS_INCLUDE_LOADER = -I loader/include -I include/lib
 
 KERNEL_OBJ_LDS = kernel.bin.lds
 KLDFLAGS = \

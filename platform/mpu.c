@@ -10,14 +10,14 @@
 #include <platform/irq.h>
 #include <platform/mpu.h>
 
-void __attribute__((weak, alias("mpu_setup_region"))) mpu_setup_region(int n, fpage_t *fp)
+void __attribute__((weak)) mpu_setup_region(int n, fpage_t *fp)
 {
 }
 
-void __attribute__((weak, alias("mpu_enable"))) mpu_enable(mpu_state_t i)
+void __attribute__((weak)) mpu_enable(mpu_state_t i)
 {
 }
 
-void __attribute__((weak, alias("__memmanage_handler"))) __memmanage_handler(void)
+void __attribute__((weak)) __memmanage_handler(void)
 {
 }
