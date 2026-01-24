@@ -47,7 +47,6 @@ void kdb_show_sampling(void)
 	}
 
 	if (init == 0) {
-		dbg_printf(DL_KDB, "Init sampling...\n");
 		sampling_init();
 		sampling_enable();
 
@@ -58,8 +57,6 @@ void kdb_show_sampling(void)
 		if (kprobe_register(&k) < 0) {
 			dbg_printf(DL_KDB,
 			           "FAILED: kprobe on Flash requires FPB hardware\n");
-			dbg_printf(DL_KDB,
-			           "(QEMU doesn't emulate FPB at 0xE0002000)\n");
 			sampling_disable();
 			init_failed = 1;
 			return;
