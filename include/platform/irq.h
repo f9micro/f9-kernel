@@ -42,20 +42,44 @@ static inline int irq_number(void)
 }
 
 /*
+ * Global to hold saved r4-r11 across irq_save_regs_only / irq_save_rest.
+ * Used to capture registers before compiler can corrupt them.
+ */
+extern uint32_t __irq_saved_regs[8];
+
+/*
+ * irq_save_regs_only()
+ *
+ * Saves {r4-r11} to global __irq_saved_regs immediately.
+ * MUST be called at very start of naked handler before any C expressions.
+ * Uses only r0-r3 which are caller-saved and safe to clobber.
+ */
+#define irq_save_regs_only()						\
+	__asm__ __volatile__ (						\
+		"ldr r0, =__irq_saved_regs\n\t"				\
+		"stm r0, {r4-r11}"					\
+		::: "r0", "memory")
+
+/*
  * irq_save()
  *
- * Saves {r4-r11}, msp, psp
+ * Saves {r4-r11}, msp, psp.
+ * Assumes irq_save_regs_only() was called first in naked handler.
+ * Copies saved regs from global to ctx->regs.
  */
-#define __irq_save(ctx)		\
-	__asm__ __volatile__ ("mov r0, %0"				\
-			: : "r" ((ctx)->regs) : "r0");			\
-	__asm__ __volatile__ ("stm r0, {r4-r11}");			\
+#define __irq_save(ctx)							\
+	{								\
+		uint32_t *_regs = (uint32_t *)(ctx)->regs;		\
+		extern uint32_t __irq_saved_regs[8];			\
+		for (int _i = 0; _i < 8; _i++)				\
+			_regs[_i] = __irq_saved_regs[_i];		\
+	}								\
 	__asm__ __volatile__ ("and r4, lr, 0xf":::"r4");		\
 	__asm__ __volatile__ ("teq r4, #0x9");				\
 	__asm__ __volatile__ ("ite eq");				\
 	__asm__ __volatile__ ("mrseq r0, msp"::: "r0");			\
 	__asm__ __volatile__ ("mrsne r0, psp"::: "r0");			\
-	__asm__ __volatile__ ("mov %0, r0" : "=r" ((ctx)->sp));	\
+	__asm__ __volatile__ ("mov %0, r0" : "=r" ((ctx)->sp));		\
 	__asm__ __volatile__ ("mov %0, lr" : "=r" ((ctx)->ret));
 
 #ifdef CONFIG_FPU
@@ -130,7 +154,7 @@ static inline int irq_number(void)
 		__asm__ __volatile__ ("pop {lr}");			\
 		irq_save(&(from)->ctx);					\
 		thread_switch((to));					\
-		irq_restore(&(from)->ctx);				\
+		irq_restore(&(to)->ctx);				\
 		__asm__ __volatile__ ("bx lr");				\
 	}
 
