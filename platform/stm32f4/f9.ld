@@ -53,6 +53,7 @@ SECTIONS {
 		kernel_text_start = .;
 		*(.text*)
 		*(.rodata*)
+		. = ALIGN(4);
 		init_hook_start = .;
 		KEEP(*(.init_hook))
 		init_hook_end = .;
@@ -111,6 +112,14 @@ SECTIONS {
 		bitmap_bitband_start = .;
 		*(.bitmap_bitband*)
 		bitmap_bitband_end = .;
+		/* Place bitmaps in RamLoc for QEMU compatibility.
+		 * QEMU's netduinoplus2 doesn't emulate CCM RAM at 0x10000000.
+		 * This also works on real hardware with minimal performance impact
+		 * since bitmaps are small and accessed infrequently.
+		 */
+		bitmap_start = .;
+		*(.bitmap*)
+		bitmap_end = .;
 		bss_end = .;
 	} > RamLoc
 
@@ -140,12 +149,12 @@ SECTIONS {
 		mem0_start = .;
 	} > RamLoc
 
+	/* CCM RAM section - not used on QEMU which doesn't emulate CCM.
+	 * On real hardware, this provides additional memory at 0x10000000.
+	 */
 	.data_AHB (NOLOAD) :
 	{
 		kernel_ahb_start = .;
-		bitmap_start = .;
-		*(.bitmap*)
-		bitmap_end = .;
 		kernel_ahb_end = .;
 		mem1_start = .;
 	} > RamCCM

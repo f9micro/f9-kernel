@@ -19,7 +19,8 @@ SECTIONS {
 		text_start = .;
 		*(.text*)
 		*(.rodata*)
-		.init_hook_start = .;
+		. = ALIGN(4);
+		init_hook_start = .;
 		KEEP(*(.init_hook))
 		init_hook_end = .;
 		text_end = .;
