@@ -66,6 +66,12 @@ typedef struct {
  */
 #define MP_MAP_ALWAYS 	0x1000
 
+/*
+ * MP_FPAGE_MASK: Bitmask for fpage type flags (bits 8-11).
+ * If (flags & MP_FPAGE_MASK) is non-zero, the mempool supports fpage creation.
+ * Mempools with MP_NO_FPAGE (0x0000) cannot have fpages allocated from them.
+ * Used to protect kernel memory (KTEXT, KDATA, KBSS) from being mapped.
+ */
 #define MP_FPAGE_MASK	0x0F00
 
 #define MP_USER_PERM(mpflags) ((mpflags & 0xF0) >> 4)
@@ -115,11 +121,19 @@ typedef enum {
 void memory_init(void);
 
 memptr_t mempool_align(int mpid, memptr_t addr);
+memptr_t mempool_align_base(int mpid, memptr_t addr);
 int mempool_search(memptr_t base, size_t size);
 mempool_t *mempool_getbyid(int mpid);
 
+/*
+ * Check if address is aligned to smallest fpage boundary.
+ * Returns 1 if aligned, 0 if not aligned.
+ * Used by kernel to reject unaligned addresses from user space.
+ */
+int addr_is_fpage_aligned(memptr_t addr);
+
 int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
-		map_action_t action, int is_priviliged);
+		map_action_t action, int is_privileged);
 
 as_t *as_create(uint32_t as_spaceid);
 void as_destroy(as_t *as);
