@@ -142,7 +142,7 @@ void dbg_device_init_hook(void)
 #ifdef DEBUG_DEVICE_EXIST
 	dbg_device_init();
 #endif
-	dbg_layer = DL_KDB;
+	dbg_layer = DL_KDB;  /* Minimal debug */
 }
 INIT_HOOK(dbg_device_init_hook, INIT_LEVEL_PLATFORM);
 #endif

@@ -136,10 +136,21 @@ void sys_clock_init(void)
 		       RCC_CFGR_SWS_PLL)
 			/* wait */ ;
 	} else {
-		/* If HSE fails to start-up, the application will have
-		 * wrong clock configuration.
+		/* HSE failed to start - fall back to HSI.
+		 * This is expected when running under QEMU emulation.
+		 * Use HSI (16MHz) as system clock directly without PLL.
 		 */
-		panic("Time out for waiting HSE Ready");
+#if defined(STM32F4X)
+		/* Configure Flash latency for 16MHz (HSI) */
+		*FLASH_ACR = FLASH_ACR_LATENCY(0);
+
+		/* Select HSI as system clock source (SW = 00) */
+		*RCC_CFGR &= (uint32_t)((uint32_t) ~(RCC_CFGR_SW_M));
+
+		/* Wait till HSI is used as system clock source */
+		while ((*RCC_CFGR & (uint32_t) RCC_CFGR_SWS_M) != 0)
+			/* wait */ ;
+#endif
 	}
 #if defined(STM32F4X)
 	/* Enable the CCM RAM clock */

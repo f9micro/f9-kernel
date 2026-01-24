@@ -16,8 +16,8 @@ endif
 
 ifeq "$(CONFIG_BOARD_STM32F429DISCOVERY)" "y"
 BOARD ?= discoveryf429
-else ifeq "$(CONFIG_BOARD_STM32P103)" "y"
-BOARD ?= stm32p103
+else ifeq "$(CONFIG_BOARD_NETDUINOPLUS2)" "y"
+BOARD ?= netduinoplus2
 else
 BOARD ?= discoveryf4
 endif
@@ -30,9 +30,9 @@ out ?= build/$(BOARD)
 # output directory for host build targets
 out_host ?= build/host
 
-# FIXME: use smarter way to detect QEMU
-# qemu directory location
-QEMU_DIR ?= ../qemu_stm32/arm-softmmu/
+# QEMU command for netduinoplus2 emulation
+# Usage: qemu-system-arm -M netduinoplus2 -nographic -kernel build/netduinoplus2/f9.elf
+QEMU ?= qemu-system-arm
 
 includes-user = user/include
 # toolchain specific configurations; common cflags and ldflags
