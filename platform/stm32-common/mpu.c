@@ -9,6 +9,7 @@
 #include <error.h>
 #include <platform/irq.h>
 #include <platform/mpu.h>
+#include <platform/cortex_m.h>
 
 #include INC_PLAT(mpu.c)
 
@@ -30,6 +31,10 @@ void mpu_setup_region(int n, fpage_t *fp)
 		*mpu_base = 0x10 | (n & 0xF);
 		*mpu_attr = 0;
 	}
+
+	/* Memory barriers ensure MPU changes take effect immediately */
+	__DSB();
+	__ISB();
 }
 
 void mpu_enable(mpu_state_t i)
@@ -76,6 +81,13 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 		if (addr_in_fpage(addr, fp, 0)) {
 			fpage_t *sfp = as->mpu_stack_first;
 
+			/*
+			 * Fix from f9-riscv commit f88633c:
+			 * Remove fpage from list first to prevent circular list.
+			 * If fp is already in mpu_first list and we prepend without
+			 * removing, we create a cycle that causes infinite loops.
+			 */
+			remove_fpage_from_list(as, fp, mpu_first, mpu_next);
 			fp->mpu_next = as->mpu_first;
 			as->mpu_first = fp;
 
@@ -99,6 +111,7 @@ int mpu_select_lru(as_t *as, uint32_t addr)
 
 		fp = fp->as_next;
 	}
+
 	return 1;
 }
 
@@ -128,50 +141,81 @@ void kdb_dump_mpu(void)
 }
 #endif
 
+static void dump_as_fpages(as_t *as)
+{
+	fpage_t *fp = as ? as->first : NULL;
+	int count = 0;
+
+	dbg_printf(DL_EMERG, "---AS fpages---\n");
+	while (fp && count < 16) {
+		dbg_printf(DL_EMERG, "  fp[%d]: base:%p, sz:2**%d\n",
+		           count, FPAGE_BASE(fp), fp->fpage.shift);
+		fp = fp->as_next;
+		count++;
+	}
+	if (fp)
+		dbg_printf(DL_EMERG, "  ... more fpages\n");
+}
+
 void __memmanage_handler(void)
 {
 	uint32_t mmsr = *((uint32_t *) MPU_FAULT_STATUS_ADDR);
 	uint32_t mmar = *((uint32_t *) MPU_FAULT_ADDRESS_ADDR);
 	tcb_t *current = thread_current();
+	int handled = 0;
 
-	/* stack errors */
+	/* Try to handle the fault first before printing diagnostics */
+	if (mmsr & MPU_MEM_FAULT) {
+		if (mpu_select_lru(current->as, mmar) == 0)
+			handled = 1;
+	}
+
+	if (mmsr & MPU_MUSTKERR) {
+		if (mpu_select_lru(current->as, (uint32_t)PSP() + 31) == 0)
+			handled = 1;
+	}
+
+	if (mmsr & MPU_IACCVIOL) {
+		uint32_t pc = PSP()[REG_PC];
+		if (mpu_select_lru(current->as, pc) == 0)
+			handled = 1;
+		else if (mpu_select_lru(current->as, pc + 2) == 0)
+			handled = 1;
+	}
+
+	/* If handled successfully, just clear status and return silently */
+	if (handled) {
+		*((uint32_t *) MPU_FAULT_STATUS_ADDR) = mmsr;
+		return;
+	}
+
+	/* Unhandled fault - show diagnostic info */
+	dbg_printf(DL_EMERG, "MEMFAULT: tid:%t, as:%p (spaceid:%p)\n",
+	           current->t_globalid, current->as,
+	           current->as ? current->as->as_spaceid : 0);
+	dbg_printf(DL_EMERG, "  mmsr:%p, mmar:%p, pc:%p, psp:%p\n",
+	           mmsr, mmar, PSP()[REG_PC], PSP());
+	dbg_printf(DL_EMERG, "  flags: %s%s%s%s%s\n",
+	           (mmsr & MPU_MEM_FAULT) ? "MMARVALID " : "",
+	           (mmsr & MPU_DACCVIOL) ? "DACCVIOL " : "",
+	           (mmsr & MPU_IACCVIOL) ? "IACCVIOL " : "",
+	           (mmsr & MPU_MSTKERR) ? "MSTKERR " : "",
+	           (mmsr & MPU_MUSTKERR) ? "MUSTKERR " : "");
+	dbg_printf(DL_EMERG, "  in_mpu(mmar)=%d, in_mpu(pc)=%d\n",
+	           addr_in_mpu(mmar), addr_in_mpu(PSP()[REG_PC]));
+
+	/* stack errors - always fatal */
 	if (mmsr & MPU_MSTKERR) {
 		panic("Corrupted Stack, current = %t, psp = %p\n",
 		      current->t_globalid, PSP());
 	}
 
-	if (mmsr & MPU_MEM_FAULT) {
-		if (mpu_select_lru(current->as, mmar) == 0)
-			goto ok;
-	}
-
-	/* unstacking errors */
-	if (mmsr & MPU_MUSTKERR) {
-		/* Processor is not writing mmar, so we do it manually */
-		if (mpu_select_lru(current->as, (uint32_t)PSP() + 31) == 0) {
-			goto ok;
-		}
-	}
-
-	if (mmsr & MPU_IACCVIOL) {
-		uint32_t pc = PSP()[REG_PC];
-
-		if (mpu_select_lru(current->as, pc) == 0)
-			goto ok;
-
-		if (mpu_select_lru(current->as, pc + 2) == 0)
-			goto ok;
-	}
-
+	/* Unhandled fault - dump diagnostics and panic */
+	dump_as_fpages(current->as);
 	mpu_dump(1);
 	panic("Memory fault mmsr:%p, mmar:%p,\n"
 	      "             current:%t, psp:%p, pc:%p\n",
 	      mmsr, mmar, current->t_globalid, PSP(), PSP()[REG_PC]);
-
-ok:
-	/* Clean status register */
-	*((uint32_t *) MPU_FAULT_STATUS_ADDR) = mmsr;
-	return;
 }
 
 IRQ_HANDLER(memmanage_handler, __memmanage_handler);
