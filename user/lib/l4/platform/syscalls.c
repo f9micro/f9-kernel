@@ -45,16 +45,20 @@ L4_Word_t L4_ThreadControl(L4_ThreadId_t dest,
                            L4_ThreadId_t Pager,
                            void *UtcbLocation)
 {
-	L4_Word_t result;
+	register L4_Word_t r0 __asm__("r0") = dest.raw;
+	register L4_Word_t r1 __asm__("r1") = SpaceSpecifier.raw;
+	register L4_Word_t r2 __asm__("r2") = Scheduler.raw;
+	register L4_Word_t r3 __asm__("r3") = Pager.raw;
+	register L4_Word_t r4 __asm__("r4") = (L4_Word_t)UtcbLocation;
 
 	__asm__ __volatile__(
-	    "ldr r4, %1\n"
 	    "svc %[syscall_num]\n"
-	    "str r0, %[output]\n"
-	    : [output] "=m"(result)
-	    : "m"(UtcbLocation), [syscall_num] "i"(SYS_THREAD_CONTROL));
+	    : "+r"(r0)
+	    : "r"(r1), "r"(r2), "r"(r3), "r"(r4),
+	      [syscall_num] "i"(SYS_THREAD_CONTROL)
+	    : "memory");
 
-	return result;
+	return r0;
 }
 
 __USER_TEXT
@@ -89,18 +93,21 @@ L4_MsgTag_t L4_Ipc(L4_ThreadId_t to,
                    L4_ThreadId_t *from)
 {
 	L4_MsgTag_t result;
-	L4_ThreadId_t from_ret;
+	register L4_Word_t r0 __asm__("r0") = to.raw;
+	register L4_Word_t r1 __asm__("r1") = FromSpecifier.raw;
+	register L4_Word_t r2 __asm__("r2") = Timeouts;
 
 	__asm__ __volatile__(
 	    "svc %[syscall_num]\n"
-	    "str r0, %[from]\n"
-	    : [from] "=m"(from_ret)
-        : [syscall_num] "i"(SYS_IPC));
+	    : "+r"(r0)
+	    : "r"(r1), "r"(r2),
+	      [syscall_num] "i"(SYS_IPC)
+	    : "memory");
 
 	result.raw = __L4_MR0;
 
 	if (from)
-		*from = from_ret;
+		from->raw = r0;
 
 	return result;
 }

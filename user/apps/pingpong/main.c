@@ -67,10 +67,14 @@ static void *main(void *user)
 	return 0;
 }
 
+/* RES_FPAGE needs space for: pager + main + PING + PONG = 4 threads
+ * Each thread needs NODE_SIZE_ALIGNED (768 bytes).
+ * Use power-of-2 size (4096) to fit in single MPU region.
+ */
 DECLARE_USER(
 	0,
 	pingpong,
 	main,
-	DECLARE_FPAGE(0x0, 4 * UTCB_SIZE + 4 * STACK_SIZE)
+	DECLARE_FPAGE(0x0, 4096)
 	DECLARE_FPAGE(0x0, 512)
 );
