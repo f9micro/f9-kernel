@@ -122,9 +122,11 @@ void *ktable_alloc_id(ktable_t *kt, int i)
 void *ktable_alloc(ktable_t *kt)
 {
 	bitmap_cursor_t	cursor;
+	int checked = 0;
 
 	/* Search for free element */
 	for_each_in_bitmap(cursor, kt->bitmap, kt->num, 0) {
+		checked++;
 		if (bitmap_test_and_set_bit(cursor)) {
 			int i = bitmap_cursor_id(cursor);
 
@@ -136,7 +138,9 @@ void *ktable_alloc(ktable_t *kt)
 		}
 	}
 
-	dbg_printf(DL_KTABLE, "KT: %s allocated failed\n", kt->tname);
+	dbg_printf(DL_KDB,
+	           "KT: %s alloc FAILED checked=%d num=%d bitmap=%p\n",
+	           kt->tname, checked, kt->num, kt->bitmap);
 
 	return NULL;
 }

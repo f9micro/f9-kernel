@@ -53,18 +53,37 @@ static void sys_thread_control(uint32_t *param1, uint32_t *param2)
 
 		if (!utcb_pool || !(utcb_pool->flags & (MP_UR | MP_UW))) {
 			/* Incorrect UTCB relocation */
+			param1[REG_R0] = 0;
+			return;
+		}
+
+		/* Reject unaligned UTCB addresses to prevent over-mapping */
+		if (!addr_is_fpage_aligned((memptr_t) utcb)) {
+			/* UTCB must be aligned to fpage boundary */
+			param1[REG_R0] = 0;
 			return;
 		}
 
 		tcb_t *thr = thread_create(dest, utcb);
+		if (!thr) {
+			/* Thread creation failed */
+			param1[REG_R0] = 0;
+			return;
+		}
 		thread_space(thr, space, utcb);
 		thr->utcb->t_pager = pager;
 		param1[REG_R0] = 1;
 	} else {
 		/* Removal of thread */
 		tcb_t *thr = thread_by_globalid(dest);
+		if (!thr) {
+			/* Thread not found */
+			param1[REG_R0] = 0;
+			return;
+		}
 		thread_free_space(thr);
 		thread_destroy(thr);
+		param1[REG_R0] = 1;
 	}
 }
 
