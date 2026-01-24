@@ -162,10 +162,16 @@ static void *main(void *user)
 	return NULL;
 }
 
+/* RES_FPAGE needs enough space for aligned thread nodes.
+ * Each node needs 256-byte alignment, so stride is 768 bytes
+ * (UTCB_SIZE + STACK_SIZE rounded up to 256).
+ * Use power-of-2 size (4096) to fit in a single MPU region.
+ * With 768-byte stride, 4096 bytes supports 5 nodes (indices 1-5).
+ */
 DECLARE_USER(
 	256,
 	l4test,
 	main,
-	DECLARE_FPAGE(0x0, 4 * (UTCB_SIZE + STACK_SIZE))
+	DECLARE_FPAGE(0x0, 4096)
 	DECLARE_FPAGE(0x0, 512)
 );

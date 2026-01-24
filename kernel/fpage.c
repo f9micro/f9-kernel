@@ -17,33 +17,54 @@
 
 DECLARE_KTABLE(fpage_t, fpage_table, CONFIG_MAX_FPAGES);
 
-#define remove_fpage_from_list(as, fpage, first, next) {	\
-	fpage_t *fpprev = (as)->first;				\
-	int end;						\
-	if (fpprev == (fpage)) {				\
-		(as)->first = fpprev->next;			\
-	}							\
-	else {							\
-		while (!end && fpprev->next != (fpage)) {	\
-			if (!fpprev->next)			\
-				end = 1;			\
-			fpprev = fpprev->next;			\
-		}						\
-		fpprev->next = (fpage)->next;			\
-	}							\
-}
+/*
+ * remove_fpage_from_list macro moved to include/fpage.h for shared use
+ * (e.g., by platform/stm32-common/mpu.c to prevent circular list bugs)
+ */
 
 /*
  * Helper functions
+ */
+
+/*
+ * Compute the position of the lowest set bit (trailing zeros).
+ * This determines the alignment of an address for fpage sizing.
+ * Returns the shift value such that (1 << shift) is the largest
+ * power of 2 that divides addr.
  */
 static int fp_addr_log2(memptr_t addr)
 {
 	int shift = 0;
 
-	while ((addr <<= 1) != 0)
-		++shift;
+	if (addr == 0)
+		return CONFIG_LARGEST_FPAGE_SHIFT;
 
-	return 31 - shift;
+	while ((addr & 1) == 0) {
+		++shift;
+		addr >>= 1;
+	}
+
+	return shift;
+}
+
+/*
+ * Compute floor(log2(size)) - the position of the highest set bit.
+ * Returns the largest shift such that (1 << shift) <= size.
+ * Used to determine the largest power-of-2 fpage that fits within size.
+ */
+static int fp_size_log2(size_t size)
+{
+	int shift = 0;
+
+	if (size == 0)
+		return 0;
+
+	while (size > 1) {
+		++shift;
+		size >>= 1;
+	}
+
+	return shift;
 }
 
 void fpages_init(void)
@@ -83,6 +104,7 @@ static void insert_fpage_chain_to_as(as_t *as, fpage_t *first, fpage_t *last)
 		}
 		fp->as_next = first;
 	}
+
 }
 
 /**
@@ -117,9 +139,22 @@ static void remove_fpage_from_as(as_t *as, fpage_t *fp)
  * @param shift (1 << shift) - fpage size
  * @param mpid - id of mpool
  */
+static int fpage_alloc_count = 0;
+
 static fpage_t *create_fpage(memptr_t base, size_t shift, int mpid)
 {
 	fpage_t *fpage = (fpage_t *) ktable_alloc(&fpage_table);
+
+	if (!fpage) {
+		dbg_printf(DL_KDB,
+		           "FPAGE: alloc failed! count=%d base=%p shift=%d mpid=%d\n",
+		           fpage_alloc_count, base, shift, mpid);
+	} else {
+		fpage_alloc_count++;
+		if ((fpage_alloc_count % 50) == 0)
+			dbg_printf(DL_KDB, "FPAGE: allocated %d fpages\n",
+			           fpage_alloc_count);
+	}
 
 	assert((intptr_t) fpage);
 
@@ -151,13 +186,14 @@ static void create_fpage_chain(memptr_t base, size_t size, int mpid,
 	fpage_t *fpage = NULL;
 
 	while (size) {
-		/* Select least of log2(base), log2(size).
-		 * Needed to make regions with correct align
+		/* Select minimum of base alignment and largest fitting size.
+		 * bshift: base alignment (trailing zeros) ensures MPU alignment
+		 * sshift: floor(log2(size)) gives largest power-of-2 that fits
 		 */
 		bshift = fp_addr_log2(base);
-		sshift = fp_addr_log2(size);
+		sshift = fp_size_log2(size);
 
-		shift = ((1 << bshift) > size) ? sshift : bshift;
+		shift = (bshift < sshift) ? bshift : sshift;
 
 		if (!*pfirst) {
 			/* Create first page */
@@ -181,7 +217,14 @@ fpage_t *split_fpage(as_t *as, fpage_t *fpage, memptr_t split, int rl)
 	memptr_t base = fpage->fpage.base,
 	         end = fpage->fpage.base + (1 << fpage->fpage.shift);
 	fpage_t *lfirst = NULL, *llast = NULL, *rfirst = NULL, *rlast = NULL;
-	split = mempool_align(fpage->fpage.mpid, split);
+
+	/* For rl=1 (right side), round DOWN to include the split point.
+	 * For rl=0 (left side), round UP to exclude past the split point.
+	 */
+	if (rl)
+		split = mempool_align_base(fpage->fpage.mpid, split);
+	else
+		split = mempool_align(fpage->fpage.mpid, split);
 
 	if (!as)
 		return NULL;
@@ -232,6 +275,12 @@ int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
 		}
 	}
 
+	/* Check if mempool supports fpage creation */
+	if (!(mempool_getbyid(mpid)->flags & MP_FPAGE_MASK)) {
+		/* Mempool does not support fpages (e.g., kernel text/data/bss) */
+		return -1;
+	}
+
 	end = base + size;
 
 	if (as) {
@@ -246,9 +295,28 @@ int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
 				           "MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
 				           mempool_getbyid(mpid)->name, base, size, as);
 
-				create_fpage_chain(mempool_align(mpid, base),
-				                   mempool_align(mpid, size),
-				                   mpid, &first, &last);
+				{
+					/* Round UP base to prevent over-mapping.
+					 * S1 fix: mempool_align_base rounds DOWN,
+					 * granting access below requested address.
+					 */
+					memptr_t abase = mempool_align(mpid, base);
+					memptr_t aend = mempool_align(mpid, base + size);
+
+					/* Empty region after alignment: skip */
+					if (abase >= aend) {
+						base = FPAGE_BASE(*fp);
+						fp = &(*fp)->as_next;
+						continue;
+					}
+
+					create_fpage_chain(abase, aend - abase, mpid,
+					                   &first, &last);
+				}
+
+				/* NULL guard: create_fpage_chain may fail */
+				if (!first || !last)
+					return -1;
 
 				last->as_next = *fp;
 				*fp = first;
@@ -278,24 +346,43 @@ int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
 			           "MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
 			           mempool_getbyid(mpid)->name, base, size, as);
 
-			create_fpage_chain(mempool_align(mpid, base),
-			                   mempool_align(mpid, size),
-			                   mpid, &first, &last);
+			{
+				/* S1 fix: round UP base to prevent over-mapping */
+				memptr_t abase = mempool_align(mpid, base);
+				memptr_t aend = mempool_align(mpid, base + size);
 
-			*fp = first;
+				/* Empty region check */
+				if (abase < aend) {
+					create_fpage_chain(abase, aend - abase, mpid,
+					                   &first, &last);
+				}
+			}
 
-			if (!*pfirst)
-				*pfirst = first;
-			*plast = last;
+			/* Only link if chain was created */
+			if (first && last) {
+				*fp = first;
+
+				if (!*pfirst)
+					*pfirst = first;
+				*plast = last;
+			}
 		}
 	} else {
 		dbg_printf(DL_MEMORY,
 		           "MEM: fpage chain %s [b:%p, sz:%p] as %p\n",
 		           mempool_getbyid(mpid)->name, base, size, as);
 
-		create_fpage_chain(mempool_align(mpid, base),
-		                   mempool_align(mpid, size),
-		                   mpid, pfirst, plast);
+		{
+			/* S1 fix: round UP base to prevent over-mapping */
+			memptr_t abase = mempool_align(mpid, base);
+			memptr_t aend = mempool_align(mpid, base + size);
+
+			/* Empty region check: return error if nothing to map */
+			if (abase >= aend)
+				return -1;
+
+			create_fpage_chain(abase, aend - abase, mpid, pfirst, plast);
+		}
 	}
 
 	return 0;
@@ -320,10 +407,10 @@ int map_fpage(as_t *src, as_t *dst, fpage_t *fpage, map_action_t action)
 	fpmap->raw[0] = fpage->raw[0];
 	fpmap->raw[1] = fpage->raw[1];
 
-	/* Set flags correctly */
+	/* Set flags correctly: preserve FPAGE_ALWAYS for MPU prioritization */
 	if (action == MAP)
 		fpage->fpage.flags |= FPAGE_MAPPED;
-	fpmap->fpage.flags = FPAGE_CLONE;
+	fpmap->fpage.flags = FPAGE_CLONE | (fpage->fpage.flags & FPAGE_ALWAYS);
 
 	/* Insert into mapee list */
 	fpmap->map_next = fpage->map_next;
@@ -332,8 +419,9 @@ int map_fpage(as_t *src, as_t *dst, fpage_t *fpage, map_action_t action)
 	/* Insert into AS */
 	insert_fpage_to_as(dst, fpmap);
 
-	dbg_printf(DL_MEMORY, "MEM: %s fpage %p from %p to %p\n",
-	           (action == MAP) ? "mapped" : "granted", fpage, src, dst);
+	dbg_printf(DL_MEMORY, "MEM: %s fpage %p [b:%p sz:2**%d] from %p to %p\n",
+	           (action == MAP) ? "mapped" : "granted", fpmap,
+	           FPAGE_BASE(fpmap), fpmap->fpage.shift, src, dst);
 
 	return 0;
 }

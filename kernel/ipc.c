@@ -79,6 +79,11 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 	int untyped_last = tag.s.n_untyped + 1;
 	int typed_last = untyped_last + tag.s.n_typed;
 
+	dbg_printf(DL_IPC,
+	           "IPC: do_ipc tag:%p n_untyped:%d n_typed:%d MR1:%p MR2:%p\n",
+	           tag.raw, tag.s.n_untyped, tag.s.n_typed,
+	           ipc_read_mr(from, 1), ipc_read_mr(from, 2));
+
 	if (typed_last > IPC_MR_COUNT) {
 		do_ipc_error(from, to,
 		             UE_IPC_MSG_OVERFLOW | UE_IPC_PHASE_SEND,
@@ -111,15 +116,44 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 		} else if (typed_item.s.header & IPC_TI_MAP_GRANT) {
 			/* MapItem / GrantItem have 1xxx in header */
 			int ret;
+			memptr_t map_base, map_size;
 			typed_data = mr_data;
 
+			map_base = typed_item.raw & 0xFFFFFFC0;
+			map_size = typed_data & 0xFFFFFFC0;
+
+			/* S1 security fix: REJECT unaligned map base addresses.
+			 * L4 spec uses 64-byte alignment (0xFFFFFFC0 mask), but
+			 * kernel requires CONFIG_SMALLEST_FPAGE_SIZE (256-byte).
+			 * Unaligned addresses cannot be safely mapped - kernel
+			 * must not silently adjust boundaries.
+			 */
+			if (!addr_is_fpage_aligned(map_base)) {
+				dbg_printf(DL_IPC,
+				           "IPC: REJECT unaligned map base %p\n",
+				           map_base);
+				do_ipc_error(from, to,
+				             UE_IPC_ABORTED | UE_IPC_PHASE_SEND,
+				             UE_IPC_ABORTED | UE_IPC_PHASE_RECV,
+				             T_RUNNABLE,
+				             T_RUNNABLE);
+				return;
+			}
+
+			dbg_printf(DL_IPC,
+			           "IPC: map_area from %t to %t base:%p size:%p priv:%d\n",
+			           from->t_globalid, to->t_globalid,
+			           map_base, map_size,
+			           thread_ispriviliged(from));
+
 			ret = map_area(from->as, to->as,
-			               typed_item.raw & 0xFFFFFFC0,
-			               typed_data & 0xFFFFFFC0,
+			               map_base, map_size,
 			               (typed_item.s.header & IPC_TI_GRANT) ?
 			                   GRANT : MAP,
 			               thread_ispriviliged(from));
 			typed_item_idx = -1;
+
+			dbg_printf(DL_IPC, "IPC: map_area returned %d\n", ret);
 
 			if (ret < 0) {
 				do_ipc_error(from, to,
@@ -165,7 +199,7 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 	sched_slot_dispatch(SSI_IPC_THREAD, to);
 
 	dbg_printf(DL_IPC,
-	           "IPC: %t to %t\n", caller->t_globalid, to->t_globalid);
+	           "IPC: %t→%t done\n", from->t_globalid, to->t_globalid);
 }
 
 uint32_t ipc_timeout(void *data)
@@ -209,6 +243,8 @@ void sys_ipc(uint32_t *param1)
 	l4_thread_t to_tid = param1[REG_R0], from_tid = param1[REG_R1];
 	uint32_t timeout = param1[REG_R2];
 
+
+
 	if (to_tid == L4_NILTHREAD &&
 		from_tid == L4_NILTHREAD) {
 		caller->state = T_INACTIVE;
@@ -228,8 +264,9 @@ void sys_ipc(uint32_t *param1)
 			user_interrupt_config(caller);
 			caller->state = T_RUNNABLE;
 			return;
-		} else if ((to_thr && to_thr->state == T_RECV_BLOCKED)
-		           || to_tid == caller->t_globalid) {
+		} else if (to_thr &&
+		           (to_thr->state == T_RECV_BLOCKED ||
+		            to_tid == caller->t_globalid)) {
 			/* To thread who is waiting for us or sends to myself */
 			do_ipc(caller, to_thr);
 			return;
@@ -247,10 +284,15 @@ void sys_ipc(uint32_t *param1)
 				uint32_t regs[4];	/* r0, r1, r2, r3 */
 
 				dbg_printf(DL_IPC,
-				           "IPC: %t thread start\n", to_tid);
+				           "IPC: %t thread start sp:%p stack_size:%p\n",
+				           to_tid, sp, stack_size);
 
 				to_thr->stack_base = sp - stack_size;
 				to_thr->stack_size = stack_size;
+
+				dbg_printf(DL_IPC,
+				           "IPC: %t stack_base:%p stack_size:%p\n",
+				           to_tid, to_thr->stack_base, to_thr->stack_size);
 
 				regs[REG_R0] = (uint32_t)&kip;
 				regs[REG_R1] = (uint32_t)to_thr->utcb;
@@ -267,13 +309,68 @@ void sys_ipc(uint32_t *param1)
 
 				return;
 			} else {
-				do_ipc(caller, to_thr);
-				to_thr->state = T_INACTIVE;
+				/* Non-start IPC to INACTIVE thread: process
+				 * typed items (MapItems) only, without full
+				 * do_ipc() which requires valid ctx.sp.
+				 * This allows mapping memory to thread before
+				 * it's started.
+				 */
+				ipc_msg_tag_t tag = { .raw = ipc_read_mr(caller, 0) };
+				int untyped_last = tag.s.n_untyped + 1;
+				int typed_last = untyped_last + tag.s.n_typed;
+				ipc_typed_item typed_item;
+				int typed_item_idx = -1;
 
+				dbg_printf(DL_IPC,
+				           "IPC: %t to INACTIVE %t (non-start)\n",
+				           caller->t_globalid, to_thr->t_globalid);
+
+				/* Process typed items (MapItems only) */
+				for (int typed_idx = untyped_last; typed_idx < typed_last; ++typed_idx) {
+					uint32_t mr_data = ipc_read_mr(caller, typed_idx);
+
+					if (typed_item_idx == -1) {
+						typed_item.raw = mr_data;
+						++typed_item_idx;
+					} else if (typed_item.s.header & IPC_TI_MAP_GRANT) {
+						memptr_t map_base = typed_item.raw & 0xFFFFFFC0;
+						memptr_t map_size = mr_data & 0xFFFFFFC0;
+						int ret;
+
+						/* S1 fix: reject unaligned addresses */
+						if (!addr_is_fpage_aligned(map_base)) {
+							dbg_printf(DL_IPC,
+							           "IPC: REJECT unaligned map to INACTIVE %p\n",
+							           map_base);
+							caller->state = T_RUNNABLE;
+							return;
+						}
+
+						ret = map_area(caller->as, to_thr->as,
+						               map_base, map_size,
+						               (typed_item.s.header & IPC_TI_GRANT) ?
+						                   GRANT : MAP,
+						               thread_ispriviliged(caller));
+						typed_item_idx = -1;
+
+						if (ret < 0) {
+							dbg_printf(DL_IPC,
+							           "IPC: map to INACTIVE failed: %d\n",
+							           ret);
+						}
+					}
+				}
+
+				/* Keep thread INACTIVE, sender continues */
+				caller->state = T_RUNNABLE;
 				return;
 			}
 		} else  {
 			/* No waiting, block myself */
+			dbg_printf(DL_KDB,
+			           "IPC: %t SEND_BLOCKED to %t (thr=%p state=%d)\n",
+			           caller->t_globalid, to_tid,
+			           to_thr, to_thr ? to_thr->state : -1);
 			caller->state = T_SEND_BLOCKED;
 			caller->utcb->intended_receiver = to_tid;
 			dbg_printf(DL_IPC,
@@ -295,7 +392,7 @@ void sys_ipc(uint32_t *param1)
 			 */
 			for (int i = 1; i < thread_count; ++i) {
 				thr = thread_map[i];
-				if (thr->state == T_SEND_BLOCKED &&
+				if (thr && thr->state == T_SEND_BLOCKED &&
 				    thr->utcb->intended_receiver ==
 				    caller->t_globalid) {
 					do_ipc(thr, caller);
@@ -305,7 +402,7 @@ void sys_ipc(uint32_t *param1)
 		} else if (from_tid != TID_TO_GLOBALID(THREAD_INTERRUPT)) {
 			thr = thread_by_globalid(from_tid);
 
-			if (thr->state == T_SEND_BLOCKED &&
+			if (thr && thr->state == T_SEND_BLOCKED &&
 			    thr->utcb->intended_receiver ==
 			    caller->t_globalid) {
 				do_ipc(thr, caller);
@@ -340,6 +437,8 @@ uint32_t ipc_deliver(void *data)
 
 	for (int i = 1; i < thread_count; ++i) {
 		tcb_t *thr = thread_map[i];
+		if (!thr)
+			continue;
 		switch (thr->state) {
 		case T_RECV_BLOCKED:
 			if (thr->ipc_from != L4_NILTHREAD &&
@@ -347,7 +446,7 @@ uint32_t ipc_deliver(void *data)
 				thr->ipc_from != TID_TO_GLOBALID(THREAD_INTERRUPT)) {
 				from_thr = thread_by_globalid(thr->ipc_from);
 				/* NOTE: Must check from_thr intend to send*/
-				if (from_thr->state == T_SEND_BLOCKED &&
+				if (from_thr && from_thr->state == T_SEND_BLOCKED &&
 				    from_thr->utcb->intended_receiver == thr->t_globalid)
 					do_ipc(from_thr, thr);
 			}
@@ -357,7 +456,7 @@ uint32_t ipc_deliver(void *data)
 			if (receiver != L4_NILTHREAD &&
 			    receiver != L4_ANYTHREAD) {
 				to_thr = thread_by_globalid(receiver);
-				if (to_thr->state == T_RECV_BLOCKED)
+				if (to_thr && to_thr->state == T_RECV_BLOCKED)
 					do_ipc(thr, to_thr);
 			}
 			break;

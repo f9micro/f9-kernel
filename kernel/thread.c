@@ -199,9 +199,13 @@ tcb_t *thread_create(l4_thread_t globalid, utcb_t *utcb)
 
 	assert((intptr_t) caller);
 
+	dbg_printf(DL_KDB, "THREAD_CREATE: gid=%p tid=%d utcb=%p\n",
+	           globalid, id, utcb);
+
 	if (id < THREAD_SYS ||
 	    globalid == L4_ANYTHREAD ||
 	    globalid == L4_ANYLOCALTHREAD) {
+		dbg_printf(DL_KDB, "THREAD_CREATE: rejected (id=%d)\n", id);
 		set_caller_error(UE_TC_NOT_AVAILABLE);
 		return NULL;
 	}
@@ -289,12 +293,18 @@ void thread_space(tcb_t *thr, l4_thread_t spaceid, utcb_t *utcb)
 	/* If no caller, than it is mapping from kernel to root thread
 	 * (some special case for root_utcb)
 	 */
-	if (caller)
-		map_area(caller->as, thr->as, (memptr_t) utcb,
+	int ret;
+	if (caller) {
+		ret = map_area(caller->as, thr->as, (memptr_t) utcb,
 		         sizeof(utcb_t), GRANT, thread_ispriviliged(caller));
-	else
-		map_area(thr->as, thr->as, (memptr_t) utcb,
+	} else {
+		ret = map_area(thr->as, thr->as, (memptr_t) utcb,
 		         sizeof(utcb_t), GRANT, 1);
+	}
+
+	if (ret < 0)
+		dbg_printf(DL_KDB, "UTCB map_area failed: utcb=%p tid=%p\n",
+		           utcb, thr->t_globalid);
 }
 
 void thread_free_space(tcb_t *thr)
@@ -305,6 +315,8 @@ void thread_free_space(tcb_t *thr)
 
 void thread_init_ctx(void *sp, void *pc, void *regs, tcb_t *thr)
 {
+	int i;
+
 	/* Reserve 8 words for fake context */
 	sp -= RESERVED_STACK;
 	thr->ctx.sp = (uint32_t) sp;
@@ -319,6 +331,12 @@ void thread_init_ctx(void *sp, void *pc, void *regs, tcb_t *thr)
 		thr->ctx.ret = 0xFFFFFFF9;
 		thr->ctx.ctl = 0x0;
 	}
+
+	/* Initialize ctx.regs to zeros (r4-r11).
+	 * User-space uses r4-r11 as MR0-MR7 for IPC.
+	 */
+	for (i = 0; i < 8; i++)
+		thr->ctx.regs[i] = 0;
 
 	if (!regs) {
 		((uint32_t *) sp)[REG_R0] = 0x0;
@@ -346,11 +364,21 @@ void thread_init_ctx(void *sp, void *pc, void *regs, tcb_t *thr)
  */
 void thread_init_kernel_ctx(void *sp, tcb_t *thr)
 {
+	int i;
+
 	sp -= RESERVED_STACK;
 
 	thr->ctx.sp = (uint32_t) sp;
 	thr->ctx.ret = 0xFFFFFFF9;
 	thr->ctx.ctl = 0x0;
+
+	/* Initialize ctx.regs to zeros.
+	 * These hold r4-r11 which are restored by irq_restore.
+	 * User-space uses r4-r11 as MR0-MR7, so uninitialized
+	 * garbage here would corrupt IPC message registers.
+	 */
+	for (i = 0; i < 8; i++)
+		thr->ctx.regs[i] = 0;
 }
 
 /*

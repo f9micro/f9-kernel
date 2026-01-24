@@ -53,6 +53,33 @@ typedef struct fpage fpage_t;
 #define FPAGE_SIZE(fp)  (1 << (fp)->fpage.shift)
 #define FPAGE_END(fp)	(FPAGE_BASE(fp) + FPAGE_SIZE(fp))
 
+/**
+ * Remove fpage from a linked list (as_next or mpu_next chain).
+ *
+ * Must be called before prepending fpage to prevent circular lists.
+ * Fix from f9-riscv commit f88633c, improved per Gemini review.
+ *
+ * Uses pointer-to-pointer traversal to safely handle:
+ * - Empty lists (first is NULL)
+ * - Removing head element
+ * - Removing middle/tail elements
+ * - Fpage not in list (no-op)
+ *
+ * @param as     Address space containing the list
+ * @param fpage  Fpage to remove
+ * @param first  Name of list head field in as (e.g., first, mpu_first)
+ * @param next   Name of next pointer field in fpage (e.g., as_next, mpu_next)
+ */
+#define remove_fpage_from_list(as, fpage, first, next) do {	\
+	fpage_t **_curr = &(as)->first;				\
+	while (*_curr && *_curr != (fpage)) {			\
+		_curr = &(*_curr)->next;			\
+	}							\
+	if (*_curr) {						\
+		*_curr = (*_curr)->next;			\
+	}							\
+} while (0)
+
 static inline int addr_in_fpage(memptr_t addr, fpage_t *fpage, int incl_end)
 {
 	return ((addr >= FPAGE_BASE(fpage) && addr < FPAGE_END(fpage)) ||

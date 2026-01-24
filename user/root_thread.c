@@ -78,10 +78,32 @@ static void __USER_TEXT start_thread(L4_ThreadId_t t, L4_Word_t ip,
 
 #define STACK_SIZE 0x200
 
+/* Align to minimum fpage size (256 bytes) to prevent overlap issues.
+ * Safe version that returns max aligned address on overflow.
+ */
+#define FPAGE_ALIGN_SIZE 256
+#define FPAGE_ALIGN_MASK (~(FPAGE_ALIGN_SIZE - 1))
+static inline L4_Word_t fpage_align_safe(L4_Word_t addr)
+{
+	L4_Word_t aligned = (addr + FPAGE_ALIGN_SIZE - 1) & FPAGE_ALIGN_MASK;
+	/* Check for overflow: if aligned < addr, we wrapped around */
+	if (aligned < addr)
+		return FPAGE_ALIGN_MASK;  /* Return max aligned address */
+	return aligned;
+}
+#define FPAGE_ALIGN(addr) fpage_align_safe((L4_Word_t)(addr))
+
 void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 {
 	L4_ThreadId_t myself = {.raw = utcb_ptr->t_globalid};
 	char *free_mem = (char *) get_free_base(kip_ptr);
+
+	/* Validate free_mem base - 0 means no free memory found */
+	if (!free_mem) {
+		/* No free memory available, halt */
+		while (1)
+			L4_Sleep(L4_Never);
+	}
 
 	for (user_struct *ptr = user_runtime_start; ptr != user_runtime_end; ++ptr) {
 		L4_ThreadId_t tid;
@@ -90,6 +112,11 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 
 		tid = L4_GlobalId(ptr->tid + kip_ptr->thread_info.s.user_base, 2);
 
+		/* Align UTCB base BEFORE ThreadControl to prevent kernel's
+		 * mempool_align_base() from rounding down into previous allocation
+		 */
+		free_mem = (char *) FPAGE_ALIGN(free_mem);
+
 		/* create thread */
 		L4_ThreadControl(tid, tid, L4_nilthread, myself, free_mem);
 		free_mem += UTCB_SIZE;
@@ -97,7 +124,8 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 		/* map user_text, user_data and user_bss */
 		map_user_sections(kip_ptr, tid);
 
-		/* map thread stack */
+		/* map thread stack - align first to prevent overlap */
+		free_mem = (char *) FPAGE_ALIGN(free_mem);
 		L4_Map(tid, (L4_Word_t)free_mem, STACK_SIZE);
 		free_mem += STACK_SIZE;
 		stack = (L4_Word_t)free_mem;
@@ -107,6 +135,18 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 			if (fpage->base) {
 				L4_Map(tid, fpage->base, fpage->size);
 			} else {
+				/* Align dynamic allocations to the fpage's own size.
+				 * This ensures the fpage can be a single MPU region.
+				 * fpage->size MUST be a non-zero power of 2.
+				 */
+				if (!fpage->size || (fpage->size & (fpage->size - 1))) {
+					printf("ERROR: invalid fpage size %p\n",
+					       (void *)fpage->size);
+					fpage++;
+					continue;
+				}
+				L4_Word_t align_mask = ~(fpage->size - 1);
+				free_mem = (char *)(((L4_Word_t)free_mem + fpage->size - 1) & align_mask);
 				L4_Map(tid, (L4_Word_t)free_mem, fpage->size);
 				fpage->base = (L4_Word_t)free_mem;
 				free_mem += fpage->size;
@@ -118,6 +158,8 @@ void __USER_TEXT __root_thread(kip_t *kip_ptr, utcb_t *utcb_ptr)
 		/* start thread */
 		start_thread(tid, (L4_Word_t)ptr->entry, stack, STACK_SIZE);
 	}
+
+	printf("root_thread: all user threads started\n");
 
 	while (1)
 		L4_Sleep(L4_Never);

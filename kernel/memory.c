@@ -68,10 +68,8 @@ static mempool_t memmap[] = {
 	DECLARE_MEMPOOL("KBITMAP",  &bitmap_start, &bitmap_end,
 		MP_KR | MP_KW | MP_NO_FPAGE, MPT_KERNEL_DATA),
 #endif
-#ifndef CONFIG_BOARD_STM32P103
 	DECLARE_MEMPOOL("MEM1",   &mem1_start, 0x10010000,
 		MP_UR | MP_UW | MP_AHB_RAM, MPT_AVAILABLE),
-#endif
 	DECLARE_MEMPOOL("APB1DEV", 0x40000000, 0x40007800,
 		MP_UR | MP_UW | MP_DEVICES, MPT_DEVICES),
 	DECLARE_MEMPOOL("APB2_1DEV", 0x40010000, 0x40014c00,
@@ -107,26 +105,63 @@ extern char *kip_extra;
 
 /* Some helper functions */
 /* size value must be 2^k */
-static memptr_t addr_align(memptr_t addr, size_t size)
+static memptr_t addr_align_up(memptr_t addr, size_t size)
 {
-	return (addr + (size - 1)) & ~(size - 1);
+	memptr_t mask = ~(size - 1);
+	memptr_t aligned = (addr + (size - 1)) & mask;
+	/* Check for overflow: if aligned < addr, return max aligned value */
+	if (aligned < addr)
+		return mask;
+	return aligned;
+}
+
+static memptr_t addr_align_down(memptr_t addr, size_t size)
+{
+	return addr & ~(size - 1);
 }
 
 #define CONFIG_SMALLEST_FPAGE_SIZE	(1 << CONFIG_SMALLEST_FPAGE_SHIFT)
 
+/* Align size up to fpage boundary (for determining region end) */
 memptr_t mempool_align(int mpid, memptr_t addr)
 {
 	if (memmap[mpid].flags & MP_FPAGE_MASK)
-		return addr_align(addr, CONFIG_SMALLEST_FPAGE_SIZE);
+		return addr_align_up(addr, CONFIG_SMALLEST_FPAGE_SIZE);
 
 	return INVALID_FPAGE_REGION;
 }
 
+/* Align base address down to fpage boundary (for region start) */
+memptr_t mempool_align_base(int mpid, memptr_t addr)
+{
+	if (memmap[mpid].flags & MP_FPAGE_MASK)
+		return addr_align_down(addr, CONFIG_SMALLEST_FPAGE_SIZE);
+
+	return INVALID_FPAGE_REGION;
+}
+
+/*
+ * Check if address is aligned to smallest fpage boundary.
+ * Used to validate user-supplied addresses before processing.
+ */
+int addr_is_fpage_aligned(memptr_t addr)
+{
+	return (addr & (CONFIG_SMALLEST_FPAGE_SIZE - 1)) == 0;
+}
+
 int mempool_search(memptr_t base, size_t size)
 {
+	memptr_t end;
+
+	/* Check for overflow in base + size */
+	if (size > 0 && base > (memptr_t)-1 - size + 1)
+		return -1;  /* Overflow would occur */
+
+	end = base + size;
+
 	for (int i = 0; i < sizeof(memmap) / sizeof(mempool_t); ++i) {
 		if ((memmap[i].start <= base) &&
-		    (memmap[i].end >= (base + size))) {
+		    (memmap[i].end >= end)) {
 			return i;
 		}
 	}
@@ -159,10 +194,10 @@ void memory_init()
 		case MPT_USER_TEXT:
 		case MPT_DEVICES:
 		case MPT_AVAILABLE:
-			mem_desc[j].base = addr_align(
+			mem_desc[j].base = addr_align_up(
 					(memmap[i].start),
 			                CONFIG_SMALLEST_FPAGE_SIZE) | i;
-			mem_desc[j].size = addr_align(
+			mem_desc[j].size = addr_align_up(
 					(memmap[i].end - memmap[i].start),
 					CONFIG_SMALLEST_FPAGE_SIZE) | memmap[i].tag;
 			j++;
@@ -360,12 +395,22 @@ void as_destroy(as_t *as)
 }
 
 int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
-             map_action_t action, int is_priviliged)
+             map_action_t action, int is_privileged)
 {
 	/* Most complicated part of mapping subsystem */
-	memptr_t end = base + size, probe = base;
+	memptr_t end, probe = base;
+
+	/* Check for overflow in base + size */
+	if (size > 0 && base > (memptr_t)-1 - size + 1)
+		return -1;  /* Overflow would occur */
+
+	end = base + size;
 	fpage_t *fp = src->first, *first = NULL, *last = NULL;
 	int last_invalid = 0;
+
+	dbg_printf(DL_MEMORY,
+	           "MEM: map_area base:%p, size:%p, priv:%d\n",
+	           base, size, is_privileged);
 
 	/* FIXME: reverse mappings (i.e. thread 1 maps 0x1000 to thread 2,
 	 * than thread 2 does the same to thread 1).
@@ -378,8 +423,11 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 
 	/* FIXME: checking existence of fpages */
 
-	if (is_priviliged) {
-		assign_fpages_ext(-1, src, base, size, &first, &last);
+	if (is_privileged) {
+		if (assign_fpages_ext(-1, src, base, size, &first, &last) < 0) {
+			/* Cannot create fpages for this region */
+			return -1;
+		}
 		if (src == dst) {
 			/* Maps to itself, ignore other actions */
 			return 0;
@@ -456,6 +504,9 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 	if (!last || !first) {
 		/* Splitting not supported for mapped pages */
 		/* UNIMPLIMENTED */
+		dbg_printf(DL_KDB,
+		           "MEM: map_area split failed: first=%p last=%p base=%p\n",
+		           first, last, base);
 		return -1;
 	}
 

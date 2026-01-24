@@ -93,9 +93,9 @@ void __l4_start(void)
 	memset(&bss_start, 0,
 	       (&bss_end - &bss_start) * sizeof(uint32_t));
 	memset(&kernel_ahb_start, 0,
-	       (&bss_end - &bss_start) * sizeof(uint32_t));
+	       (&kernel_ahb_end - &kernel_ahb_start) * sizeof(uint32_t));
 	memset(&user_bss_start, 0,
-	       (&user_bss_end - & user_bss_start) * sizeof(uint32_t));
+	       (&user_bss_end - &user_bss_start) * sizeof(uint32_t));
 
 	sys_clock_init();
 

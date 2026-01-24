@@ -11,6 +11,11 @@
 
 #define STACK_SIZE 0x200
 
+/* Kernel requires 256-byte alignment for UTCB addresses */
+#define NODE_ALIGN 256
+#define NODE_SIZE_ALIGNED \
+	(((UTCB_SIZE + STACK_SIZE) + NODE_ALIGN - 1) & ~(NODE_ALIGN - 1))
+
 typedef void *thr_handler_t(void *);
 
 struct thread_node {
@@ -67,7 +72,7 @@ static struct thread_pool *init_thread_pool(L4_Word_t res_base,
 	struct thread_node *nodes;
 
 	num1 = (heap_size - sizeof(struct thread_pool)) / sizeof(struct thread_node);
-	num2 = (res_size) / (UTCB_SIZE + STACK_SIZE);
+	num2 = (res_size) / NODE_SIZE_ALIGNED;
 
 	node_num = (num1 < num2) ? num1 : num2;
 	node_num = (node_num > THREAD_MAX_NUM) ? THREAD_MAX_NUM : node_num;
@@ -87,7 +92,7 @@ static struct thread_pool *init_thread_pool(L4_Word_t res_base,
 	for (i = 1 ; i < node_num ; i++) {
 		nodes[i].base = res_base;
 		nodes[i].tid.raw = 0;
-		res_base += (UTCB_SIZE + STACK_SIZE);
+		res_base += NODE_SIZE_ALIGNED;
 	}
 
 	return pool;
@@ -200,6 +205,16 @@ static L4_ThreadId_t __thread_create(struct thread_pool *pool)
 	myself = L4_MyGlobalId();
 	free_mem = (L4_Word_t)THREAD_NODE_BASE(node);
 
+	/* Create thread with shared address space (spaceid=myself).
+	 * Since spaceid != dest, the kernel's thread_space() will share
+	 * the pager's address space with the child. All fpages in the
+	 * pager's AS (including RES_FPAGE for stack/UTCB, UTEXT, UDATA,
+	 * UBSS) are automatically accessible to the child.
+	 *
+	 * Note: The kernel maps the UTCB via map_area() during ThreadControl.
+	 * The stack region is part of RES_FPAGE which is already in the
+	 * pager's AS, so no explicit mapping is needed here.
+	 */
 	L4_ThreadControl(child, myself, L4_nilthread, myself, (void *)free_mem);
 
 	return child;
@@ -215,8 +230,10 @@ static L4_Word_t __thread_start(struct thread_pool *pool, L4_ThreadId_t tid,
 
 	node = find_thread_node(pool, tid);
 
-	if (!node)
+	if (!node) {
+		printf("__thread_start: node not found for %p\n", tid.raw);
 		return (L4_Word_t) - 1;
+	}
 
 	stack = (L4_Word_t)THREAD_NODE_BASE(node) + UTCB_SIZE + STACK_SIZE;
 	start_thread(tid, entry, entry_arg, stack, STACK_SIZE);
@@ -230,13 +247,17 @@ L4_ThreadId_t pager_create_thread(void)
 	L4_ThreadId_t tid;
 	L4_Msg_t msg;
 	L4_MsgTag_t tag;
+	L4_ThreadId_t pager_tid = L4_Pager();
+
+	printf("pager_create: me=%p pager=%p\n",
+	       L4_Myself().raw, pager_tid.raw);
 
 	L4_MsgClear(&msg);
 	L4_Set_Label(&msg.tag, PAGER_REQUEST_LABEL);
 	L4_MsgAppendWord(&msg, THREAD_CREATE);
 
 	L4_MsgLoad(&msg);
-	tag = L4_Call(L4_Pager());
+	tag = L4_Call(pager_tid);
 
 	if (L4_Label(tag) == PAGER_REPLY_LABEL)
 		L4_StoreMR(1, &tid.raw);
@@ -253,6 +274,8 @@ L4_Word_t pager_start_thread(L4_ThreadId_t tid, void * (*thr_routine)(void *),
 	L4_Msg_t msg;
 	L4_MsgTag_t tag;
 	L4_Word_t ret;
+
+	printf("pager_start: tid=%p\n", tid.raw);
 
 	L4_MsgClear(&msg);
 	L4_Set_Label(&msg.tag, PAGER_REQUEST_LABEL);
@@ -280,6 +303,8 @@ void pager_thread(user_struct *user,
 	L4_Word_t fpage_num;
 	L4_ThreadId_t main_tid;
 	struct thread_pool *pool;
+
+	printf("pager: starting\n");
 
 	fpage_num = user_fpage_number(user->fpages);
 

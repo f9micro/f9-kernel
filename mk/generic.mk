@@ -99,11 +99,11 @@ distclean: clean
 	-rm -rf $(out_host) $(KCONFIG_DIR)
 	-rm -f $(CONFIG) $(CONFIG).old include/autoconf.h
 
-# FIXME: validate the target machine and check its availability
+# QEMU emulation for netduinoplus2
 .PHONY: qemu
 qemu: $(out)/$(PROJECT).bin
 	-killall -q qemu-system-arm
-	$(QEMU_DIR)qemu-system-arm -M stm32-p103 -kernel $(out)/$(PROJECT).bin -serial stdio -semihosting
+	$(QEMU) -M netduinoplus2 -nographic -kernel $(out)/$(PROJECT).elf -serial mon:stdio
 
 # Kconfiglib download target
 $(KCONFIG_DIR)/kconfiglib.py:

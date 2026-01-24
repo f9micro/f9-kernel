@@ -31,18 +31,27 @@ static int16_t usart_baud(uint32_t base, uint32_t baud)
 {
 	uint16_t mantissa;
 	uint16_t fraction;
+	uint32_t apb_clock;
 
-	/* USART1 and USART6 are on APB2 whose frequency is 84MHz,
-	 * while USART2, USART3, UART4, and UART5 are on APB1 whose
-	 * frequency is 42 MHz (max).
+	/* Detect system clock source to determine actual APB frequencies.
+	 * When HSE fails (common in QEMU), we fall back to HSI (16MHz)
+	 * with no PLL, so APB clocks are different from PLL case.
 	 */
-	if (base == USART1_BASE) {
-		mantissa = (84000000) / (16 *  baud);
-		fraction = (84000000 / baud) % 16;
+	uint32_t sws = *RCC_CFGR & RCC_CFGR_SWS_M;
+
+	if (sws == RCC_CFGR_SWS_PLL) {
+		/* PLL is system clock: SYSCLK=168MHz, APB1=42MHz, APB2=84MHz */
+		if (base == USART1_BASE)
+			apb_clock = 84000000;	/* APB2 for USART1/6 */
+		else
+			apb_clock = 42000000;	/* APB1 for USART2-5 */
 	} else {
-		mantissa = (42000000) / (16 *  baud);
-		fraction = (42000000 / baud) % 16;
+		/* HSI or HSE without PLL: assume 16MHz with no prescalers */
+		apb_clock = 16000000;
 	}
+
+	mantissa = apb_clock / (16 * baud);
+	fraction = (apb_clock / baud) % 16;
 
 	return (mantissa << 4) | fraction;
 }

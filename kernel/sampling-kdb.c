@@ -37,18 +37,32 @@ void kdb_show_sampling(void)
 {
 	int *hitcount, *symid_list;
 	static int init = 0;
+	static int init_failed = 0;
 	static struct kprobe k;
 
+	if (init_failed) {
+		dbg_printf(DL_KDB,
+		           "Sampling unavailable (kprobe on Flash requires FPB)\n");
+		return;
+	}
+
 	if (init == 0) {
-		dbg_printf(DL_KDB, "Init sampling...\n");
 		sampling_init();
 		sampling_enable();
-		init++;
 
 		k.addr = ktimer_handler;
 		k.pre_handler = sampling_handler;
 		k.post_handler = NULL;
-		kprobe_register(&k);
+
+		if (kprobe_register(&k) < 0) {
+			dbg_printf(DL_KDB,
+			           "FAILED: kprobe on Flash requires FPB hardware\n");
+			sampling_disable();
+			init_failed = 1;
+			return;
+		}
+
+		init++;
 		return;
 	}
 

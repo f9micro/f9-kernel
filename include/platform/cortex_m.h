@@ -57,6 +57,17 @@ inline uint32_t *MSP(void) {
     return val;
 }
 
+/* Memory barriers required after MPU updates */
+inline void __DSB(void) __attribute__((always_inline));
+inline void __DSB(void) {
+    asm volatile ("dsb" ::: "memory");
+}
+
+inline void __ISB(void) __attribute__((always_inline));
+inline void __ISB(void) {
+    asm volatile ("isb" ::: "memory");
+}
+
 /* Cortex M4 General Registers */
 
 /* System Control Map */

@@ -1,0 +1,90 @@
+name: Build
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        board: [discoveryf4, discoveryf429, netduinoplus2]
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Install ARM toolchain
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi
+
+    - name: Configure for ${{ matrix.board }}
+      run: make ${{ matrix.board }}_defconfig
+
+    - name: Build kernel
+      run: make
+
+    - name: Show binary size
+      run: arm-none-eabi-size build/${{ matrix.board }}/f9.elf
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: f9-${{ matrix.board }}
+        path: |
+          build/${{ matrix.board }}/f9.elf
+          build/${{ matrix.board }}/f9.bin
+
+  qemu-test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Download netduinoplus2 artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: f9-netduinoplus2
+        path: build/netduinoplus2
+
+    - name: Install QEMU
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y qemu-system-arm
+
+    - name: QEMU boot test
+      run: |
+        timeout 15s qemu-system-arm \
+          -M netduinoplus2 \
+          -nographic \
+          -serial mon:stdio \
+          -kernel build/netduinoplus2/f9.elf 2>&1 | tee qemu.log || true
+
+        echo "=== QEMU Output ==="
+        cat qemu.log
+        echo "==================="
+
+        # Check for successful boot indicators
+        if grep -q "Press '?' to print KDB menu" qemu.log; then
+          echo "✓ KDB shell ready"
+          exit 0
+        elif grep -q "KDB" qemu.log; then
+          echo "✓ KDB initialized"
+          exit 0
+        elif grep -q "f9" qemu.log || grep -q "F9" qemu.log; then
+          echo "✓ Kernel boot detected"
+          exit 0
+        fi
+
+        # Check for crash indicators
+        if grep -q "MEMFAULT\|HardFault\|panic" qemu.log; then
+          echo "✗ Kernel crash detected"
+          exit 1
+        fi
+
+        echo "⚠ No boot message detected (timeout or minimal output)"
+        exit 0

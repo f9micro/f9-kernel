@@ -22,13 +22,25 @@ config BOARD_STM32F429DISCOVERY
 	help
 	  STM32F429 Discovery board with STM32F429ZIT6 MCU and LCD.
 
-config BOARD_STM32P103
-	bool "Olimex STM32-P103"
-	select PLATFORM_STM32F1
+config BOARD_NETDUINOPLUS2
+	bool "Netduino Plus 2"
+	select PLATFORM_STM32F4
 	help
-	  Olimex STM32-P103 board with STM32F103RBT6 MCU.
+	  Netduino Plus 2 board with STM32F405RGT6 MCU.
+	  This board is supported by upstream QEMU for emulation.
 
 endchoice
+
+config QEMU
+	bool "QEMU emulation mode"
+	default y if BOARD_NETDUINOPLUS2
+	help
+	  Enable workarounds for QEMU emulation limitations:
+	  - Use synchronous UART output (QEMU TXE interrupt unreliable)
+	  - Place bitmaps in regular SRAM (QEMU lacks CCM RAM emulation)
+
+	  Enable this when running under QEMU. Disable for real hardware
+	  to get better performance.
 
 endmenu
 
@@ -37,7 +49,4 @@ config PLATFORM_STM32F4
 	bool
 
 config PLATFORM_STM32F429
-	bool
-
-config PLATFORM_STM32F1
 	bool
