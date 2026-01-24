@@ -26,12 +26,18 @@ static void dbg_uart_send(int avail);
 
 void __uart_irq_handler(void)
 {
-	if (usart_interrupt_status(&console_uart, USART_IT_TXE)) {
-		/* USART TX */
-		dbg_uart_send(1);
-	} else if (usart_interrupt_status(&console_uart, USART_IT_RXNE)) {
-		/* USART RX */
+	/* For RX: check SR status (RXNE) to ensure data is available.
+	 * For TX: check only CR1 interrupt enable (TXEIE) because QEMU's
+	 * USART emulation may not properly update SR TXE status bit.
+	 * This is safe because TXE interrupt only fires when TXE is set.
+	 */
+	if (usart_status(&console_uart, USART_RXNE)) {
+		/* USART RX - data received */
 		dbg_uart_recv();
+	}
+	if (usart_interrupt_status(&console_uart, USART_IT_TXE)) {
+		/* USART TX - transmit buffer empty */
+		dbg_uart_send(1);
 	}
 }
 
@@ -142,10 +148,22 @@ void dbg_uart_init(void)
 	queue_init(&(dbg_uart.tx), dbg_uart_tx_buffer, SEND_BUFSIZE);
 	queue_init(&(dbg_uart.rx), dbg_uart_rx_buffer, RECV_BUFSIZE);
 
+#ifdef CONFIG_QEMU
+	/* Use sync output for reliable debugging under QEMU.
+	 * QEMU's USART TXE interrupt emulation is unreliable,
+	 * causing the async TX queue to block indefinitely.
+	 */
+	dbg_state = DBG_PANIC;
+#else
 	dbg_state = DBG_ASYNC;
+#endif
 	usart_config_interrupt(&console_uart, USART_IT_RXNE, 1);
 
-	NVIC_SetPriority(BOARD_UART_DEVICE, 0xf, 0);
+	/* UART must have higher priority (lower number) than PendSV (0xf)
+	 * so it can preempt and drain TX queue during debug output.
+	 * Otherwise dbg_async_putchar deadlocks waiting for queue space.
+	 */
+	NVIC_SetPriority(BOARD_UART_DEVICE, 0xe, 0);
 	NVIC_ClearPendingIRQ(BOARD_UART_DEVICE);
 	NVIC_EnableIRQ(BOARD_UART_DEVICE);
 
