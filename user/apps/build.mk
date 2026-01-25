@@ -16,13 +16,13 @@ user-apps-dirs += \
 	pingpong
 endif
 
-ifdef CONFIG_EXTI_INTERRUPT_TEST
-user-apps-dirs += \
-	irq_test
-endif
-
 ifdef CONFIG_LCD_TEST
 user-apps-dirs += \
 	lcd_test
+endif
+
+ifdef CONFIG_TESTS
+user-apps-dirs += \
+	tests
 endif
 endif
