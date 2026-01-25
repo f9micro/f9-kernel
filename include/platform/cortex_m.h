@@ -104,6 +104,7 @@ inline void __ISB(void) {
 #define SCB_VTOR                        (volatile uint32_t *) (SCB_BASE + 0x008)                /* Vector Table Offset Register */
 #define SCB_AIRCR                       (volatile uint32_t *) (SCB_BASE + 0x00c)                /* Application Interrupt/Reset Control Register */
 #define SCB_SCR                         (volatile uint32_t *) (SCB_BASE + 0x010)                /* System Control Register */
+#define SCB_CCR                         (volatile uint32_t *) (SCB_BASE + 0x014)                /* Configuration and Control Register */
 #define SCB_SHPR                        (volatile uint8_t *)  (SCB_BASE + 0x018)                /* System Handler Priority Register */
 #define SCB_SHCSR                       (volatile uint32_t *) (SCB_BASE + 0x024)                /* System Handler Control and State Register */
 #define SCB_CFSR                        (volatile uint32_t *) (SCB_BASE + 0x028)                /* Configurable fault status register - Describes Usage, Bus, and Memory faults */
@@ -142,6 +143,8 @@ inline void __ISB(void) {
 #define SCB_SCR_SLEEPONEXIT             (uint32_t) (1 << 1)                                     /* Sleep on return from interrupt routine */
 #define SCB_SCR_SLEEPDEEP               (uint32_t) (1 << 2)                                     /* Use deep sleep as low power mode */
 #define SCB_SCR_SEVONPEND               (uint32_t) (1 << 4)                                     /* Send event on pending exception */
+
+#define SCB_CCR_STKALIGN                (uint32_t) (1 << 9)                                     /* Stack 8-byte alignment on exception entry */
 
 #define SCB_SHCSR_MEMFAULTENA           (uint32_t) (1 << 16)                                    /* Enables Memory Management Fault */
 #define SCB_SHCSR_BUSFAULTENA           (uint32_t) (1 << 17)                                    /* Enables Bus Fault */

@@ -9,6 +9,7 @@
 #include <softirq.h>
 #include <thread.h>
 #include <sched.h>
+#include <error.h>
 #include <platform/link.h>
 #include <platform/cortex_m.h>
 
@@ -168,7 +169,24 @@ extern volatile uint32_t __irq_saved_regs[8];
 	{								\
 		register tcb_t *sel;					\
 		sel = schedule_select();				\
+		/* Check current thread canary before any return path.	\
+		 * Catches overflow that occurred while thread ran. */	\
+		if (!thread_check_canary((tcb_t *)current)) {		\
+			panic("Stack overflow (current): tid=%t, "	\
+			      "stack_base=%p, canary=%p\n",		\
+			      current->t_globalid, current->stack_base,	\
+			      current->stack_base ?			\
+			      *((uint32_t *)current->stack_base) : 0);	\
+		}							\
 		if (sel != current) {					\
+			/* Check next thread before switching to it */	\
+			if (!thread_check_canary(sel)) {		\
+				panic("Stack overflow (next): tid=%t, "	\
+				      "stack_base=%p, canary=%p\n",	\
+				      sel->t_globalid, sel->stack_base,	\
+				      sel->stack_base ?			\
+				      *((uint32_t *)sel->stack_base) : 0); \
+			}						\
 			context_switch(current, sel);			\
 		} else {						\
 			/* No context switch - restore saved registers	\

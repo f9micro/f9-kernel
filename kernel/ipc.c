@@ -287,8 +287,23 @@ void sys_ipc(uint32_t *param1)
 				           "IPC: %t thread start sp:%p stack_size:%p\n",
 				           to_tid, sp, stack_size);
 
+				/* Security check: Ensure stack is in user-writable memory */
+				int pid = mempool_search(sp - stack_size, stack_size);
+				mempool_t *mp = mempool_getbyid(pid);
+
+				if (!mp || !(mp->flags & MP_UW)) {
+					dbg_printf(DL_IPC,
+					           "IPC: REJECT invalid stack for %t: %p (pool %s)\n",
+					           to_tid, sp - stack_size, mp ? mp->name : "N/A");
+					user_ipc_error(caller,
+					               UE_IPC_ABORTED | UE_IPC_PHASE_SEND);
+					caller->state = T_RUNNABLE;
+					return;
+				}
+
 				to_thr->stack_base = sp - stack_size;
 				to_thr->stack_size = stack_size;
+				thread_init_canary(to_thr);
 
 				dbg_printf(DL_IPC,
 				           "IPC: %t stack_base:%p stack_size:%p\n",

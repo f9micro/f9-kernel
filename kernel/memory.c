@@ -11,6 +11,7 @@
 #include <fpage_impl.h>
 #include <init_hook.h>
 #include <kip.h>
+#include <platform/cortex_m.h>
 
 /**
  * @file    memory.c
@@ -180,6 +181,15 @@ void memory_init()
 {
 	int j = 0;
 	uint32_t *shcsr = (uint32_t *) 0xE000ED24;
+
+	/* Verify and set STKALIGN for 8-byte stack alignment on exceptions.
+	 * This is critical for Cortex-M: misaligned stacks cause HardFault.
+	 * STKALIGN (bit 9 of CCR) ensures automatic 8-byte alignment.
+	 */
+	if (!(*SCB_CCR & SCB_CCR_STKALIGN)) {
+		*SCB_CCR |= SCB_CCR_STKALIGN;
+		__ISB();
+	}
 
 	fpages_init();
 
