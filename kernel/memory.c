@@ -359,7 +359,12 @@ as_t *as_create(uint32_t as_spaceid)
 {
 	as_t *as = (as_t *) ktable_alloc(&as_table);
 
-	/* assert as == NULL */
+	if (!as) {
+		dbg_printf(DL_KDB,
+		           "AS: Failed to allocate address space for %p\n",
+		           as_spaceid);
+		return NULL;
+	}
 
 	as->as_spaceid = as_spaceid;
 	as->first = NULL;
@@ -514,10 +519,18 @@ int map_area(as_t *src, as_t *dst, memptr_t base, size_t size,
 
 	fp = first;
 	while (fp != last) {
-		map_fpage(src, dst, fp, action);
+		if (map_fpage(src, dst, fp, action) < 0) {
+			dbg_printf(DL_KDB,
+			           "MEM: map_area fpage map failed: fp=%p\n", fp);
+			return -1;
+		}
 		fp = fp->as_next;
 	}
-	map_fpage(src, dst, fp, action);
+	if (map_fpage(src, dst, fp, action) < 0) {
+		dbg_printf(DL_KDB,
+		           "MEM: map_area final fpage map failed: fp=%p\n", fp);
+		return -1;
+	}
 
 	return 0;
 }

@@ -81,7 +81,13 @@ void fpages_init(void)
  */
 static void insert_fpage_chain_to_as(as_t *as, fpage_t *first, fpage_t *last)
 {
-	fpage_t *fp = as->first;
+	fpage_t *fp;
+
+	/* NULL chain is a no-op */
+	if (!first || !last)
+		return;
+
+	fp = as->first;
 
 	if (!fp) {
 		/* First chain in AS */
@@ -149,14 +155,13 @@ static fpage_t *create_fpage(memptr_t base, size_t shift, int mpid)
 		dbg_printf(DL_KDB,
 		           "FPAGE: alloc failed! count=%d base=%p shift=%d mpid=%d\n",
 		           fpage_alloc_count, base, shift, mpid);
-	} else {
-		fpage_alloc_count++;
-		if ((fpage_alloc_count % 50) == 0)
-			dbg_printf(DL_KDB, "FPAGE: allocated %d fpages\n",
-			           fpage_alloc_count);
+		return NULL;
 	}
 
-	assert((intptr_t) fpage);
+	fpage_alloc_count++;
+	if ((fpage_alloc_count % 50) == 0)
+		dbg_printf(DL_KDB, "FPAGE: allocated %d fpages\n",
+		           fpage_alloc_count);
 
 	fpage->as_next = NULL;
 	fpage->map_next = fpage; 	/* That is first fpage in mapping */
@@ -179,11 +184,26 @@ void destroy_fpage(fpage_t *fpage)
 	ktable_free(&fpage_table, fpage);
 }
 
+/**
+ * Free a chain of fpages
+ * @param first - first fpage in chain (may be NULL)
+ */
+static void free_fpage_chain(fpage_t *first)
+{
+	fpage_t *fp, *next;
+
+	for (fp = first; fp; fp = next) {
+		next = fp->as_next;
+		ktable_free(&fpage_table, fp);
+	}
+}
+
 static void create_fpage_chain(memptr_t base, size_t size, int mpid,
                                fpage_t **pfirst, fpage_t **plast)
 {
 	int shift, sshift, bshift;
 	fpage_t *fpage = NULL;
+	fpage_t *newfp;
 
 	while (size) {
 		/* Select minimum of base alignment and largest fitting size.
@@ -195,28 +215,39 @@ static void create_fpage_chain(memptr_t base, size_t size, int mpid,
 
 		shift = (bshift < sshift) ? bshift : sshift;
 
+		newfp = create_fpage(base, shift, mpid);
+		if (!newfp) {
+			/* Allocation failed - leave chain incomplete */
+			dbg_printf(DL_KDB,
+			           "FPAGE: chain alloc failed at base=%p\n", base);
+			return;
+		}
+
 		if (!*pfirst) {
 			/* Create first page */
-			fpage = create_fpage(base, shift, mpid);
+			fpage = newfp;
 			*pfirst = fpage;
 			*plast = fpage;
 		} else {
 			/* Build chain */
-			fpage->as_next = create_fpage(base, shift, mpid);
+			fpage->as_next = newfp;
 			fpage = fpage->as_next;
 			*plast = fpage;
 		}
 
-		size -= (1 << shift);
-		base += (1 << shift);
+		size -= ((memptr_t)1 << shift);
+		base += ((memptr_t)1 << shift);
 	}
 }
 
 fpage_t *split_fpage(as_t *as, fpage_t *fpage, memptr_t split, int rl)
 {
 	memptr_t base = fpage->fpage.base,
-	         end = fpage->fpage.base + (1 << fpage->fpage.shift);
+	         end = fpage->fpage.base + ((memptr_t)1 << fpage->fpage.shift);
 	fpage_t *lfirst = NULL, *llast = NULL, *rfirst = NULL, *rlast = NULL;
+
+	if (!as || !fpage)
+		return NULL;
 
 	/* For rl=1 (right side), round DOWN to include the split point.
 	 * For rl=0 (left side), round UP to exclude past the split point.
@@ -226,11 +257,10 @@ fpage_t *split_fpage(as_t *as, fpage_t *fpage, memptr_t split, int rl)
 	else
 		split = mempool_align(fpage->fpage.mpid, split);
 
-	if (!as)
-		return NULL;
-
-	/* Check if we can split something */
-	if (split == base || split == end) {
+	/* Check if split point is valid after alignment.
+	 * Must be strictly between base and end.
+	 */
+	if (split <= base || split >= end) {
 		return fpage;
 	}
 
@@ -245,6 +275,26 @@ fpage_t *split_fpage(as_t *as, fpage_t *fpage, memptr_t split, int rl)
 	                   fpage->fpage.mpid, &lfirst, &llast);
 	create_fpage_chain(split, (end - split),
 	                   fpage->fpage.mpid, &rfirst, &rlast);
+
+	/* Check if both chains were created successfully.
+	 * If either failed, keep the original fpage intact.
+	 */
+	if (!lfirst || !llast || !rfirst || !rlast) {
+		/* Free any partially created chains */
+		fpage_t *fp, *next;
+		for (fp = lfirst; fp; fp = next) {
+			next = fp->as_next;
+			ktable_free(&fpage_table, fp);
+		}
+		for (fp = rfirst; fp; fp = next) {
+			next = fp->as_next;
+			ktable_free(&fpage_table, fp);
+		}
+		dbg_printf(DL_KDB,
+		           "FPAGE: split failed, keeping original (base=%p split=%p)\n",
+		           base, split);
+		return NULL;
+	}
 
 	remove_fpage_from_as(as, fpage);
 	ktable_free(&fpage_table, fpage);
@@ -283,6 +333,14 @@ int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
 
 	end = base + size;
 
+	/* Overflow check: end must be greater than base */
+	if (end < base) {
+		dbg_printf(DL_KDB,
+		           "FPAGE: overflow in assign_fpages_ext base=%p size=%p\n",
+		           base, size);
+		return -1;
+	}
+
 	if (as) {
 		/* find unmapped space */
 		fp = &as->first;
@@ -315,8 +373,10 @@ int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
 				}
 
 				/* NULL guard: create_fpage_chain may fail */
-				if (!first || !last)
+				if (!first || !last) {
+					free_fpage_chain(first);
 					return -1;
+				}
 
 				last->as_next = *fp;
 				*fp = first;
@@ -382,6 +442,14 @@ int assign_fpages_ext(int mpid, as_t *as, memptr_t base, size_t size,
 				return -1;
 
 			create_fpage_chain(abase, aend - abase, mpid, pfirst, plast);
+
+			/* Check if chain creation failed */
+			if (!*pfirst || !*plast) {
+				free_fpage_chain(*pfirst);
+				*pfirst = NULL;
+				*plast = NULL;
+				return -1;
+			}
 		}
 	}
 
@@ -397,9 +465,24 @@ int assign_fpages(as_t *as, memptr_t base, size_t size)
 
 int map_fpage(as_t *src, as_t *dst, fpage_t *fpage, map_action_t action)
 {
-	fpage_t *fpmap = (fpage_t *) ktable_alloc(&fpage_table);
+	fpage_t *fpmap;
 
-	/* FIXME: check for fpmap == NULL */
+	/* NULL fpage or dst is a programming error - fail gracefully */
+	if (!fpage || !dst) {
+		dbg_printf(DL_KDB,
+		           "FPAGE: map_fpage NULL arg! fpage=%p dst=%p\n",
+		           fpage, dst);
+		return -1;
+	}
+
+	fpmap = (fpage_t *) ktable_alloc(&fpage_table);
+
+	if (!fpmap) {
+		dbg_printf(DL_KDB,
+		           "FPAGE: map alloc failed! src=%p dst=%p\n", src, dst);
+		return -1;
+	}
+
 	fpmap->as_next = NULL;
 	fpmap->mpu_next = NULL;
 
@@ -438,8 +521,18 @@ int unmap_fpage(as_t *as, fpage_t *fpage)
 	if (!(fpage->fpage.flags & FPAGE_CLONE))
 		return -1;
 
-	while (fpprev->map_next != fpage)
-		fpprev = fpprev->map_next;
+	/* Find previous fpage in circular map list with cycle guard */
+	{
+		int guard = CONFIG_MAX_FPAGES;
+		while (fpprev->map_next != fpage && --guard > 0)
+			fpprev = fpprev->map_next;
+
+		if (guard <= 0) {
+			dbg_printf(DL_KDB,
+			           "FPAGE: cycle detected in unmap_fpage %p\n", fpage);
+			return -1;
+		}
+	}
 
 	/* Clear flags */
 	fpprev->fpage.flags &= ~FPAGE_MAPPED;

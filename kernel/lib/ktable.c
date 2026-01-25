@@ -27,6 +27,14 @@ void kdb_dump_ktable(void)
 
 	for (; i < kdb_ktable_cnt; ++i) {
 		kt = kdb_ktables[i];
+
+		/* Validate ktable before dumping to avoid crash on corruption */
+		if (!kt || !kt->bitmap || !kt->data || kt->num == 0) {
+			dbg_printf(DL_KDB,
+			           "\nKT: [%d] INVALID kt=%p\n", i, kt);
+			continue;
+		}
+
 		dbg_printf(DL_KDB, "\nKT: %s\nbitmap:%p, data:%p, num: %d size: %d\n",
 		           kt->tname, kt->bitmap, kt->data, kt->num, kt->size);
 		/* Dump bitmap */
@@ -124,6 +132,20 @@ void *ktable_alloc(ktable_t *kt)
 	bitmap_cursor_t	cursor;
 	int checked = 0;
 
+	/* Validate ktable pointer and fields to detect corruption early.
+	 * A corrupted ktable can cause undefined behavior in bitmap ops.
+	 */
+	if (!kt || !kt->bitmap || !kt->data || kt->num == 0 || kt->size == 0) {
+		dbg_printf(DL_KDB,
+		           "KT: INVALID kt=%p bitmap=%p data=%p num=%d size=%d\n",
+		           kt,
+		           kt ? kt->bitmap : (bitmap_ptr_t)0,
+		           kt ? kt->data : (ptr_t)0,
+		           kt ? (int)kt->num : 0,
+		           kt ? (int)kt->size : 0);
+		return NULL;
+	}
+
 	/* Search for free element */
 	for_each_in_bitmap(cursor, kt->bitmap, kt->num, 0) {
 		checked++;
@@ -139,8 +161,8 @@ void *ktable_alloc(ktable_t *kt)
 	}
 
 	dbg_printf(DL_KDB,
-	           "KT: %s alloc FAILED checked=%d num=%d bitmap=%p\n",
-	           kt->tname, checked, kt->num, kt->bitmap);
+	           "KT: %s FULL checked=%d num=%d\n",
+	           kt->tname, checked, kt->num);
 
 	return NULL;
 }
