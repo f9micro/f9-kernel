@@ -52,11 +52,14 @@ static void *main(void *user)
 	return 0;
 }
 
+#define ALIGN_UP_POW2(x) \
+    (1UL << (32 - __builtin_clz((x) - 1)))
+
 DECLARE_USER(
 	128,
 	irq_test,
 	main,
-	DECLARE_FPAGE(0x0, 4 * (UTCB_SIZE + IRQ_STACK_SIZE))
+	DECLARE_FPAGE(0x0, ALIGN_UP_POW2(4 * (UTCB_SIZE + IRQ_STACK_SIZE)))
 	DECLARE_FPAGE(0x0, 512)
 	DECLARE_FPAGE(0x40010000, 0x4000)
 );
