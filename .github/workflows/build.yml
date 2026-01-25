@@ -84,9 +84,16 @@ jobs:
         fi
 
         # Check for test results if tests ran
-        if grep -q "test suite" qemu.log; then
+        if grep -q "test suite complete" qemu.log; then
           ok_count=$(grep -c "OK" qemu.log || echo 0)
-          echo "✓ Tests passed: $ok_count"
+          echo "✓ Test suite complete: $ok_count tests passed"
+          exit 0
+        fi
+
+        # Fallback: tests started but didn't complete
+        if grep -q "test suite starts" qemu.log; then
+          echo "✗ Test suite started but did not complete (timeout)"
+          exit 1
         fi
 
         exit 0

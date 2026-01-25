@@ -242,6 +242,7 @@ static void *simple_ipc_t2_l(void *arg)
 	L4_Send(ipc_t1);
 	L4_Receive(ipc_t1);
 
+	printf("\nL4/Pistachio test suite complete\n");
 	return NULL;
 }
 
