@@ -25,6 +25,28 @@ static inline void irq_enable(void)
 	__asm__ __volatile__ ("cpsie i" ::: "memory");
 }
 
+/*
+ * Save and restore interrupt state (PRIMASK).
+ * Used for critical sections that may be nested or called from
+ * contexts where IRQ state is unknown.
+ */
+static inline uint32_t irq_save_flags(void)
+{
+	uint32_t flags;
+	__asm__ __volatile__ (
+		"mrs %0, primask\n\t"
+		"cpsid i"
+		: "=r" (flags) :: "memory");
+	return flags;
+}
+
+static inline void irq_restore_flags(uint32_t flags)
+{
+	__asm__ __volatile__ (
+		"msr primask, %0"
+		:: "r" (flags) : "memory");
+}
+
 static inline void irq_svc(void)
 {
 	__asm__ __volatile__ ("svc #0");

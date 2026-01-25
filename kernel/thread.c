@@ -277,6 +277,12 @@ void thread_destroy(tcb_t *thr)
 		caller->t_child = thr->t_child;
 	}
 
+	/* Release address space reference.
+	 * This may free the AS if this was the last reference.
+	 */
+	if (thr->as)
+		as_put(thr->as);
+
 	thread_deinit(thr);
 }
 
@@ -310,10 +316,23 @@ void thread_space(tcb_t *thr, l4_thread_t spaceid, utcb_t *utcb)
 		dbg_printf(DL_THREAD,
 		           "\tNew space: as: %p, utcb: %p \n", thr->as, utcb);
 	} else {
-		tcb_t *space = thread_by_globalid(spaceid);
+		tcb_t *space;
+		as_t *shared_as;
 
-		thr->as = space->as;
-		++(space->as->shared);
+		irq_disable();
+		space = thread_by_globalid(spaceid);
+		if (!space || !space->as) {
+			irq_enable();
+			dbg_printf(DL_KDB,
+			           "THREAD: space thread %t not found\n",
+			           spaceid);
+			return;
+		}
+		shared_as = space->as;
+		as_get(shared_as);
+		irq_enable();
+
+		thr->as = shared_as;
 	}
 
 	/* If no caller, than it is mapping from kernel to root thread
@@ -331,12 +350,6 @@ void thread_space(tcb_t *thr, l4_thread_t spaceid, utcb_t *utcb)
 	if (ret < 0)
 		dbg_printf(DL_KDB, "UTCB map_area failed: utcb=%p tid=%p\n",
 		           utcb, thr->t_globalid);
-}
-
-void thread_free_space(tcb_t *thr)
-{
-	/* free address space */
-	as_destroy(thr->as);
 }
 
 void thread_init_ctx(void *sp, void *pc, void *regs, tcb_t *thr)

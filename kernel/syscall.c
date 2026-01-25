@@ -81,7 +81,7 @@ static void sys_thread_control(uint32_t *param1, uint32_t *param2)
 			param1[REG_R0] = 0;
 			return;
 		}
-		thread_free_space(thr);
+		/* thread_destroy() handles AS refcount via as_put() */
 		thread_destroy(thr);
 		param1[REG_R0] = 1;
 	}
