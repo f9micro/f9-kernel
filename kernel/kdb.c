@@ -23,6 +23,7 @@ extern void kdb_dump_ktable(void);
 extern void kdb_show_ktimer(void);
 extern void kdb_dump_softirq(void);
 extern void kdb_dump_threads(void);
+extern void kdb_dump_stacks(void);
 extern void kdb_dump_mpu(void);
 extern void kdb_dump_mempool(void);
 extern void kdb_dump_as(void);
@@ -59,6 +60,12 @@ struct kdb_t kdb_functions[] = {
 		.name = "THREADS",
 		.menuentry = "dump threads",
 		.function = kdb_dump_threads
+	},
+	{
+		.option = 'S',
+		.name = "STACKS",
+		.menuentry = "dump stack usage",
+		.function = kdb_dump_stacks
 	},
 	{
 		.option = 'M',

@@ -441,6 +441,15 @@ void thread_switch(tcb_t *thr)
 	assert((intptr_t) thr);
 	assert(thread_isrunnable(thr));
 
+	/* Check stack canary before switching to this thread.
+	 * If canary is corrupted, the thread's stack has overflowed.
+	 */
+	if (!thread_check_canary(thr)) {
+		panic("Stack overflow: tid=%t, stack_base=%p, canary=%p\n",
+		      thr->t_globalid, thr->stack_base,
+		      thr->stack_base ? *((uint32_t *) thr->stack_base) : 0);
+	}
+
 	current = thr;
 	current_utcb = thr->utcb;
 	if (current->as)
@@ -525,6 +534,41 @@ void kdb_dump_threads(void)
 		           kdb_get_thread_type(thr),
 		           thr->t_globalid, thr->t_localid, state[thr->state],
 		           (thr->t_parent) ? thr->t_parent->t_globalid : 0);
+	}
+}
+
+void kdb_dump_stacks(void)
+{
+	tcb_t *thr;
+	int idx;
+
+	dbg_printf(DL_KDB, "%5s %8s %10s %10s %10s %6s\n",
+	           "type", "global", "stack_base", "stack_size", "sp", "canary");
+
+	for_each_in_ktable(thr, idx, (&thread_table)) {
+		char *canary_status;
+		uint32_t canary_val = 0;
+
+		if (!thr->stack_base) {
+			canary_status = "N/A";
+		} else {
+			canary_val = *((uint32_t *) thr->stack_base);
+			canary_status = (canary_val == STACK_CANARY) ? "OK" : "FAIL";
+		}
+
+		dbg_printf(DL_KDB, "%5s %t %p %10d %p %6s\n",
+		           kdb_get_thread_type(thr),
+		           thr->t_globalid,
+		           thr->stack_base,
+		           thr->stack_size,
+		           thr->ctx.sp,
+		           canary_status);
+
+		/* If canary failed, show what was found */
+		if (thr->stack_base && canary_val != STACK_CANARY) {
+			dbg_printf(DL_KDB, "      expected: %p, found: %p\n",
+			           STACK_CANARY, canary_val);
+		}
 	}
 }
 

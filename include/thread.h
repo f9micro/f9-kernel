@@ -17,6 +17,11 @@
  * @file thread.h
  * @brief Thread dispatcher definitions
  *
+ * Stack Overflow Protection:
+ * A canary value is placed at the bottom of each thread's stack (lowest
+ * address, since ARM stacks grow downward). The canary is checked on
+ * every context switch - if corrupted, the stack has overflowed.
+ *
  * Thread ID type is declared in @file types.h and called l4_thread_t
  *
  * For Global Thread ID only high 18 bits are used and lower are reserved,
@@ -37,6 +42,11 @@
 #define TID_TO_GLOBALID(id)	(id << 14)
 
 #define THREAD_BY_TID(id)	 thread_by_globalid(TID_TO_GLOBALID(id))
+
+/* Stack canary for overflow detection.
+ * Placed at stack_base (lowest address). Checked on context switch.
+ */
+#define STACK_CANARY		0xDEADBEEF
 
 typedef enum {
 	THREAD_IDLE,
@@ -97,6 +107,23 @@ struct tcb {
 	uint32_t timeout_event;
 };
 typedef struct tcb tcb_t;
+
+/* Initialize stack canary at bottom of stack.
+ * Must be called after stack_base is set.
+ */
+static inline void thread_init_canary(tcb_t *thr)
+{
+	if (thr->stack_base)
+		*((uint32_t *) thr->stack_base) = STACK_CANARY;
+}
+
+/* Check stack canary. Returns 1 if valid, 0 if corrupted. */
+static inline int thread_check_canary(tcb_t *thr)
+{
+	if (!thr->stack_base)
+		return 1;  /* No stack tracking, skip check */
+	return *((uint32_t *) thr->stack_base) == STACK_CANARY;
+}
 
 void thread_init_subsys(void);
 

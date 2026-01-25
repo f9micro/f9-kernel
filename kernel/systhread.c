@@ -41,6 +41,7 @@ void create_root_thread(void)
 	root->stack_base = (memptr_t) &root_stack_start;
 	root->stack_size = (uint32_t) &root_stack_end -
 	                   (uint32_t) &root_stack_start;
+	thread_init_canary(root);
 
 	sched_slot_dispatch(SSI_ROOT_THREAD, root);
 	root->state = T_RUNNABLE;
@@ -51,6 +52,14 @@ void create_kernel_thread(void)
 	kernel = thread_init(TID_TO_GLOBALID(THREAD_KERNEL), NULL);
 
 	thread_init_kernel_ctx(&kernel_stack_end, kernel);
+
+	/* Initialize stack tracking for kernel thread.
+	 * Kernel stack follows idle stack in memory layout.
+	 */
+	kernel->stack_base = (memptr_t) &idle_stack_end;
+	kernel->stack_size = (uint32_t) &kernel_stack_end -
+	                     (uint32_t) &idle_stack_end;
+	thread_init_canary(kernel);
 
 	/* This will prevent running other threads
 	 * than kernel until it will be initialized
@@ -63,6 +72,11 @@ void create_idle_thread(void)
 {
 	idle = thread_init(TID_TO_GLOBALID(THREAD_IDLE), NULL);
 	thread_init_ctx((void *) &idle_stack_end, idle_thread, NULL, idle);
+
+	idle->stack_base = (memptr_t) &idle_stack_start;
+	idle->stack_size = (uint32_t) &idle_stack_end -
+	                   (uint32_t) &idle_stack_start;
+	thread_init_canary(idle);
 
 	sched_slot_dispatch(SSI_IDLE, idle);
 	idle->state = T_RUNNABLE;
