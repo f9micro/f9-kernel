@@ -112,7 +112,7 @@ config TIM1_CC_USER_IRQ
 	bool "TIM1_CC User IRQ"
 	default n
 
-config TIM2_USER_IRQ       
+config TIM2_USER_IRQ
 	bool "TIM2 User IRQ"
 	default n
 
@@ -180,7 +180,7 @@ config TIM8_UP_TIM13_USER_IRQ
 	bool "TIM8_UP_TIM13 User IRQ"
 	default n
 
-config TIM8_TRG_COM_TIM14_USER_IRQ 
+config TIM8_TRG_COM_TIM14_USER_IRQ
 	bool "TIM8_TRG_COM_TIM14 User IRQ"
 	default n
 

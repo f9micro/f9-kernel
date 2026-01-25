@@ -29,6 +29,12 @@ config BOARD_NETDUINOPLUS2
 	  Netduino Plus 2 board with STM32F405RGT6 MCU.
 	  This board is supported by upstream QEMU for emulation.
 
+config BOARD_STM32F429NUCLEO
+	bool "STM32F429 Nucleo"
+	select PLATFORM_STM32F429
+	help
+	  STM32F429 Nucleo board with STM32F429ZIT6 MCU.
+
 endchoice
 
 config QEMU

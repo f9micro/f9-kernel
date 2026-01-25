@@ -55,7 +55,8 @@ with a focus on efficiency (performance and power consumption) and security
 F9 Microkernel supports the following boards:
 * [STM32F4DISCOVERY](https://www.st.com/en/evaluation-tools/stm32f4discovery.html)
 * [STM32F429I-DISC1](https://www.st.com/en/evaluation-tools/32f429idiscovery.html)
-  - Both are based on ARM Cortex-M4F core. F9 should work on any STM32F40x/STM32F429/STM32F439 microcontroller.
+* [NUCLEO-F429ZI](https://www.st.com/en/evaluation-tools/nucleo-f429zi.html)
+  - All supported boards are based on the ARM Cortex-M4F core. F9 should work on any STM32F40x/STM32F429/STM32F439 microcontroller.
 * Netduino Plus 2 (STM32F405RGT6)
   - Supported by upstream [QEMU for emulation](https://www.qemu.org/docs/master/system/arm/stm32.html), making it ideal for development and testing without hardware.
 
@@ -107,6 +108,17 @@ For STM32F429I-DISC1:
 | USART4 | PC11   | PC10   |
 | USART2 | PD5    | PD6    |
 | USART1 | PA9    | PA10   |
+
+For NUCLEO-F429ZI:
+
+| Port   | TX Pin | RX Pin |
+|--------|--------|--------|
+| USART3 | PD8    | PD9    |
+| USART2 | PD5    | PD6    |
+| USART1 | PB6    | PB7    |
+
+> **Note:** On the NUCLEO-F429ZI, `USART3` is connected to the on-board
+> **VCOM (Virtual COM Port)** provided by the ST-LINK.
 
 For Netduino Plus 2 under QEMU, the default configuration uses USART1, which
 QEMU routes to the console. Run with:

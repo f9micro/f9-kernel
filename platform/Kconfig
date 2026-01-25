@@ -42,6 +42,8 @@ config DBGPORT_USE_USART1
 	bool "USART1"
 config DBGPORT_USE_USART2
 	bool "USART2"
+config DBGPORT_USE_USART3
+	bool "USART3"
 config DBGPORT_USE_USART4
 	bool "USART4"
 

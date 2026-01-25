@@ -10,7 +10,7 @@ chip-y = \
 	ltdc.o \
 	dma2d.o \
 	i2c.o \
-	ioe.o 
+	ioe.o
 
 loader-chip-y = \
 	gpio.loader.o \
