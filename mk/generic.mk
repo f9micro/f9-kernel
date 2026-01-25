@@ -105,6 +105,30 @@ qemu: $(out)/$(PROJECT).bin
 	-killall -q qemu-system-arm
 	$(QEMU) -M netduinoplus2 -nographic -kernel $(out)/$(PROJECT).elf -serial mon:stdio
 
+# QEMU automated testing
+# Usage: make run-tests              (test suite)
+#        make run-tests FAULT=mpu    (MPU fault test)
+#        make run-tests FAULT=canary (stack canary test)
+.PHONY: run-tests
+run-tests:
+ifeq ($(FAULT),mpu)
+	@echo "Building with FAULT_TYPE=1 (MPU)..."
+	@$(MAKE) clean $(silent)
+	@$(MAKE) FAULT_TYPE=1 $(out)/$(PROJECT).elf $(silent)
+	@echo "Running MPU fault test under QEMU..."
+	@python3 scripts/qemu-test.py $(out)/$(PROJECT).elf --fault -t 30
+else ifeq ($(FAULT),canary)
+	@echo "Building with FAULT_TYPE=2 (canary)..."
+	@$(MAKE) clean $(silent)
+	@$(MAKE) FAULT_TYPE=2 $(out)/$(PROJECT).elf $(silent)
+	@echo "Running stack canary fault test under QEMU..."
+	@python3 scripts/qemu-test.py $(out)/$(PROJECT).elf --fault -t 30
+else
+	@echo "Running test suite under QEMU..."
+	@$(MAKE) $(out)/$(PROJECT).elf $(silent)
+	@python3 scripts/qemu-test.py $(out)/$(PROJECT).elf -t 45
+endif
+
 # Kconfiglib download target
 $(KCONFIG_DIR)/kconfiglib.py:
 	@echo "  CLONE   Kconfiglib"

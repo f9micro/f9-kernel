@@ -41,59 +41,41 @@ jobs:
           build/${{ matrix.board }}/f9.elf
           build/${{ matrix.board }}/f9.bin
 
+  test:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Install ARM toolchain
+      uses: carlosperate/arm-none-eabi-gcc-action@v1
+      with:
+        release: '15.2.Rel1'
+
     - name: Install QEMU
-      if: matrix.board == 'netduinoplus2'
       run: sudo apt-get update && sudo apt-get install -y qemu-system-arm
 
-    - name: QEMU boot test
-      if: matrix.board == 'netduinoplus2'
+    - name: Configure for netduinoplus2
+      run: make netduinoplus2_defconfig
+
+    - name: Enable test suite
       run: |
-        timeout 15s qemu-system-arm \
-          -M netduinoplus2 \
-          -nographic \
-          -serial mon:stdio \
-          -kernel build/netduinoplus2/f9.elf 2>&1 | tee qemu.log || true
+        # Enable test suite, disable conflicting apps
+        echo "CONFIG_TESTS=y" >> .config
+        echo "# CONFIG_PINGPONG is not set" >> .config
+        echo "# CONFIG_L4_TEST is not set" >> .config
+        make oldconfig
 
-        echo "=== QEMU Output ==="
-        cat qemu.log
-        echo "==================="
+    - name: Build kernel with tests
+      run: make
 
-        # Check for crashes first (highest priority failure)
-        if grep -qE "MEMFAULT|HardFault|panic|PANIC" qemu.log; then
-          echo "✗ Kernel crash detected"
-          exit 1
-        fi
+    - name: Run test suite
+      run: make run-tests
 
-        # Check for test failures
-        if grep -q "FAILED" qemu.log; then
-          echo "✗ Test failure detected:"
-          grep -B1 "FAILED" qemu.log
-          exit 1
-        fi
+    - name: Run MPU fault test (expected to fail on QEMU)
+      run: make run-tests FAULT=mpu
+      continue-on-error: true
 
-        # Check for successful boot
-        if grep -q "Press '?' to print KDB menu" qemu.log; then
-          echo "✓ KDB shell ready"
-        elif grep -q "KDB" qemu.log; then
-          echo "✓ KDB initialized"
-        elif grep -q "f9\|F9" qemu.log; then
-          echo "✓ Kernel boot detected"
-        else
-          echo "✗ No boot message detected (timeout or minimal output)"
-          exit 1
-        fi
-
-        # Check for test results if tests ran
-        if grep -q "test suite complete" qemu.log; then
-          ok_count=$(grep -c "OK" qemu.log || echo 0)
-          echo "✓ Test suite complete: $ok_count tests passed"
-          exit 0
-        fi
-
-        # Fallback: tests started but didn't complete
-        if grep -q "test suite starts" qemu.log; then
-          echo "✗ Test suite started but did not complete (timeout)"
-          exit 1
-        fi
-
-        exit 0
+    - name: Run stack canary fault test
+      run: make run-tests FAULT=canary
