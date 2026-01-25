@@ -47,16 +47,18 @@ static void ktimer_disable(void)
 
 static void ktimer_enable(uint32_t delta)
 {
-	if (!ktimer_enabled) {
-		ktimer_delta = delta;
-		ktimer_time = 0;
-		ktimer_enabled = 1;
+	/* Always update delta and reset time counter.
+	 * This is called both for initial enable and to reschedule
+	 * when an earlier event is inserted at queue head.
+	 */
+	ktimer_delta = delta;
+	ktimer_time = 0;
+	ktimer_enabled = 1;
 
 #if defined(CONFIG_KDB) && \
     defined(CONFIG_KTIMER_TICKLESS) && defined(CONFIG_KTIMER_TICKLESS_VERIFY)
-		tickless_verify_start(ktimer_now, ktimer_delta);
+	tickless_verify_start(ktimer_now, ktimer_delta);
 #endif	/* CONFIG_KDB */
-	}
 }
 
 void __ktimer_handler(void)
