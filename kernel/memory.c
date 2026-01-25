@@ -12,6 +12,7 @@
 #include <init_hook.h>
 #include <kip.h>
 #include <platform/cortex_m.h>
+#include <platform/irq.h>
 
 /**
  * @file    memory.c
@@ -378,31 +379,79 @@ as_t *as_create(uint32_t as_spaceid)
 
 	as->as_spaceid = as_spaceid;
 	as->first = NULL;
-	as->shared = 0;
+	as->mpu_first = NULL;
+	as->mpu_stack_first = NULL;
+	as->shared = 1;  /* Creator holds initial reference */
 
 	return as;
 }
 
+/*
+ * Increment address space reference count.
+ * Called when a thread shares an existing address space.
+ */
+void as_get(as_t *as)
+{
+	uint32_t flags;
+
+	if (!as)
+		return;
+
+	flags = irq_save_flags();
+	as->shared++;
+	irq_restore_flags(flags);
+}
+
+/*
+ * Decrement address space reference count.
+ * Frees the address space when refcount reaches 0.
+ * IRQs remain disabled through as_destroy() to prevent reentrancy.
+ */
+void as_put(as_t *as)
+{
+	uint32_t flags;
+
+	if (!as)
+		return;
+
+	flags = irq_save_flags();
+
+	/* Guard against refcount underflow (double-put bug) */
+	if (as->shared == 0) {
+		irq_restore_flags(flags);
+		dbg_printf(DL_KDB, "AS: refcount underflow for %p\n",
+		           as->as_spaceid);
+		return;
+	}
+
+	if (--as->shared == 0) {
+		/* Keep IRQs disabled through destroy */
+		as_destroy(as);
+	}
+	irq_restore_flags(flags);
+}
+
+/*
+ * Free all fpages and the address space structure.
+ * Called by as_put() when refcount reaches 0.
+ * Caller must hold IRQs disabled.
+ */
 void as_destroy(as_t *as)
 {
 	fpage_t *fp, *fpnext;
 	fp = as->first;
 
-	if (as->shared > 0) {
-		--as->shared;
-		return;
-	}
-
 	/*
 	 * FIXME: What if a CLONED fpage which is MAPPED is to be deleted
 	 */
 	while (fp) {
+		fpnext = fp->as_next;
+
 		if (fp->fpage.flags & FPAGE_CLONE)
 			unmap_fpage(as, fp);
 		else
 			destroy_fpage(fp);
 
-		fpnext = fp->as_next;
 		fp = fpnext;
 	}
 

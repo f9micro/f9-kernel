@@ -23,8 +23,19 @@ typedef struct {
 
 	struct fpage *mpu_first;	/*! head of MPU fpage list */
 	struct fpage *mpu_stack_first;	/*! head of MPU stack fpage list */
-	uint32_t shared;	/*! shared user number */
+	uint32_t shared;	/*! Reference count: number of threads using this AS */
 } as_t;
+
+/*
+ * Address space reference counting.
+ * as_get(): Increment reference count (thread sharing this AS)
+ * as_put(): Decrement reference count; frees AS when it reaches 0
+ *
+ * Thread must be unlinked from AS before calling as_put().
+ * IRQ protection ensures atomicity of refcount operations.
+ */
+void as_get(as_t *as);
+void as_put(as_t *as);
 
 /**
  * Memory pool represents area of physical address space
