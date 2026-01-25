@@ -64,21 +64,32 @@ static tcb_t *thread_sched(sched_slot_t *);
 void thread_init_subsys()
 {
 	fpage_t *last = NULL;
+	int ret;
 
 	ktable_init(&thread_table);
 
 	kip.thread_info.s.system_base = THREAD_SYS;
 	kip.thread_info.s.user_base = THREAD_USER;
 
-	/* Create KIP fpages
-	 * last is ignored, because kip fpages is aligned
+	/* Create KIP fpages - these are critical for kernel operation.
+	 * Failure here indicates a severe configuration or memory problem.
 	 */
-	assign_fpages_ext(-1, NULL,
-	                  (memptr_t) &kip, sizeof(kip_t),
-	                  &kip_fpage, &last);
-	assign_fpages_ext(-1, NULL,
-	                  (memptr_t) kip_extra, CONFIG_KIP_EXTRA_SIZE,
-	                  &kip_extra_fpage, &last);
+	ret = assign_fpages_ext(-1, NULL,
+	                        (memptr_t) &kip, sizeof(kip_t),
+	                        &kip_fpage, &last);
+	if (ret < 0 || !kip_fpage) {
+		panic("THREAD: Failed to create KIP fpage (addr=%p sz=%d ret=%d)\n",
+		      &kip, sizeof(kip_t), ret);
+	}
+
+	last = NULL;
+	ret = assign_fpages_ext(-1, NULL,
+	                        (memptr_t) kip_extra, CONFIG_KIP_EXTRA_SIZE,
+	                        &kip_extra_fpage, &last);
+	if (ret < 0 || !kip_extra_fpage) {
+		panic("THREAD: Failed to create KIP extra fpage (addr=%p sz=%d ret=%d)\n",
+		      kip_extra, CONFIG_KIP_EXTRA_SIZE, ret);
+	}
 
 	sched_slot_set_handler(SSI_NORMAL_THREAD, thread_sched);
 }
@@ -277,9 +288,24 @@ void thread_space(tcb_t *thr, l4_thread_t spaceid, utcb_t *utcb)
 	if (GLOBALID_TO_TID(thr->t_globalid) == GLOBALID_TO_TID(spaceid)) {
 		thr->as = as_create(thr->t_globalid);
 
-		/* Grant kip_fpage & kip_ext_fpage only to new AS */
-		map_fpage(NULL, thr->as, kip_fpage, GRANT);
-		map_fpage(NULL, thr->as, kip_extra_fpage, GRANT);
+		if (!thr->as) {
+			dbg_printf(DL_KDB,
+			           "THREAD: as_create failed for %t\n",
+			           thr->t_globalid);
+			return;
+		}
+
+		/* Grant kip_fpage & kip_ext_fpage only to new AS.
+		 * These are critical for thread operation.
+		 */
+		if (map_fpage(NULL, thr->as, kip_fpage, GRANT) < 0) {
+			dbg_printf(DL_KDB, "THREAD: KIP map failed for %t\n",
+			           thr->t_globalid);
+		}
+		if (map_fpage(NULL, thr->as, kip_extra_fpage, GRANT) < 0) {
+			dbg_printf(DL_KDB, "THREAD: KIP extra map failed for %t\n",
+			           thr->t_globalid);
+		}
 
 		dbg_printf(DL_THREAD,
 		           "\tNew space: as: %p, utcb: %p \n", thr->as, utcb);

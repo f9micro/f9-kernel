@@ -16,12 +16,12 @@ void irq_init(void);
 
 static inline void irq_disable(void)
 {
-	__asm__ __volatile__ ("cpsid i");
+	__asm__ __volatile__ ("cpsid i" ::: "memory");
 }
 
 static inline void irq_enable(void)
 {
-	__asm__ __volatile__ ("cpsie i");
+	__asm__ __volatile__ ("cpsie i" ::: "memory");
 }
 
 static inline void irq_svc(void)
@@ -34,9 +34,8 @@ static inline int irq_number(void)
 	int irqno;
 
 	__asm__ __volatile__ (
-		"mrs r0, ipsr\n"
-		"mov r0, %0"
-		: "=r" (irqno) : : "r0");
+		"mrs %0, ipsr"
+		: "=r" (irqno));
 
 	return irqno;
 }
@@ -45,7 +44,7 @@ static inline int irq_number(void)
  * Global to hold saved r4-r11 across irq_save_regs_only / irq_save_rest.
  * Used to capture registers before compiler can corrupt them.
  */
-extern uint32_t __irq_saved_regs[8];
+extern volatile uint32_t __irq_saved_regs[8];
 
 /*
  * irq_save_regs_only()
@@ -70,9 +69,16 @@ extern uint32_t __irq_saved_regs[8];
 #define __irq_save(ctx)							\
 	{								\
 		uint32_t *_regs = (uint32_t *)(ctx)->regs;		\
-		extern uint32_t __irq_saved_regs[8];			\
-		for (int _i = 0; _i < 8; _i++)				\
-			_regs[_i] = __irq_saved_regs[_i];		\
+		extern volatile uint32_t __irq_saved_regs[8];		\
+		/* Explicit unrolled copy to prevent loop mis-optimization */ \
+		_regs[0] = __irq_saved_regs[0];				\
+		_regs[1] = __irq_saved_regs[1];				\
+		_regs[2] = __irq_saved_regs[2];				\
+		_regs[3] = __irq_saved_regs[3];				\
+		_regs[4] = __irq_saved_regs[4];				\
+		_regs[5] = __irq_saved_regs[5];				\
+		_regs[6] = __irq_saved_regs[6];				\
+		_regs[7] = __irq_saved_regs[7];				\
 	}								\
 	__asm__ __volatile__ ("and r4, lr, 0xf":::"r4");		\
 	__asm__ __volatile__ ("teq r4, #0x9");				\
@@ -113,7 +119,7 @@ extern uint32_t __irq_saved_regs[8];
 	__asm__ __volatile__ ("msrne psp, r0");				\
 	__asm__ __volatile__ ("mov r0, %0" : : "r" ((ctx)->regs));	\
 	__asm__ __volatile__ ("ldm r0, {r4-r11}");			\
-	__asm__ __volatile__ ("msr control, r2");
+	__asm__ __volatile__ ("msr control, r2\n\tisb" ::: "memory");
 
 #ifdef CONFIG_FPU
 #define irq_restore(ctx)						\
@@ -162,8 +168,17 @@ extern uint32_t __irq_saved_regs[8];
 	{								\
 		register tcb_t *sel;					\
 		sel = schedule_select();				\
-		if (sel != current)					\
+		if (sel != current) {					\
 			context_switch(current, sel);			\
+		} else {						\
+			/* No context switch - restore saved registers	\
+			 * and return via irq_return path */		\
+			extern volatile uint32_t __irq_saved_regs[8];	\
+			__asm__ __volatile__ (				\
+				"mov r0, %0\n\t"			\
+				"ldm r0, {r4-r11}"			\
+				: : "r" (__irq_saved_regs) : "r0");	\
+		}							\
 	}
 
 #define request_schedule()						\

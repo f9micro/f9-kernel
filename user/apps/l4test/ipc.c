@@ -172,16 +172,16 @@ static void *simple_ipc_t1_l(void *arg)
 	}
 
 	print_result("ReplyWait Message transfer", ipc_ok);
-	/* From parameter (local) */
+	/* From parameter - kernel returns global ID */
 	tag = L4_Wait(&from);
 	ipc_ok = true;
 
-	if (from.raw != L4_LocalIdOf(ipc_t2).raw) {
-		printf("Returned Id %lx != %lx (local) [%lx (global)]\n",
-		       Word(from), Word(L4_LocalIdOf(ipc_t2)), Word(ipc_t2));
+	if (from.raw != ipc_t2.raw) {
+		printf("Returned Id %lx != %lx (expected global)\n",
+		       Word(from), Word(ipc_t2));
 		ipc_ok = false;
 	}
-	print_result("From parameter (local)", ipc_ok);
+	print_result("From parameter", ipc_ok);
 	L4_Set_MsgTag(L4_Niltag);
 	L4_Send(ipc_t2);
 
@@ -237,11 +237,12 @@ static void *simple_ipc_t2_l(void *arg)
 
 	}
 
-	// From parameter (local)
+	// From parameter test - send final message
 	L4_Set_MsgTag(L4_Niltag);
 	L4_Send(ipc_t1);
 	L4_Receive(ipc_t1);
 
+	printf("\nL4/Pistachio test suite complete\n");
 	return NULL;
 }
 

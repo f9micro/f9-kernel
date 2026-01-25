@@ -11,7 +11,7 @@
  * Used to capture registers before compiler can corrupt them.
  * See irq.h for usage.
  */
-uint32_t __irq_saved_regs[8];
+volatile uint32_t __irq_saved_regs[8];
 
 void irq_init(void)
 {

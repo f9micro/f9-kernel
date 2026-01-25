@@ -321,6 +321,14 @@ void sys_ipc(uint32_t *param1)
 				ipc_typed_item typed_item;
 				int typed_item_idx = -1;
 
+				/* Bounds check to prevent OOB MR access */
+				if (typed_last > IPC_MR_COUNT) {
+					user_ipc_error(caller,
+					               UE_IPC_MSG_OVERFLOW | UE_IPC_PHASE_SEND);
+					caller->state = T_RUNNABLE;
+					return;
+				}
+
 				dbg_printf(DL_IPC,
 				           "IPC: %t to INACTIVE %t (non-start)\n",
 				           caller->t_globalid, to_thr->t_globalid);
@@ -366,15 +374,41 @@ void sys_ipc(uint32_t *param1)
 				return;
 			}
 		} else  {
-			/* No waiting, block myself */
-			dbg_printf(DL_KDB,
-			           "IPC: %t SEND_BLOCKED to %t (thr=%p state=%d)\n",
-			           caller->t_globalid, to_tid,
-			           to_thr, to_thr ? to_thr->state : -1);
+			/* Check if we should block or return error.
+			 * Blocking on non-existent threads or T_INACTIVE
+			 * threads without timeout leads to infinite stalls.
+			 */
+			if (!to_thr) {
+				/* Thread doesn't exist - return error */
+				dbg_printf(DL_IPC,
+				           "IPC: %t send to non-existent %t\n",
+				           caller->t_globalid, to_tid);
+				user_ipc_error(caller,
+				               UE_IPC_ABORTED | UE_IPC_PHASE_SEND);
+				caller->state = T_RUNNABLE;
+				return;
+			}
+
+			if (to_thr->state == T_INACTIVE && !timeout) {
+				/* T_INACTIVE thread with no timeout.
+				 * Would block forever - return error.
+				 * With timeout, we can safely block and wait.
+				 */
+				dbg_printf(DL_IPC,
+				           "IPC: %t send to INACTIVE %t (no timeout)\n",
+				           caller->t_globalid, to_tid);
+				user_ipc_error(caller,
+				               UE_IPC_ABORTED | UE_IPC_PHASE_SEND);
+				caller->state = T_RUNNABLE;
+				return;
+			}
+
+			/* Block and wait for receiver */
+			dbg_printf(DL_IPC,
+			           "IPC: %t SEND_BLOCKED to %t (state=%d)\n",
+			           caller->t_globalid, to_tid, to_thr->state);
 			caller->state = T_SEND_BLOCKED;
 			caller->utcb->intended_receiver = to_tid;
-			dbg_printf(DL_IPC,
-			           "IPC: %t sending\n", caller->t_globalid);
 
 			if (timeout)
 				sys_ipc_timeout(timeout);

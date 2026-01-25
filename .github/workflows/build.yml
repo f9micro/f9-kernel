@@ -58,17 +58,42 @@ jobs:
         cat qemu.log
         echo "==================="
 
+        # Check for crashes first (highest priority failure)
+        if grep -qE "MEMFAULT|HardFault|panic|PANIC" qemu.log; then
+          echo "✗ Kernel crash detected"
+          exit 1
+        fi
+
+        # Check for test failures
+        if grep -q "FAILED" qemu.log; then
+          echo "✗ Test failure detected:"
+          grep -B1 "FAILED" qemu.log
+          exit 1
+        fi
+
+        # Check for successful boot
         if grep -q "Press '?' to print KDB menu" qemu.log; then
-          echo "✓ KDB shell ready"; exit 0
+          echo "✓ KDB shell ready"
         elif grep -q "KDB" qemu.log; then
-          echo "✓ KDB initialized"; exit 0
+          echo "✓ KDB initialized"
         elif grep -q "f9\|F9" qemu.log; then
-          echo "✓ Kernel boot detected"; exit 0
+          echo "✓ Kernel boot detected"
+        else
+          echo "✗ No boot message detected (timeout or minimal output)"
+          exit 1
         fi
 
-        if grep -qE "MEMFAULT|HardFault|panic" qemu.log; then
-          echo "✗ Kernel crash detected"; exit 1
+        # Check for test results if tests ran
+        if grep -q "test suite complete" qemu.log; then
+          ok_count=$(grep -c "OK" qemu.log || echo 0)
+          echo "✓ Test suite complete: $ok_count tests passed"
+          exit 0
         fi
 
-        echo "✗ No boot message detected (timeout or minimal output)"
-        exit 1
+        # Fallback: tests started but didn't complete
+        if grep -q "test suite starts" qemu.log; then
+          echo "✗ Test suite started but did not complete (timeout)"
+          exit 1
+        fi
+
+        exit 0
