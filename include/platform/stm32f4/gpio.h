@@ -38,40 +38,40 @@ struct gpio_cfg {
 };
 
 /* GPIO Alternative Function */
-#define     af_system           AF0
-#define     af_tim1             AF1
-#define     af_tim2             AF1
-#define     af_tim3             AF2
-#define     af_tim4             AF2
-#define     af_tim5             AF2
-#define     af_tim8             AF3
-#define     af_tim9             AF3
-#define     af_tim10            AF3
-#define     af_tim11            AF3
-#define     af_i2c1             AF4
-#define     af_i2c2             AF4
-#define     af_i2c3             AF4
-#define     af_spi1             AF5
-#define     af_spi2             AF5
-#define     af_spi3             AF6
-#define     af_usart1           AF7
-#define     af_usart2           AF7
-#define     af_usart3		AF7
-#define     af_uart4		AF8
-#define     af_uart5		AF8
-#define     af_usart6           AF8
-#define     af_can1             AF9
-#define     af_can2             AF9
-#define     af_tim12            AF9
-#define     af_tim13            AF9
-#define     af_tim14            AF9
-#define     af_otg_fs           AF10
-#define     af_otg_hs           AF10
-#define     af_eth              AF11
-#define     af_fsmc             AF12
-#define     af_sdio             AF12
-#define     af_dcmi             AF13
-#define     af_eventout         AF15
+#define af_system AF0
+#define af_tim1 AF1
+#define af_tim2 AF1
+#define af_tim3 AF2
+#define af_tim4 AF2
+#define af_tim5 AF2
+#define af_tim8 AF3
+#define af_tim9 AF3
+#define af_tim10 AF3
+#define af_tim11 AF3
+#define af_i2c1 AF4
+#define af_i2c2 AF4
+#define af_i2c3 AF4
+#define af_spi1 AF5
+#define af_spi2 AF5
+#define af_spi3 AF6
+#define af_usart1 AF7
+#define af_usart2 AF7
+#define af_usart3 AF7
+#define af_uart4 AF8
+#define af_uart5 AF8
+#define af_usart6 AF8
+#define af_can1 AF9
+#define af_can2 AF9
+#define af_tim12 AF9
+#define af_tim13 AF9
+#define af_tim14 AF9
+#define af_otg_fs AF10
+#define af_otg_hs AF10
+#define af_eth AF11
+#define af_fsmc AF12
+#define af_sdio AF12
+#define af_dcmi AF13
+#define af_eventout AF15
 
 void gpio_config(struct gpio_cfg *cfg);
 void gpio_config_output(uint8_t port, uint8_t pin, uint8_t pupd, uint8_t speed);

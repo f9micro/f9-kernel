@@ -10,15 +10,11 @@ enum {
     IRQ_IPC_PRIORITY = 4
 };
 
-#define IRQ_IPC_MSG_NUM	IRQ_IPC_PRIORITY
+#define IRQ_IPC_MSG_NUM IRQ_IPC_PRIORITY
 
 /* irq actions */
-enum {
-    USER_IRQ_ENABLE = 0,
-    USER_IRQ_DISABLE = 1,
-    USER_IRQ_FREE = 2
-};
+enum { USER_IRQ_ENABLE = 0, USER_IRQ_DISABLE = 1, USER_IRQ_FREE = 2 };
 
-#define USER_INTERRUPT_LABEL	0x928
+#define USER_INTERRUPT_LABEL 0x928
 
 #endif

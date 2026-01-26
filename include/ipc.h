@@ -9,6 +9,8 @@
 #include <l4/ipc.h>
 #include <types.h>
 
+typedef struct tcb tcb_t;
+
 void sys_ipc(uint32_t *param1);
 uint32_t ipc_deliver(void *data);
 

@@ -5,7 +5,7 @@
 
 /* FIXME: This should be moved to time.h */
 struct timespec {
-	uint64_t nsec;
+    uint64_t nsec;
 };
 
 /* FIXME: Define proper type for pthread type */

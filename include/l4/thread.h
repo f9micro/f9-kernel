@@ -9,17 +9,18 @@
 #include <platform/armv7m.h>
 #include <platform/link.h>
 
-#define L4_NILTHREAD		0
-#define L4_ANYTHREAD		0xFFFFFFFF
+#define L4_NILTHREAD 0
+#define L4_ANYTHREAD 0xFFFFFFFF
 
-#define DECLARE_THREAD(name, sub) \
-	void name(void) __attribute__ ((naked));	\
-	void __USER_TEXT name(void)			\
-	{						\
-		register void *kip_ptr asm ("r0");	\
-		register void *utcb_ptr asm ("r1");	\
-		sub(kip_ptr, utcb_ptr);			\
-		while (1);				\
-	}
+#define DECLARE_THREAD(name, sub)           \
+    void name(void) __attribute__((naked)); \
+    void __USER_TEXT name(void)             \
+    {                                       \
+        register void *kip_ptr asm("r0");   \
+        register void *utcb_ptr asm("r1");  \
+        sub(kip_ptr, utcb_ptr);             \
+        while (1)                           \
+            ;                               \
+    }
 
-#endif	/* L4_THREAD_H_ */
+#endif /* L4_THREAD_H_ */

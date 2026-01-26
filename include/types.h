@@ -15,8 +15,8 @@ typedef uint32_t l4_thread_t;
 
 #if !defined(__cplusplus) && !defined(c_plusplus)
 typedef uint32_t bool;
-#define true	1
-#define false	0
+#define true 1
+#define false 0
 #endif
 
 #ifndef _SIZE_T_
@@ -24,10 +24,8 @@ typedef uint32_t bool;
 typedef uint32_t size_t;
 #endif
 
-#define NULL \
-	((ptr_t) 0x0)
+#define NULL ((ptr_t) 0x0)
 
-#define ALIGNED(size, align) \
-	(size / align) + ((size & (align - 1)) != 0)
+#define ALIGNED(size, align) (size / align) + ((size & (align - 1)) != 0)
 
 #endif /* TYPES_H_ */

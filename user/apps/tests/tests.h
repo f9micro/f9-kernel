@@ -25,8 +25,8 @@
 
 /* Test context structure */
 typedef struct {
-	int passed;
-	int failed;
+    int passed;
+    int failed;
 } test_context_t;
 
 /* Global test context - defined in main.c */
@@ -42,49 +42,47 @@ extern test_context_t test_ctx;
  */
 
 /* ANSI color codes */
-#define ANSI_GREEN  "\033[32m"
-#define ANSI_RED    "\033[31m"
-#define ANSI_RESET  "\033[0m"
+#define ANSI_GREEN "\033[32m"
+#define ANSI_RED "\033[31m"
+#define ANSI_RESET "\033[0m"
 
-#define TEST_START(suite) \
-	do { \
-		printf("[TEST:START] %s\n", suite); \
-		printf("=== Running %s ===\n", suite); \
-	} while (0)
+#define TEST_START(suite)                      \
+    do {                                       \
+        printf("[TEST:START] %s\n", suite);    \
+        printf("=== Running %s ===\n", suite); \
+    } while (0)
 
-#define TEST_RUN(name) \
-	printf("[TEST:RUN] %s\n", name)
+#define TEST_RUN(name) printf("[TEST:RUN] %s\n", name)
 
-#define TEST_PASS(name) \
-	do { \
-		test_ctx.passed++; \
-		printf("[TEST:PASS] %s\n", name); \
-		printf("Test %-40s[ " ANSI_GREEN "OK" ANSI_RESET " ]\n", name); \
-	} while (0)
+#define TEST_PASS(name)                                                 \
+    do {                                                                \
+        test_ctx.passed++;                                              \
+        printf("[TEST:PASS] %s\n", name);                               \
+        printf("Test %-40s[ " ANSI_GREEN "OK" ANSI_RESET " ]\n", name); \
+    } while (0)
 
-#define TEST_FAIL(name) \
-	do { \
-		test_ctx.failed++; \
-		printf("[TEST:FAIL] %s\n", name); \
-		printf("Test %-40s[" ANSI_RED "FAIL" ANSI_RESET "]\n", name); \
-	} while (0)
+#define TEST_FAIL(name)                                               \
+    do {                                                              \
+        test_ctx.failed++;                                            \
+        printf("[TEST:FAIL] %s\n", name);                             \
+        printf("Test %-40s[" ANSI_RED "FAIL" ANSI_RESET "]\n", name); \
+    } while (0)
 
-#define TEST_SUMMARY() \
-	printf("[TEST:SUMMARY] passed=%d failed=%d\n", \
-	       test_ctx.passed, test_ctx.failed)
+#define TEST_SUMMARY()                                              \
+    printf("[TEST:SUMMARY] passed=%d failed=%d\n", test_ctx.passed, \
+           test_ctx.failed)
 
-#define TEST_EXIT(code) \
-	printf("[TEST:EXIT] %d\n", code)
+#define TEST_EXIT(code) printf("[TEST:EXIT] %d\n", code)
 
 /* Test assertion - non-blocking unlike L4_KDB_Enter */
 #define TEST_ASSERT(name, condition) \
-	do { \
-		if (condition) { \
-			TEST_PASS(name); \
-		} else { \
-			TEST_FAIL(name); \
-		} \
-	} while (0)
+    do {                             \
+        if (condition) {             \
+            TEST_PASS(name);         \
+        } else {                     \
+            TEST_FAIL(name);         \
+        }                            \
+    } while (0)
 
 /* Test function declarations */
 
@@ -129,7 +127,7 @@ void test_sched_ipc_priority_boost(void);
 void test_sched_syscall(void);
 
 /* Fault test type constants */
-#define FAULT_MPU    1
+#define FAULT_MPU 1
 #define FAULT_CANARY 2
 
 /* Fault tests (test-fault.c) - requires FAULT_TYPE define */

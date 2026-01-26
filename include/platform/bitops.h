@@ -8,11 +8,11 @@
 
 #include <types.h>
 
-typedef	uint32_t atomic_t;
+typedef uint32_t atomic_t;
 
 /* Atomic ops */
 void atomic_set(atomic_t *atom, atomic_t newval);
-uint32_t atomic_get(atomic_t* atom);
+uint32_t atomic_get(atomic_t *atom);
 
 uint32_t test_and_set_word(uint32_t *word);
 uint32_t test_and_set_bit(uint32_t *word, int bitmask);

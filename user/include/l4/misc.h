@@ -12,27 +12,27 @@
 /*
  * Memory attributes
  */
-#define L4_DefaultMemory	0
+#define L4_DefaultMemory 0
 
 /*
  * Derived functions
  */
 L4_INLINE L4_Word_t L4_Set_PageAttribute(L4_Fpage_t f, L4_Word_t attribute)
 {
-	L4_Word_t attributes[4];
-	attributes[0] = attribute;
+    L4_Word_t attributes[4];
+    attributes[0] = attribute;
 
-	L4_Set_Rights(&f, 0);			/* Set a to 0 */
-	L4_LoadMR(0, f.raw);
-	return L4_MemoryControl(0, attributes);
+    L4_Set_Rights(&f, 0); /* Set a to 0 */
+    L4_LoadMR(0, f.raw);
+    return L4_MemoryControl(0, attributes);
 }
 
-L4_INLINE L4_Word_t L4_Set_PageAttributes(
-		L4_Word_t n, L4_Fpage_t *f,
-		const L4_Word_t *attributes)
+L4_INLINE L4_Word_t L4_Set_PageAttributes(L4_Word_t n,
+                                          L4_Fpage_t *f,
+                                          const L4_Word_t *attributes)
 {
-	L4_LoadMRs (0, n, (L4_Word_t *) f);
-	return L4_MemoryControl (n - 1, attributes);
+    L4_LoadMRs(0, n, (L4_Word_t *) f);
+    return L4_MemoryControl(n - 1, attributes);
 }
 
 #endif /* !__L4__MISC_H__ */

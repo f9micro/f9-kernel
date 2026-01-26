@@ -14,19 +14,19 @@
 __USER_TEXT
 void test_kip_access(void)
 {
-	void *kip;
+    void *kip;
 
-	TEST_RUN("kip_access");
+    TEST_RUN("kip_access");
 
-	kip = L4_GetKernelInterface();
+    kip = L4_GetKernelInterface();
 
-	/* KIP pointer should be non-NULL */
-	if (kip) {
-		TEST_PASS("kip_access");
-	} else {
-		printf("L4_GetKernelInterface() returned NULL\n");
-		TEST_FAIL("kip_access");
-	}
+    /* KIP pointer should be non-NULL */
+    if (kip) {
+        TEST_PASS("kip_access");
+    } else {
+        printf("L4_GetKernelInterface() returned NULL\n");
+        TEST_FAIL("kip_access");
+    }
 }
 
 /*
@@ -35,26 +35,25 @@ void test_kip_access(void)
 __USER_TEXT
 void test_kip_processors(void)
 {
-	void *kip;
-	L4_Word_t num_procs;
+    void *kip;
+    L4_Word_t num_procs;
 
-	TEST_RUN("kip_processors");
+    TEST_RUN("kip_processors");
 
-	kip = L4_GetKernelInterface();
-	if (!kip) {
-		printf("L4_GetKernelInterface() returned NULL\n");
-		TEST_FAIL("kip_processors");
-		return;
-	}
+    kip = L4_GetKernelInterface();
+    if (!kip) {
+        printf("L4_GetKernelInterface() returned NULL\n");
+        TEST_FAIL("kip_processors");
+        return;
+    }
 
-	num_procs = L4_NumProcessors(kip);
+    num_procs = L4_NumProcessors(kip);
 
-	/* Should have at least 1 processor */
-	if (num_procs >= 1) {
-		TEST_PASS("kip_processors");
-	} else {
-		printf("L4_NumProcessors() returned %lu\n",
-		       (unsigned long)num_procs);
-		TEST_FAIL("kip_processors");
-	}
+    /* Should have at least 1 processor */
+    if (num_procs >= 1) {
+        TEST_PASS("kip_processors");
+    } else {
+        printf("L4_NumProcessors() returned %lu\n", (unsigned long) num_procs);
+        TEST_FAIL("kip_processors");
+    }
 }

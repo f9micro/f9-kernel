@@ -35,7 +35,7 @@ L4_Word_t L4_ThreadControl(L4_ThreadId_t dest,
                            L4_ThreadId_t SpaceSpecifier,
                            L4_ThreadId_t Scheduler,
                            L4_ThreadId_t Pager,
-                           void * UtcbLocation);
+                           void *UtcbLocation);
 __USER_TEXT
 L4_Clock_t L4_SystemClock(void);
 
@@ -48,17 +48,17 @@ L4_Word_t L4_Schedule(L4_ThreadId_t dest,
                       L4_Word_t ProcessorControl,
                       L4_Word_t PrioControl,
                       L4_Word_t PreemptionControl,
-                      L4_Word_t * old_TimeControl);
+                      L4_Word_t *old_TimeControl);
 __USER_TEXT
 L4_MsgTag_t L4_Ipc(L4_ThreadId_t to,
                    L4_ThreadId_t FromSpecifier,
                    L4_Word_t Timeouts,
-                   L4_ThreadId_t * from);
+                   L4_ThreadId_t *from);
 __USER_TEXT
 L4_MsgTag_t L4_Lipc(L4_ThreadId_t to,
                     L4_ThreadId_t FromSpecifier,
                     L4_Word_t Timeouts,
-                    L4_ThreadId_t * from);
+                    L4_ThreadId_t *from);
 __USER_TEXT
 void L4_Unmap(L4_Word_t control);
 
@@ -75,7 +75,6 @@ L4_Word_t L4_ProcessorControl(L4_Word_t ProcessorNo,
                               L4_Word_t ExternalFrequency,
                               L4_Word_t voltage);
 __USER_TEXT
-L4_Word_t L4_MemoryControl(L4_Word_t control,
-                           const L4_Word_t * attributes);
+L4_Word_t L4_MemoryControl(L4_Word_t control, const L4_Word_t *attributes);
 
 #endif /* !__L4_PLATFORM_SYSCALLS_H__ */

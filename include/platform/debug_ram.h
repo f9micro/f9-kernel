@@ -9,7 +9,7 @@
 #include <types.h>
 
 /* Default debug ram buffer size */
-#define DBG_RAM_BUFSIZE    0x2000
+#define DBG_RAM_BUFSIZE 0x2000
 
 void dbg_ram_init(void);
 

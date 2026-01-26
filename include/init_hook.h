@@ -7,29 +7,29 @@
 #define INIT_HOOK_H_
 
 enum init_levels {
-	INIT_LEVEL_EARLIEST		= 1,
-	INIT_LEVEL_PLATFORM_EARLY 	= 0x1000,
-	INIT_LEVEL_PLATFORM		= 0x2000,
-	INIT_LEVEL_KERNEL_EARLY		= 0x3000,
-	INIT_LEVEL_KERNEL		= 0x4000,
-	INIT_LEVEL_LAST			= 0xFFFFFFFF,
+    INIT_LEVEL_EARLIEST = 1,
+    INIT_LEVEL_PLATFORM_EARLY = 0x1000,
+    INIT_LEVEL_PLATFORM = 0x2000,
+    INIT_LEVEL_KERNEL_EARLY = 0x3000,
+    INIT_LEVEL_KERNEL = 0x4000,
+    INIT_LEVEL_LAST = 0xFFFFFFFF,
 };
 
 typedef void (*init_hook_t)(void);
 
 typedef struct {
-	unsigned int level;
-	init_hook_t hook;
-	const char *hook_name;
+    unsigned int level;
+    init_hook_t hook;
+    const char *hook_name;
 } init_struct;
 
-#define INIT_HOOK(_hook, _level)					\
-	const init_struct _init_struct_##_hook				\
-			__attribute__((section(".init_hook"))) = {	\
-		.level = _level,					\
-		.hook = _hook,						\
-		.hook_name = #_hook,					\
-	};
+#define INIT_HOOK(_hook, _level)                   \
+    const init_struct _init_struct_##_hook         \
+        __attribute__((section(".init_hook"))) = { \
+            .level = _level,                       \
+            .hook = _hook,                         \
+            .hook_name = #_hook,                   \
+    };
 
 int run_init_hook(unsigned int level);
 

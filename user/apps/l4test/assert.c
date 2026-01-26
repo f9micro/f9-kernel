@@ -7,14 +7,13 @@
 #include <l4io.h>
 #include <platform/link.h>
 
-#include "config.h"
 #include "assert.h"
+#include "config.h"
 
-__USER_TEXT void
-__assert(const char *msg, const char *file, int line)
+__USER_TEXT void __assert(const char *msg, const char *file, int line)
 {
-	printf("\n\nassertion failed: %s, line %d in %s\n\n",
-	       msg, (int) line, file);
+    printf("\n\nassertion failed: %s, line %d in %s\n\n", msg, (int) line,
+           file);
 
-	L4_KDB_Enter("assertion failed");
+    L4_KDB_Enter("assertion failed");
 }

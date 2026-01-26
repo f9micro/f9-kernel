@@ -10,26 +10,26 @@
 
 void init_systick(uint32_t tick_reload, uint32_t tick_next_reload)
 {
-	/* 250us at 168Mhz */
-	*SYSTICK_RELOAD = tick_reload - 1;
-	*SYSTICK_VAL = 0;
-	*SYSTICK_CTL = 0x00000007;
+    /* 250us at 168Mhz */
+    *SYSTICK_RELOAD = tick_reload - 1;
+    *SYSTICK_VAL = 0;
+    *SYSTICK_CTL = 0x00000007;
 
-	if (tick_next_reload)
-		*SYSTICK_RELOAD = tick_next_reload - 1;
+    if (tick_next_reload)
+        *SYSTICK_RELOAD = tick_next_reload - 1;
 }
 
 void systick_disable()
 {
-	*SYSTICK_CTL = 0x00000000;
+    *SYSTICK_CTL = 0x00000000;
 }
 
 uint32_t systick_now()
 {
-	return *SYSTICK_VAL;
+    return *SYSTICK_VAL;
 }
 
 uint32_t systick_flag_count()
 {
-	return (*SYSTICK_CTL & (1 << 16)) >> 16;
+    return (*SYSTICK_CTL & (1 << 16)) >> 16;
 }

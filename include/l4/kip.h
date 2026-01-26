@@ -8,4 +8,4 @@
 
 #include <l4/kip_types.h>
 
-#endif	/* L4_KIP_H_ */
+#endif /* L4_KIP_H_ */

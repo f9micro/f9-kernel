@@ -12,31 +12,27 @@ L4_INLINE int __L4_Msb(L4_Word_t w) __attribute__((const));
 
 L4_INLINE int __L4_Msb(L4_Word_t w)
 {
-	int zeros;
-	__asm__ __volatile__(
-	    "clz %0, %1\n"
-	    : /* outputs */ "=r"(zeros)
-	    : /* inputs */ "r"(w)
-	);
-	return 31 - zeros;
+    int zeros;
+    __asm__ __volatile__("clz %0, %1\n"
+                         : /* outputs */ "=r"(zeros)
+                         : /* inputs */ "r"(w));
+    return 31 - zeros;
 }
 
 L4_INLINE int __L4_Lsb(L4_Word_t w) __attribute__((const));
 
 L4_INLINE int __L4_Lsb(L4_Word_t w)
 {
-	L4_Word_t bitnum;
-	__asm__ __volatile__(
-	    "bsf %1, %0\n"
-	    : /* outputs */ "=r"(bitnum)
-	    : /* inputs */ "rm"(w)
-	);
-	return bitnum;
+    L4_Word_t bitnum;
+    __asm__ __volatile__("bsf %1, %0\n"
+                         : /* outputs */ "=r"(bitnum)
+                         : /* inputs */ "rm"(w));
+    return bitnum;
 }
 
-#endif	/* __L4_PLATFORM_SPECIALS_H__ */
+#endif /* __L4_PLATFORM_SPECIALS_H__ */
 
-#if 0	/* FIXME: IA32 specific implementation */
+#if 0 /* FIXME: IA32 specific implementation */
 
 #ifndef __L4__IA32__SPECIALS_H__
 #define __L4__IA32__SPECIALS_H__
@@ -83,7 +79,7 @@ L4_INLINE L4_Word64_t __L4_Rdpmc(const L4_Word_t ctrsel)
  * Control parameter for SpaceControl system call.
  */
 
-#define L4_LargeSpace		0
+#define L4_LargeSpace 0
 
 L4_INLINE L4_Word_t L4_SmallSpace(L4_Word_t location, L4_Word_t size)
 {
@@ -102,12 +98,12 @@ L4_INLINE L4_Word_t L4_SmallSpace(L4_Word_t location, L4_Word_t size)
 /*
  * Memory attributes for MemoryControl system call.
  */
-#define L4_WriteBackMemory		1
-#define L4_WriteThroughMemory		2
-#define L4_UncacheableMemory		4
-#define L4_WriteCombiningMemory		5
-#define L4_WriteProtectedMemory		8
+#define L4_WriteBackMemory 1
+#define L4_WriteThroughMemory 2
+#define L4_UncacheableMemory 4
+#define L4_WriteCombiningMemory 5
+#define L4_WriteProtectedMemory 8
 
 #endif /* !__L4__IA32__SPECIALS_H__ */
 
-#endif	/* IA32 specific implementation */
+#endif /* IA32 specific implementation */

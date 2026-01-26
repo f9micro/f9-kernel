@@ -7,52 +7,51 @@
 
 static uint32_t queue_length(struct queue_t *queue)
 {
-	return (queue->end >= queue->top) ?
-	       (queue->end - queue->top) :
-	       (queue->size + queue->top - queue->end);
+    return (queue->end >= queue->top) ? (queue->end - queue->top)
+                                      : (queue->size + queue->top - queue->end);
 }
 
 uint32_t queue_init(struct queue_t *queue, uint8_t *addr, size_t size)
 {
-	queue->top = 0;
-	queue->end = 0;
-	queue->size = size;
-	queue->data = addr;
+    queue->top = 0;
+    queue->end = 0;
+    queue->size = size;
+    queue->data = addr;
 
-	return QUEUE_OK;
+    return QUEUE_OK;
 }
 
 uint32_t queue_push(struct queue_t *queue, uint8_t element)
 {
-	if (queue_length(queue) == queue->size)
-		return QUEUE_OVERFLOW;
+    if (queue_length(queue) == queue->size)
+        return QUEUE_OVERFLOW;
 
-	++queue->end;
+    ++queue->end;
 
-	if (queue->end == (queue->size - 1))
-		queue->end = 0;
+    if (queue->end == (queue->size - 1))
+        queue->end = 0;
 
-	queue->data[queue->end] = element;
+    queue->data[queue->end] = element;
 
-	return QUEUE_OK;
+    return QUEUE_OK;
 }
 
 int queue_is_empty(struct queue_t *queue)
 {
-	return queue_length(queue) == 0;
+    return queue_length(queue) == 0;
 }
 
 uint32_t queue_pop(struct queue_t *queue, uint8_t *element)
 {
-	if (queue_length(queue) == 0)
-		return QUEUE_EMPTY;
+    if (queue_length(queue) == 0)
+        return QUEUE_EMPTY;
 
-	++queue->top;
+    ++queue->top;
 
-	if (queue->top == (queue->size - 1))
-		queue->top = 0;
+    if (queue->top == (queue->size - 1))
+        queue->top = 0;
 
-	*element = queue->data[queue->top];
+    *element = queue->data[queue->top];
 
-	return QUEUE_OK;
+    return QUEUE_OK;
 }

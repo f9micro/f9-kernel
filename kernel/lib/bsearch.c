@@ -6,8 +6,8 @@
  * found in the LICENSE file.
  */
 
-#include <types.h>
 #include <error.h>
+#include <types.h>
 
 /*
  * Perform a binary search.
@@ -25,23 +25,26 @@
  * have to make lim 3, then halve, obtaining 1, so that we will only
  * look at item 3.
  */
-void *bsearch(const void *key, const void *base0, size_t nmemb, size_t size,
+void *bsearch(const void *key,
+              const void *base0,
+              size_t nmemb,
+              size_t size,
               int (*compar)(const void *, const void *))
 {
-	const char *base = base0;
-	size_t lim;
-	int cmp;
-	const void *p;
+    const char *base = base0;
+    size_t lim;
+    int cmp;
+    const void *p;
 
-	for (lim = nmemb; lim != 0; lim >>= 1) {
-		p = base + (lim >> 1) * size;
-		cmp = (*compar)(key, p);
-		if (cmp == 0)
-			return (void *) p;
-		if (cmp > 0) {	/* key > p: move right */
-			base = (const char *) p + size;
-			lim--;
-		}		/* else move left */
-	}
-	return NULL;
+    for (lim = nmemb; lim != 0; lim >>= 1) {
+        p = base + (lim >> 1) * size;
+        cmp = (*compar)(key, p);
+        if (cmp == 0)
+            return (void *) p;
+        if (cmp > 0) { /* key > p: move right */
+            base = (const char *) p + size;
+            lim--;
+        } /* else move left */
+    }
+    return NULL;
 }

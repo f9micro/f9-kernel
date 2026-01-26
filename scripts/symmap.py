@@ -35,19 +35,20 @@ class ConfigParser(dict):
 
         # Parsing .config file
         self.parse_defconfig()
-        self.parse_config('.config', user_config=True)
+        self.parse_config(".config", user_config=True)
 
         # Parsing infile for Makefile
         if infile is not None:
             self.parse_makefile(infile)
 
     def parse_makefile(self, infile):
-        f = map(lambda x: x.strip('\r\n ').replace(' ', ''),
-                open(infile, 'r').readlines())
+        f = map(
+            lambda x: x.strip("\r\n ").replace(" ", ""), open(infile, "r").readlines()
+        )
 
         for i in f:
-            if len(i.split('?=')) == 2:
-                key, value = i.split('?=')
+            if len(i.split("?=")) == 2:
+                key, value = i.split("?=")
 
                 # Hack for ?=, if not set then set.
                 try:
@@ -56,24 +57,23 @@ class ConfigParser(dict):
                     self.__setattr__(key, value)
 
     def parse_config(self, path, user_config=False):
-        maps = map(lambda x: x.strip('\r\n '),
-                   open(path, 'r').readlines())
+        maps = map(lambda x: x.strip("\r\n "), open(path, "r").readlines())
 
         for i in maps:
-            if i and i.startswith('#') is False:
-                key, value = i.split('=')
+            if i and i.startswith("#") is False:
+                key, value = i.split("=")
 
                 if user_config:
                     self.__setattr__(key, True)
 
-                    if key.startswith('CONFIG_BOARD_'):
-                        self.__setattr__('BOARD', self.board[key])
+                    if key.startswith("CONFIG_BOARD_"):
+                        self.__setattr__("BOARD", self.board[key])
                 else:
-                    if key.startswith('CONFIG_BOARD_'):
-                        self.board[key] = path.split('/')[1]
+                    if key.startswith("CONFIG_BOARD_"):
+                        self.board[key] = path.split("/")[1]
 
     def parse_defconfig(self):
-        defconfig = glob.glob('board/*/defconfig')
+        defconfig = glob.glob("board/*/defconfig")
         for path in defconfig:
             self.parse_config(path)
 
@@ -81,21 +81,21 @@ class ConfigParser(dict):
 class Symmap:
     def __init__(self):
         self.symmap = {}
-        self.config = ConfigParser('Makefile')
+        self.config = ConfigParser("Makefile")
         self.parse()
 
     def parse(self):
         try:
-            f = open('build/%s/f9_symmap.c' % (self.config.BOARD)).read()
+            f = open("build/%s/f9_symmap.c" % (self.config.BOARD)).read()
         except FileNotFoundError:
             sys.exit(filenotfound % (self.config.BOARD))
 
         # Regex out address
-        regex = r'{ \(void\*\) \((.*?)\), \d* }'
+        regex = r"{ \(void\*\) \((.*?)\), \d* }"
         address = re.findall(regex, f)
 
         # Regex out name
-        regex = r'\"(.*?)\\0\"'
+        regex = r"\"(.*?)\\0\""
         names = re.findall(regex, f)
 
         # Zip it into dict
@@ -104,12 +104,12 @@ class Symmap:
 
     def print_addr_by_name(self, name):
         if name in self.symmap:
-            print('Symbol : %s\nAddress: 0x%x' % (name, self.symmap[name]))
+            print("Symbol : %s\nAddress: 0x%x" % (name, self.symmap[name]))
         else:
             print('Cannot found "%s" in symmap.' % (name))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit(usage)
 

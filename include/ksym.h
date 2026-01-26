@@ -10,8 +10,8 @@
 #define MAX_KSYM 512
 
 typedef struct ksym {
-	void *addr;
-	int strid;
+    void *addr;
+    int strid;
 } ksym_t;
 
 void ksym_init(void);
