@@ -18,6 +18,8 @@ ifeq "$(CONFIG_BOARD_STM32F429DISCOVERY)" "y"
 BOARD ?= discoveryf429
 else ifeq "$(CONFIG_BOARD_NETDUINOPLUS2)" "y"
 BOARD ?= netduinoplus2
+else ifeq "$(CONFIG_BOARD_STM32F429NUCLEO)" "y"
+BOARD ?= nucleof429
 else
 BOARD ?= discoveryf4
 endif
