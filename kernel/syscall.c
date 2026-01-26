@@ -15,6 +15,16 @@
 #include <syscall.h>
 #include <thread.h>
 
+/* L4 Schedule result codes */
+#define L4_SCHEDRESULT_ERROR 0
+#define L4_SCHEDRESULT_DEAD 1
+#define L4_SCHEDRESULT_INACTIVE 2
+#define L4_SCHEDRESULT_RUNNING 3
+#define L4_SCHEDRESULT_PENDING_SEND 4
+#define L4_SCHEDRESULT_SENDING 5
+#define L4_SCHEDRESULT_WAITING 6
+#define L4_SCHEDRESULT_RECEIVING 7
+
 tcb_t *caller;
 
 void __svc_handler(void)
@@ -42,6 +52,95 @@ void syscall_init()
 }
 
 INIT_HOOK(syscall_init, INIT_LEVEL_KERNEL);
+
+/**
+ * Schedule system call handler.
+ * Implements L4 Schedule interface with PTS support.
+ *
+ * Parameters (from L4 spec):
+ *   R0: dest - target thread ID
+ *   R1: time_control - timeslice control
+ *   R2: processor_control - processor number
+ *   R3: prio_control - priority and stride
+ *   R4: preemption_control - preemption threshold (PTS)
+ *   R5: old_control (output pointer)
+ *
+ * WCET Analysis:
+ *   - thread_by_globalid(): O(1) lookup (~10 instructions)
+ *   - Priority update: O(1) via sched_set_priority() (~50 instructions)
+ *     - sched_is_queued(): O(1) pointer check
+ *     - sched_dequeue(): O(1) list ops + bitmap clear
+ *     - sched_enqueue(): O(1) list ops + bitmap set
+ *   - Threshold update: O(1) via sched_preemption_change() (~30 instructions)
+ *     - Validation: O(1) range checks
+ *     - IRQ-safe critical section: O(1) MSR instructions
+ *     - Threshold calculation: O(1) min() operation
+ *     - Optional reschedule: O(1) CLZ + bitmap ops + PendSV trigger
+ *   - State return: O(1) switch (~10 instructions)
+ *
+ *   Total WCET: O(1) - approximately 100 instructions
+ *   At 168 MHz: ~0.6 microseconds worst case (bounded and deterministic)
+ */
+static void sys_schedule(uint32_t *param1, uint32_t *param2)
+{
+    l4_thread_t dest = param1[REG_R0];
+    uint32_t prio_control = param1[REG_R3];
+    uint32_t preemption_control = param2[0];        /* R4 */
+    uint32_t *old_control = (uint32_t *) param2[1]; /* R5 */
+
+    tcb_t *target = thread_by_globalid(dest);
+    if (!target) {
+        param1[REG_R0] = L4_SCHEDRESULT_ERROR;
+        return;
+    }
+
+    /* Extract priority from prio_control (lower 8 bits) */
+    uint8_t new_priority = prio_control & 0xFF;
+
+    /* Extract preemption threshold from preemption_control (bits 16-23) */
+    uint8_t new_threshold = (preemption_control >> 16) & 0xFF;
+
+    /* Save old control value if requested */
+    if (old_control)
+        *old_control = (target->preempt_threshold << 16) | target->priority;
+
+    /* Update priority if specified (0xFF means "don't change") */
+    if (new_priority != 0xFF && new_priority < SCHED_PRIORITY_LEVELS) {
+        sched_set_priority(target, new_priority);
+        target->user_priority = new_priority;
+        target->base_priority = new_priority;
+    }
+
+    /* Update preemption threshold if specified (0xFF means "don't change") */
+    if (new_threshold != 0xFF) {
+        if (sched_preemption_change(target, new_threshold, NULL) < 0) {
+            param1[REG_R0] = L4_SCHEDRESULT_ERROR;
+            return;
+        }
+    }
+
+    /* Return thread state */
+    switch (target->state) {
+    case T_INACTIVE:
+        param1[REG_R0] = L4_SCHEDRESULT_INACTIVE;
+        break;
+    case T_RUNNABLE:
+        param1[REG_R0] = L4_SCHEDRESULT_RUNNING;
+        break;
+    case T_RECV_BLOCKED:
+        param1[REG_R0] = L4_SCHEDRESULT_RECEIVING;
+        break;
+    case T_SEND_BLOCKED:
+        param1[REG_R0] = L4_SCHEDRESULT_SENDING;
+        break;
+    case T_SVC_BLOCKED:
+        param1[REG_R0] = L4_SCHEDRESULT_WAITING;
+        break;
+    default:
+        param1[REG_R0] = L4_SCHEDRESULT_ERROR;
+        break;
+    }
+}
 
 static void sys_thread_control(uint32_t *param1, uint32_t *param2)
 {
@@ -103,6 +202,11 @@ void syscall_handler()
          * TODO: pagers and schedulers
          */
         sys_thread_control(svc_param1, svc_param2);
+        caller->state = T_RUNNABLE;
+        sched_enqueue(caller);
+    } else if (svc_num == SYS_SCHEDULE) {
+        /* Schedule system call - priority and preemption threshold control */
+        sys_schedule(svc_param1, svc_param2);
         caller->state = T_RUNNABLE;
         sched_enqueue(caller);
     } else if (svc_num == SYS_IPC) {

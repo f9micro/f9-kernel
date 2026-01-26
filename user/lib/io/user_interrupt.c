@@ -5,6 +5,7 @@
 #include <interrupt_ipc.h>
 #include <l4/ipc.h>
 #include <l4/pager.h>
+#include <l4/schedule.h>
 #include <l4io.h>
 #include <thread.h>
 #include <user_interrupt.h>
@@ -12,6 +13,9 @@
 __USER_TEXT
 static void *__interrupt_handler_thread(void *arg)
 {
+    L4_ThreadId_t self = L4_Myself();
+    L4_Word_t old_threshold;
+
     do {
         L4_Msg_t msg;
         L4_MsgTag_t tag;
@@ -27,7 +31,25 @@ static void *__interrupt_handler_thread(void *arg)
 
         switch (action) {
         case USER_IRQ_ENABLE:
+            /* Use PTS to protect handler execution without disabling
+             * interrupts. IRQ threads run at priority 1 (SCHED_PRIO_INTR).
+             * Setting threshold to 0 allows only the softirq thread (priority
+             * 0) to preempt during handler execution, while all other threads
+             * (priorities 2-31) are blocked.
+             *
+             * Benefits:
+             * - Hardware interrupts still arrive (not disabled)
+             * - Critical system threads (priority 0) can still run
+             * - User threads (2-31) cannot interfere with IRQ processing
+             * - No interrupt latency penalty from full IRQ disable
+             */
+            L4_Set_PreemptionDelay(self, 0, &old_threshold);
+
+            /* Execute user's IRQ handler with PTS protection */
             handler();
+
+            /* Restore normal preemption threshold */
+            L4_Set_PreemptionDelay(self, old_threshold, NULL);
             break;
         case USER_IRQ_FREE:
             return NULL;

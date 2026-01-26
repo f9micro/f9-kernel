@@ -126,6 +126,12 @@ void test_sched_idle_fallback(void);
 void test_sched_ipc_priority_boost(void);
 void test_sched_syscall(void);
 
+/* PTS (Preemption-Threshold Scheduling) tests */
+void test_pts_threshold_set(void);
+void test_pts_threshold_bounds(void);
+void test_pts_reduced_preemption(void);
+void test_pts_priority_inheritance(void);
+
 /* Fault test type constants */
 #define FAULT_MPU 1
 #define FAULT_CANARY 2

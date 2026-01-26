@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 The F9 Microkernel Project. All rights reserved.
+/* Copyright (c) 2013, 2026 The F9 Microkernel Project. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12,7 +12,7 @@
 
 /**
  * @file sched.c
- * @brief Priority Bitmap Scheduler (Optimized)
+ * @brief Priority Bitmap Scheduler
  *
  * 32-level priority scheduler with O(1) highest-priority selection.
  * Uses Cortex-M CLZ instruction for efficient bitmap scanning.
@@ -25,13 +25,19 @@
  *   - Conditional rotation: only rotate on timeslice expiry (yield)
  *
  * Data structures:
- *   - ready_bitmap: One bit per priority level (bit 31 = prio 0, bit 0 = prio
- * 31)
+ *   - ready_bitmap: One bit per priority level (bit 31 = prio 0,
+ *     bit 0 = prio 31)
  *   - ready_queue[]: Circular doubly-linked list per priority level
  */
 
 /* Priority bitmap: bit set means queue has runnable threads */
 static uint32_t ready_bitmap;
+
+/* Preempted bitmap: tracks priorities deferred by preemption-threshold.
+ * Bit set means a thread at that priority was ready but couldn't preempt
+ * the running thread due to its preemption threshold.
+ */
+static uint32_t preempted_bitmap;
 
 /* Ready queue heads for each priority level (circular doubly-linked) */
 static tcb_t *ready_queue[SCHED_PRIORITY_LEVELS];
@@ -56,6 +62,7 @@ static inline uint32_t clz32(uint32_t x)
 void sched_init(void)
 {
     ready_bitmap = 0;
+    preempted_bitmap = 0;
 
     for (int i = 0; i < SCHED_PRIORITY_LEVELS; ++i)
         ready_queue[i] = NULL;
@@ -242,10 +249,16 @@ void sched_yield(void)
 }
 
 /**
- * Select next thread to run.
+ * Select next thread to run with PTS enforcement.
  *
  * O(1) selection: CLZ gives highest priority, return queue head.
  * Strict invariant: all queued threads are runnable.
+ *
+ * PTS Enforcement: Task j preempts task i iff π_j < γ_i
+ *   - If current thread has preemption threshold set, only threads with
+ *     priority < threshold can preempt
+ *   - Deferred threads are tracked in preempted_bitmap
+ *   - Voluntary yields (current not running) bypass threshold check
  *
  * IRQ-safe: protects bitmap/queue read from concurrent modifications
  * by SysTick or other interrupt handlers that may call sched_enqueue().
@@ -254,6 +267,7 @@ tcb_t *schedule_select(void)
 {
     uint32_t prio;
     tcb_t *thread;
+    tcb_t *curr;
     uint32_t flags;
 
     flags = irq_save_flags();
@@ -261,24 +275,54 @@ tcb_t *schedule_select(void)
     /* CLZ returns 32 if bitmap is 0 (no branches needed) */
     prio = clz32(ready_bitmap);
 
-    if (prio < SCHED_PRIORITY_LEVELS) {
-        thread = ready_queue[prio];
-
-        /* Safety check for consistency */
-        if (!thread) {
-            irq_restore_flags(flags);
-            panic("SCHED: Inconsistent bitmap/queue at prio %d\n", prio);
-        }
-
+    if (prio >= SCHED_PRIORITY_LEVELS) {
         irq_restore_flags(flags);
-        /* Strict invariant: queued threads are always runnable */
-        return thread;
+        /* Not reached: idle thread should always be runnable */
+        panic("SCHED: Empty ready_bitmap (idle missing)\n");
+        return NULL;
     }
 
+    thread = ready_queue[prio];
+
+    /* Safety check for consistency */
+    if (!thread) {
+        irq_restore_flags(flags);
+        panic("SCHED: Inconsistent bitmap/queue at prio %d\n", prio);
+        return NULL;
+    }
+
+    /* PTS Enforcement: check if current thread's threshold blocks preemption */
+    curr = thread_current();
+    if (curr && curr->state == T_RUNNABLE && curr != thread) {
+        /* Preemption attempt: check threshold
+         * Can preempt iff: priority < threshold (numerically)
+         * Example: If threshold=10, only priorities 0-9 can preempt
+         */
+        if (prio >= curr->preempt_threshold) {
+            /* Priority doesn't exceed threshold - defer preemption
+             * Mark CURRENT thread's priority in preempted bitmap,
+             * not the candidate's priority
+             */
+            if (curr->preempt_threshold != curr->priority)
+                preempted_bitmap |= (1UL << (31 - curr->priority));
+
+            dbg_printf(DL_SCHEDULE,
+                       "SCHED: PTS defer prio %d (curr %t thresh %d)\n", prio,
+                       curr->t_globalid, curr->preempt_threshold);
+
+            irq_restore_flags(flags);
+            return curr; /* Continue running current thread */
+        }
+    }
+
+    /* Either voluntary yield or priority exceeds threshold - allow switch
+     * Clear preempted bit for the thread being switched to
+     */
+    preempted_bitmap &= ~(1UL << (31 - prio));
+
     irq_restore_flags(flags);
-    /* Not reached: idle thread should always be runnable */
-    panic("Reached end of schedule_select()\n");
-    return NULL;
+    /* Strict invariant: queued threads are always runnable */
+    return thread;
 }
 
 /**
@@ -321,6 +365,106 @@ void sched_set_priority(tcb_t *thread, uint8_t new_prio)
         sched_enqueue(thread);
 
     irq_restore_flags(flags);
+}
+
+/**
+ * Change thread preemption threshold (PTS).
+ *
+ * Threshold controls which priorities can preempt this thread:
+ *   - Lower threshold = fewer threads can preempt
+ *   - Threshold must be <= user_priority (numerically)
+ *
+ * Integrates with Priority Inheritance Protocol:
+ *   - Uses tighter of user threshold or inherited priority
+ *
+ * When threshold is raised (numerically higher = easier to preempt),
+ * checks if any deferred threads should now be scheduled.
+ *
+ * @param thread Thread to modify
+ * @param new_threshold New preemption threshold (0 = highest, 31 = lowest)
+ * @param old_threshold Output parameter for previous threshold (can be NULL)
+ * @return 0 on success, negative error code on failure
+ */
+int sched_preemption_change(tcb_t *thread,
+                            uint8_t new_threshold,
+                            uint8_t *old_threshold)
+{
+    uint32_t flags;
+    uint8_t old_thresh;
+    int should_reschedule = 0;
+
+    if (!thread)
+        return -1;
+
+    /* Validate threshold per PTS semantics
+     * Threshold must be <= user_priority (numerically).
+     * Lower threshold values provide tighter protection.
+     * Example: If user_priority = 10, threshold can be 0-10.
+     *   - threshold = 10: only 0-9 can preempt (equal protection)
+     *   - threshold = 5: only 0-4 can preempt (tighter protection)
+     *   - threshold = 15: INVALID (would allow 0-14 to preempt, looser than
+     * priority)
+     */
+    if (new_threshold > thread->user_priority) {
+        /* Error: threshold must be <= user_priority for valid protection */
+        return -1;
+    }
+
+    flags = irq_save_flags();
+
+    /* Save old threshold (return user-set value) */
+    old_thresh = thread->user_preempt_threshold;
+    if (old_threshold)
+        *old_threshold = old_thresh;
+
+    /* Update threshold considering priority inheritance.
+     * Use tighter (numerically lower) of new_threshold or inherit_priority.
+     */
+    if (new_threshold < thread->inherit_priority) {
+        thread->preempt_threshold = new_threshold;
+    } else {
+        thread->preempt_threshold = thread->inherit_priority;
+    }
+
+    /* Update user threshold for future reference */
+    thread->user_preempt_threshold = new_threshold;
+
+    /* Check if threshold was raised (numerically higher = easier to preempt)
+     * If so, check if any ready threads should now be allowed to preempt
+     */
+    if (thread == thread_current() && thread->preempt_threshold > old_thresh) {
+        /* Threshold was raised - check highest ready priority directly
+         * and trigger immediate preemption if higher priority thread is ready
+         */
+        uint32_t highest_ready_prio = clz32(ready_bitmap);
+        if (highest_ready_prio < thread->preempt_threshold) {
+            /* A higher priority thread is ready and can now preempt */
+            should_reschedule = 1;
+
+            /* Clear preempted bit for current thread since threshold raised */
+            preempted_bitmap &= ~(1UL << (31 - thread->priority));
+
+            dbg_printf(
+                DL_SCHEDULE,
+                "SCHED: PTS threshold raised %d->%d, prio %d now eligible\n",
+                old_thresh, thread->preempt_threshold, highest_ready_prio);
+        } else {
+            /* Clear preempted bit if threshold now matches priority */
+            if (thread->preempt_threshold == thread->priority) {
+                preempted_bitmap &= ~(1UL << (31 - thread->priority));
+            }
+        }
+    }
+
+    irq_restore_flags(flags);
+
+    /* Trigger reschedule if needed (outside critical section) */
+    if (should_reschedule) {
+        /* Set PendSV pending to trigger reschedule at next opportunity */
+        *SCB_ICSR |= SCB_ICSR_PENDSVSET;
+    }
+
+    return 0;
 }
 
 /**

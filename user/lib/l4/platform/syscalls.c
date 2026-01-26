@@ -79,8 +79,24 @@ L4_Word_t L4_Schedule(L4_ThreadId_t dest,
                       L4_Word_t PreemptionControl,
                       L4_Word_t *old_TimeControl)
 {
-    L4_Word_t result = 0;
-    return result;
+    register L4_Word_t r0 __asm__("r0") = dest.raw;
+    register L4_Word_t r1 __asm__("r1") = TimeControl;
+    register L4_Word_t r2 __asm__("r2") = ProcessorControl;
+    register L4_Word_t r3 __asm__("r3") = PrioControl;
+    register L4_Word_t r4 __asm__("r4") = PreemptionControl;
+    register L4_Word_t r5 __asm__("r5") = (L4_Word_t) old_TimeControl;
+
+    __asm__ __volatile__("svc %[syscall_num]\n"
+                         : "+r"(r0), "+r"(r5)
+                         : "r"(r1), "r"(r2), "r"(r3),
+                           "r"(r4), [syscall_num] "i"(SYS_SCHEDULE)
+                         : "memory");
+
+    /* Write back old_TimeControl if pointer provided */
+    if (old_TimeControl)
+        *old_TimeControl = r5;
+
+    return r0;
 }
 
 __USER_TEXT

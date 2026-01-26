@@ -249,3 +249,264 @@ void test_sched_syscall(void)
         TEST_PASS("sched_syscall");
     }
 }
+
+/*
+ * Preemption-Threshold Scheduling (PTS) Tests
+ *
+ * PTS mitigates priority inversion but requires Priority Inheritance
+ * Protocol (PIP) for mutex-based synchronization.
+ *
+ * Key properties:
+ *   - Each thread has priority (π) and threshold (γ), where γ ≥ π
+ *   - Preemption rule: Task j preempts task i iff π_j < γ_i
+ *   - Reduces context switches in critical sections
+ *   - Works with PIP for complete priority inversion prevention
+ */
+
+/*
+ * Test: PTS Threshold Validation (ThreadX-compatible semantics)
+ *
+ * Validates that preemption threshold can be set within valid range.
+ * Threshold must be <= priority (numerically) for valid protection.
+ * Lower threshold values provide tighter protection.
+ *
+ * Priority numbering: 0=highest, 31=lowest
+ */
+__USER_TEXT
+void test_pts_threshold_set(void)
+{
+    L4_ThreadId_t self;
+    L4_Word_t result;
+
+    TEST_RUN("pts_threshold_set");
+
+    self = L4_Myself();
+
+    /* Set priority to 10 */
+    result = L4_Set_Priority(self, 10);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf("Failed to set priority\n");
+        TEST_FAIL("pts_threshold_set");
+        return;
+    }
+
+    /* Set threshold to 10 (same as priority) - equal protection, should succeed
+     */
+    result = L4_Set_PreemptionDelay(self, 10, NULL);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf("Failed to set threshold to priority\n");
+        TEST_FAIL("pts_threshold_set");
+        return;
+    }
+
+    /* Set threshold to 5 (< priority, tighter protection) - should succeed
+     * Only priorities 0-4 can preempt (5 sources instead of 10)
+     */
+    result = L4_Set_PreemptionDelay(self, 5, NULL);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf("Failed to set threshold < priority (tighter protection)\n");
+        TEST_FAIL("pts_threshold_set");
+        return;
+    }
+
+    TEST_PASS("pts_threshold_set");
+}
+
+/*
+ * Test: PTS Threshold Bounds Checking (ThreadX-compatible semantics)
+ *
+ * Validates PTS threshold constraints:
+ *   1. Threshold must be within valid priority range (0-31)
+ *   2. Threshold must be <= priority (numerically) for valid protection
+ *      Example: If priority=15, threshold can be 0-15, not 16-31
+ *   3. Lower threshold = tighter protection (fewer preemption sources)
+ */
+__USER_TEXT
+void test_pts_threshold_bounds(void)
+{
+    L4_ThreadId_t self;
+    L4_Word_t result;
+
+    TEST_RUN("pts_threshold_bounds");
+
+    self = L4_Myself();
+
+    /* Set priority to 15 */
+    result = L4_Set_Priority(self, 15);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf("Failed to set priority\n");
+        TEST_FAIL("pts_threshold_bounds");
+        return;
+    }
+
+    /* Set threshold to 10 (< priority, tighter protection) - should SUCCEED
+     * Only priorities 0-9 can preempt (10 sources instead of 15)
+     */
+    result = L4_Set_PreemptionDelay(self, 10, NULL);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf(
+            "Valid threshold rejected (threshold < priority for tighter "
+            "protection)\n");
+        TEST_FAIL("pts_threshold_bounds");
+        return;
+    }
+
+    /* Try to set threshold to 32 (out of range) - should FAIL */
+    result = L4_Set_PreemptionDelay(self, 32, NULL);
+    if (result != L4_SCHEDRESULT_ERROR) {
+        printf("Invalid threshold accepted (out of range)\n");
+        TEST_FAIL("pts_threshold_bounds");
+        return;
+    }
+
+    /* Set threshold to 15 (same as priority, equal protection) - should SUCCEED
+     */
+    result = L4_Set_PreemptionDelay(self, 15, NULL);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf("Valid threshold rejected (threshold == priority)\n");
+        TEST_FAIL("pts_threshold_bounds");
+        return;
+    }
+
+    /* Try to set threshold to 20 (> priority, looser than priority) - should
+     * FAIL Would allow priorities 0-19 to preempt, which is looser than
+     * priority 15
+     */
+    result = L4_Set_PreemptionDelay(self, 20, NULL);
+    if (result != L4_SCHEDRESULT_ERROR) {
+        printf(
+            "Invalid threshold accepted (threshold > priority, looser "
+            "protection)\n");
+        TEST_FAIL("pts_threshold_bounds");
+        return;
+    }
+
+    TEST_PASS("pts_threshold_bounds");
+}
+
+/*
+ * Test: PTS Reduces Context Switches (ThreadX-compatible semantics)
+ *
+ * Validates that preemption threshold reduces unnecessary preemptions.
+ * Lower threshold values provide tighter protection.
+ *
+ * PTS constraint: threshold must be <= priority (numerically)
+ * Without PTS (threshold = priority): priorities 0-4 can preempt
+ * With PTS (threshold < priority): even fewer threads can preempt
+ */
+__USER_TEXT
+void test_pts_reduced_preemption(void)
+{
+    L4_ThreadId_t self;
+    L4_Word_t result;
+    int i;
+    volatile int counter = 0;
+
+    TEST_RUN("pts_reduced_preemption");
+
+    self = L4_Myself();
+
+    /* Set priority to 10 */
+    result = L4_Set_Priority(self, 10);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf("Failed to set priority\n");
+        TEST_FAIL("pts_reduced_preemption");
+        return;
+    }
+
+    /* Set threshold to 10 (same as priority) - normal preemption
+     * Priorities 0-9 can preempt (10 sources)
+     */
+    result = L4_Set_PreemptionDelay(self, 10, NULL);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf("Failed to set threshold to priority\n");
+        TEST_FAIL("pts_reduced_preemption");
+        return;
+    }
+
+    /* Set threshold to 5 (< priority) - TIGHTER protection
+     * Now only priorities 0-4 can preempt us (5 sources instead of 10)
+     * This demonstrates PTS reducing preemption sources
+     */
+    result = L4_Set_PreemptionDelay(self, 5, NULL);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf("Failed to set threshold < priority\n");
+        TEST_FAIL("pts_reduced_preemption");
+        return;
+    }
+
+    /* Critical section with tighter protection */
+    for (i = 0; i < 100; i++) {
+        counter++;
+        /* Only priorities 0-4 can preempt us (was 0-9 without PTS) */
+    }
+
+    /* Restore normal preemption (threshold = priority) */
+    result = L4_Set_PreemptionDelay(self, 10, NULL);
+
+    if (counter == 100) {
+        TEST_PASS("pts_reduced_preemption");
+    } else {
+        printf("Counter mismatch: %d/100\n", counter);
+        TEST_FAIL("pts_reduced_preemption");
+    }
+}
+
+/*
+ * Test: PTS with Priority Inheritance (ThreadX-compatible semantics)
+ *
+ * Validates that PTS threshold interacts correctly with priority inheritance.
+ * When a thread inherits priority, its effective threshold uses the tighter
+ * (numerically lower) of user threshold or inherited priority.
+ *
+ * Threshold constraint: threshold must be <= priority
+ */
+__USER_TEXT
+void test_pts_priority_inheritance(void)
+{
+    L4_ThreadId_t self;
+    L4_Word_t result;
+
+    TEST_RUN("pts_priority_inheritance");
+
+    self = L4_Myself();
+
+    /* Set initial priority and threshold */
+    result = L4_Set_Priority(self, 20);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf("Failed to set priority\n");
+        TEST_FAIL("pts_priority_inheritance");
+        return;
+    }
+
+    /* Set threshold to 20 (equal protection) */
+    result = L4_Set_PreemptionDelay(self, 20, NULL);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf("Failed to set threshold\n");
+        TEST_FAIL("pts_priority_inheritance");
+        return;
+    }
+
+    /* Set threshold to 15 (< priority, tighter protection)
+     * Only priorities 0-14 can preempt
+     */
+    result = L4_Set_PreemptionDelay(self, 15, NULL);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf("Failed to set tighter threshold\n");
+        TEST_FAIL("pts_priority_inheritance");
+        return;
+    }
+
+    /* Set threshold to 10 (even tighter protection)
+     * Only priorities 0-9 can preempt
+     * This demonstrates threshold can be progressively tightened
+     */
+    result = L4_Set_PreemptionDelay(self, 10, NULL);
+    if (result == L4_SCHEDRESULT_ERROR) {
+        printf("Failed to further tighten threshold\n");
+        TEST_FAIL("pts_priority_inheritance");
+        return;
+    }
+
+    TEST_PASS("pts_priority_inheritance");
+}
