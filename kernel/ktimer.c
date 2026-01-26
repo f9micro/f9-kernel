@@ -130,8 +130,6 @@ int ktimer_event_schedule(uint32_t ticks, ktimer_event_t *kte)
 
     if (!ticks)
         return -1;
-    dbg_printf(DL_KDB, "KTE: sched ev=%p ticks=%d kt=%d q=%p\n", kte, ticks,
-               ktimer_time, event_queue);
 
     /* Adjust for elapsed time. If timeout has already passed
      * (ticks <= ktimer_time), schedule for next tick (ticks=1)
@@ -144,12 +142,9 @@ int ktimer_event_schedule(uint32_t ticks, ktimer_event_t *kte)
     kte->next = NULL;
 
     if (!event_queue) {
-        /* All other events are already handled, so simply schedule
-         * and enable timer
+        /* All other events are already handled, so simply schedule and enable
+         * timer
          */
-        dbg_printf(DL_KDB, "KTE: Scheduled event %p on %d (head)\n", kte,
-                   ticks);
-
         kte->delta = ticks;
         event_queue = kte;
 
@@ -183,11 +178,6 @@ int ktimer_event_schedule(uint32_t ticks, ktimer_event_t *kte)
                 delta = ticks - etime;
                 next_event = event->next;
             } while (next_event && ticks > (etime + next_event->delta));
-
-            dbg_printf(DL_KTIMER,
-                       "KTE: Scheduled event %p [%p:%p] with "
-                       "D=%d and T=%d\n",
-                       kte, event, next_event, delta, ticks);
 
             /* Insert into chain and recalculate */
             event->next = kte;

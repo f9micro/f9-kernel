@@ -59,6 +59,12 @@ static void run_all_tests(void)
     test_sched_ipc_priority_boost();
     /* Note: test_sched_priority_order() requires more thread resources */
 
+    /* Preemption-Threshold Scheduling (PTS) tests */
+    test_pts_threshold_set();
+    test_pts_threshold_bounds();
+    test_pts_reduced_preemption();
+    test_pts_priority_inheritance();
+
 #ifdef CONFIG_EXTI_INTERRUPT_TEST
     /* IRQ test (requires hardware EXTI support) */
     test_irq_exti();

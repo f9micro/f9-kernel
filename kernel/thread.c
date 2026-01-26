@@ -193,6 +193,12 @@ tcb_t *thread_init(l4_thread_t globalid, utcb_t *utcb)
     thr->sched_link.prev = NULL; /* NULL = not queued */
     thr->sched_link.next = NULL;
 
+    /* Initialize PTS (Preemption-Threshold Scheduling) fields */
+    thr->user_priority = SCHED_PRIO_DEFAULT;
+    thr->preempt_threshold = SCHED_PRIO_DEFAULT;
+    thr->user_preempt_threshold = SCHED_PRIO_DEFAULT;
+    thr->inherit_priority = SCHED_PRIO_DEFAULT;
+
     dbg_printf(DL_THREAD, "T: New thread: %t @[%p] \n", globalid, thr);
 
     return thr;
@@ -478,6 +484,96 @@ void thread_switch(tcb_t *thr)
         as_setup_mpu(current->as, current->ctx.sp,
                      ((uint32_t *) current->ctx.sp)[REG_PC],
                      current->stack_base, current->stack_size);
+}
+
+/**
+ * Priority Inheritance Protocol (PIP) implementation.
+ * Prevents priority inversion when high-priority threads block on resources
+ * held by low-priority threads.
+ */
+
+/**
+ * Boost holder's priority when waiter blocks on it.
+ * Temporarily raises holder's priority to waiter's if higher.
+ *
+ * Example: High-priority thread blocks on IPC from low-priority thread.
+ * Boost the low-priority thread to prevent priority inversion.
+ *
+ * @param waiter Thread that is blocking (high priority)
+ * @param holder Thread holding the resource (low priority)
+ */
+void thread_priority_inherit(tcb_t *waiter, tcb_t *holder)
+{
+    uint32_t flags;
+
+    if (!waiter || !holder)
+        return;
+
+    flags = irq_save_flags();
+
+    /* Only boost if waiter has higher priority (lower number) */
+    if (waiter->priority < holder->priority) {
+        /* Set inherit_priority to waiter's priority */
+        holder->inherit_priority = waiter->priority;
+
+        /* Boost holder's effective priority */
+        holder->priority = waiter->priority;
+
+        /* Recalculate preempt_threshold considering inheritance.
+         * Use tighter (numerically lower) of user threshold or inherit
+         * priority.
+         */
+        if (holder->user_preempt_threshold < holder->inherit_priority) {
+            holder->preempt_threshold = holder->user_preempt_threshold;
+        } else {
+            holder->preempt_threshold = holder->inherit_priority;
+        }
+
+        /* Requeue holder at new priority if queued */
+        if (sched_is_queued(holder)) {
+            sched_dequeue(holder);
+            sched_enqueue(holder);
+        }
+    }
+
+    irq_restore_flags(flags);
+}
+
+/**
+ * Restore holder's original priority after releasing resource.
+ * Recalculates preempt_threshold considering inheritance.
+ *
+ * @param holder Thread releasing the resource
+ */
+void thread_priority_disinherit(tcb_t *holder)
+{
+    uint32_t flags;
+
+    if (!holder)
+        return;
+
+    flags = irq_save_flags();
+
+    /* Restore original priorities */
+    holder->priority = holder->user_priority;
+    holder->inherit_priority = holder->user_priority;
+
+    /* Recalculate preempt_threshold.
+     * With no inheritance, use user_preempt_threshold.
+     */
+    if (holder->user_preempt_threshold < holder->inherit_priority) {
+        holder->preempt_threshold = holder->user_preempt_threshold;
+    } else {
+        holder->preempt_threshold = holder->inherit_priority;
+    }
+
+    /* Requeue holder at original priority if queued */
+    if (sched_is_queued(holder)) {
+        sched_dequeue(holder);
+        sched_enqueue(holder);
+    }
+
+    irq_restore_flags(flags);
 }
 
 #ifdef CONFIG_KDB

@@ -228,6 +228,7 @@ L4_Word_t value = L4_MsgWord(&msg, 0);
 
 The L4 IPC design prioritizes performance:
 - Direct process switch: The scheduler immediately runs the IPC partner
+- Priority inheritance: Receivers get temporary priority boost to minimize latency (see [scheduler.md](scheduler.md))
 - Register-based MRs: Small messages avoid memory access
 - Minimal copying: Only the specified words are transferred
 - Combined operations: Send-receive in one system call

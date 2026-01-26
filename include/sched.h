@@ -85,4 +85,19 @@ void sched_yield(void);
  */
 void sched_set_priority(struct tcb *thread, uint8_t new_prio);
 
+/**
+ * Change thread preemption threshold (PTS).
+ * Updates both current and user threshold values.
+ * Threshold must be <= user_priority (numerically, i.e., tighter or equal
+ * protection).
+ *
+ * @param thread Thread to modify
+ * @param new_threshold New preemption threshold (0 = highest, 31 = lowest)
+ * @param old_threshold Output parameter for previous threshold (can be NULL)
+ * @return 0 on success, negative error code on failure
+ */
+int sched_preemption_change(struct tcb *thread,
+                            uint8_t new_threshold,
+                            uint8_t *old_threshold);
+
 #endif /* SCHED_H_ */

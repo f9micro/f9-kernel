@@ -4,7 +4,8 @@ F9 implements L4-style interrupt delegation, allowing user-space threads to hand
 
 ## Design Rationale
 
-In traditional operating systems, interrupt handlers run in kernel mode with full privileges. L4 microkernels take a different approach: hardware interrupts are converted to IPC messages and delivered to user-space handler threads.
+In traditional operating systems, interrupt handlers run in kernel mode with full privileges.
+L4 microkernels take a different approach: hardware interrupts are converted to IPC messages and delivered to user-space handler threads.
 
 This provides:
 - Reduced kernel complexity
@@ -21,7 +22,8 @@ ARM Cortex-M processors use the Nested Vectored Interrupt Controller (NVIC) for 
 - Hardware priority grouping for preemption control
 - Automatic context saving on exception entry
 
-The NVIC vector table contains addresses of exception handlers. F9 installs its trap handler at each vector entry, which then dispatches to the appropriate kernel or user-space handler.
+The NVIC vector table contains addresses of exception handlers.
+F9 installs its trap handler at each vector entry, which then dispatches to the appropriate kernel or user-space handler.
 
 ### Exception Types
 
@@ -168,15 +170,18 @@ void interrupt_handler_thread(void)
 
 ## Scheduling Priority
 
-Interrupt handler threads receive elevated scheduling priority. The scheduler has a dedicated slot for interrupt handlers, ensuring they run promptly after the kernel delivers the IPC message.
+Interrupt handler threads receive elevated scheduling priority (`SCHED_PRIO_INTR = 1`).
+The scheduler ensures they run promptly after the kernel delivers the IPC message.
 
 The scheduling order:
-1. Kernel thread
-2. Interrupt handler threads (threads with pending interrupt IPC)
-3. Root thread
-4. IPC waiters
-5. Normal threads
-6. Idle thread
+1. Softirq thread (priority 0)
+2. Interrupt handler threads (priority 1)
+3. Root thread (priority 2)
+4. User threads (priorities 3-30)
+5. Idle thread (priority 31)
+
+IRQ threads can use Preemption-Threshold Scheduling (PTS) to protect critical sections without disabling interrupts.
+For complete scheduling documentation, see [scheduler.md](scheduler.md).
 
 ## Hardware Setup
 

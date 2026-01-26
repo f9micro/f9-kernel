@@ -90,10 +90,11 @@ struct tcb {
         struct tcb *prev, *next;
     } sched_link; /* 8 bytes (0-7) */
 
-    thread_state_t state;  /* 4 bytes (8-11) */
-    uint8_t priority;      /* 1 byte  (12) - effective priority */
-    uint8_t base_priority; /* 1 byte  (13) - natural priority */
-    uint8_t _sched_pad[2]; /* 2 bytes (14-15) - Alignment */
+    thread_state_t state;      /* 4 bytes (8-11) */
+    uint8_t priority;          /* 1 byte  (12) - effective priority */
+    uint8_t base_priority;     /* 1 byte  (13) - natural priority */
+    uint8_t preempt_threshold; /* 1 byte  (14) - preemption threshold */
+    uint8_t user_priority;     /* 1 byte  (15) - original user priority */
 
     l4_thread_t t_globalid; /* 4 bytes (16-19) */
     l4_thread_t t_localid;  /* 4 bytes (20-23) */
@@ -103,6 +104,11 @@ struct tcb {
     /* End of Cache Line 0 (32 bytes) */
 
     context_t ctx;
+
+    /* PTS (Preemption-Threshold Scheduling) fields */
+    uint8_t user_preempt_threshold; /* Original user-set threshold */
+    uint8_t inherit_priority;       /* Priority Inheritance Protocol */
+    uint8_t _pts_pad[2];            /* Alignment padding */
 
     as_t *as;
     struct utcb *utcb;
@@ -151,5 +157,27 @@ int thread_isrunnable(tcb_t *thr);
 tcb_t *thread_current(void);
 
 int schedule(void);
+
+/**
+ * Priority Inheritance Protocol (PIP) functions.
+ * Used when threads block on synchronization primitives (IPC, mutexes).
+ */
+
+/**
+ * Boost holder's priority when waiter blocks on it.
+ * Temporarily raises holder's priority to waiter's if higher.
+ *
+ * @param waiter Thread that is blocking (high priority)
+ * @param holder Thread holding the resource (low priority)
+ */
+void thread_priority_inherit(tcb_t *waiter, tcb_t *holder);
+
+/**
+ * Restore holder's original priority after releasing resource.
+ * Recalculates preempt_threshold considering inheritance.
+ *
+ * @param holder Thread releasing the resource
+ */
+void thread_priority_disinherit(tcb_t *holder);
 
 #endif /* THREAD_H_ */
