@@ -119,6 +119,15 @@ void test_timer_monotonicity(void);
 void test_thread_priority(void);
 void test_thread_yield(void);
 
+/* Scheduler validation tests (test-sched.c) */
+void test_sched_priority_order(void);
+void test_sched_round_robin(void);
+void test_sched_no_starvation(void);
+void test_sched_yield_returns(void);
+void test_sched_idle_fallback(void);
+void test_sched_ipc_priority_boost(void);
+void test_sched_syscall(void);
+
 /* Fault test type constants */
 #define FAULT_MPU    1
 #define FAULT_CANARY 2

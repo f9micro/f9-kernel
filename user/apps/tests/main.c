@@ -50,6 +50,15 @@ static void run_all_tests(void)
 	test_thread_priority();
 	test_thread_yield();
 
+	/* Scheduler validation tests (based on formal invariants) */
+	test_sched_syscall();
+	test_sched_yield_returns();
+	test_sched_idle_fallback();
+	test_sched_round_robin();
+	test_sched_no_starvation();
+	test_sched_ipc_priority_boost();
+	/* Note: test_sched_priority_order() requires more thread resources */
+
 #ifdef CONFIG_EXTI_INTERRUPT_TEST
 	/* IRQ test (requires hardware EXTI support) */
 	test_irq_exti();

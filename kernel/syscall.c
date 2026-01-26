@@ -6,6 +6,7 @@
 #include <syscall.h>
 #include <softirq.h>
 #include <thread.h>
+#include <sched.h>
 #include <debug.h>
 #include <ipc.h>
 #include <l4/utcb.h>
@@ -25,6 +26,9 @@ void __svc_handler(void)
 		return;
 
 	caller = thread_current();
+
+	/* Dequeue before blocking (strict queue invariant) */
+	sched_dequeue(caller);
 	caller->state = T_SVC_BLOCKED;
 
 	softirq_schedule(SYSCALL_SOFTIRQ);
@@ -100,6 +104,7 @@ void syscall_handler()
 		 */
 		sys_thread_control(svc_param1, svc_param2);
 		caller->state = T_RUNNABLE;
+		sched_enqueue(caller);
 	} else if (svc_num == SYS_IPC) {
 		sys_ipc(svc_param1);
 	} else {
@@ -108,5 +113,6 @@ void syscall_handler()
 		           svc_param1[REG_R0], svc_param1[REG_R1],
 		           svc_param1[REG_R2], svc_param1[REG_R3]);
 		caller->state = T_RUNNABLE;
+		sched_enqueue(caller);
 	}
 }

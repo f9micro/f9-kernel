@@ -59,8 +59,6 @@ static fpage_t *kip_fpage, *kip_extra_fpage;
 extern kip_t kip;
 extern char *kip_extra;
 
-static tcb_t *thread_sched(sched_slot_t *);
-
 void thread_init_subsys()
 {
 	fpage_t *last = NULL;
@@ -90,8 +88,6 @@ void thread_init_subsys()
 		panic("THREAD: Failed to create KIP extra fpage (addr=%p sz=%d ret=%d)\n",
 		      kip_extra, CONFIG_KIP_EXTRA_SIZE, ret);
 	}
-
-	sched_slot_set_handler(SSI_NORMAL_THREAD, thread_sched);
 }
 
 INIT_HOOK(thread_init_subsys, INIT_LEVEL_KERNEL);
@@ -192,6 +188,12 @@ tcb_t *thread_init(l4_thread_t globalid, utcb_t *utcb)
 
 	thr->timeout_event = 0;
 
+	/* Initialize scheduler fields */
+	thr->priority = SCHED_PRIO_DEFAULT;
+	thr->base_priority = SCHED_PRIO_DEFAULT;
+	thr->sched_link.prev = NULL;	/* NULL = not queued */
+	thr->sched_link.next = NULL;
+
 	dbg_printf(DL_THREAD, "T: New thread: %t @[%p] \n", globalid, thr);
 
 	return thr;
@@ -246,6 +248,9 @@ tcb_t *thread_create(l4_thread_t globalid, utcb_t *utcb)
 void thread_destroy(tcb_t *thr)
 {
 	tcb_t *parent, *child, *prev_child;
+
+	/* Remove from scheduler ready queue if queued */
+	sched_dequeue(thr);
 
 	/* remove thr from its parent and its siblings */
 	parent = thr->t_parent;
@@ -451,8 +456,18 @@ int thread_ispriviliged(tcb_t *thread)
 /* Switch context */
 void thread_switch(tcb_t *thr)
 {
+	tcb_t *prev = (tcb_t *) current;
+
 	assert((intptr_t) thr);
 	assert(thread_isrunnable(thr));
+
+	/* Restore previous thread's base priority if it was boosted.
+	 * This ensures IPC priority boost is temporary and only lasts
+	 * for one scheduling quantum.
+	 */
+	if (prev && prev->priority != prev->base_priority) {
+		sched_set_priority(prev, prev->base_priority);
+	}
 
 	/* Check stack canary before switching to this thread.
 	 * If canary is corrupted, the thread's stack has overflowed.
@@ -469,47 +484,6 @@ void thread_switch(tcb_t *thr)
 		as_setup_mpu(current->as, current->ctx.sp,
 		             ((uint32_t *) current->ctx.sp)[REG_PC],
 		             current->stack_base, current->stack_size);
-}
-
-/* Select normal thread to run
- *
- * NOTE: all threads are derived from root
- */
-static tcb_t *thread_select(tcb_t *parent)
-{
-	tcb_t *thr = parent->t_child;
-	if (!thr)
-		return NULL;
-
-	while (1) {
-		if (thread_isrunnable(thr))
-			return thr;
-
-		if (thr->t_child) {
-			thr = thr->t_child;
-			continue;
-		}
-
-		if (thr->t_sibling) {
-			thr = thr->t_sibling;
-			continue;
-		}
-
-		do {
-			if (thr->t_parent == parent)
-				return NULL;
-			thr = thr->t_parent;
-		} while (!thr->t_sibling);
-
-		thr = thr->t_sibling;
-	}
-}
-
-static tcb_t *thread_sched(sched_slot_t *slot)
-{
-	extern tcb_t *root;
-
-	return thread_select(root);
 }
 
 #ifdef CONFIG_KDB

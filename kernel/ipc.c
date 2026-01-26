@@ -23,6 +23,16 @@ extern tcb_t *caller;
 extern tcb_t *thread_map[];
 extern int thread_count;
 
+/**
+ * Make thread runnable and enqueue to scheduler.
+ * Used after IPC operations that unblock threads.
+ */
+static inline void thread_make_runnable(tcb_t *thr)
+{
+	thr->state = T_RUNNABLE;
+	sched_enqueue(thr);
+}
+
 uint32_t ipc_read_mr(tcb_t *from, int i)
 {
 	if (i >= 8)
@@ -179,24 +189,25 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 
 	to->utcb->sender = from->t_globalid;
 
-	to->state = T_RUNNABLE;
+	/* Temporarily boost receiver priority for IPC fast path.
+	 * base_priority is preserved; effective priority restored
+	 * when thread is descheduled (in thread_switch).
+	 */
+	sched_set_priority(to, SCHED_PRIO_IPC);
+	thread_make_runnable(to);
 	to->ipc_from = L4_NILTHREAD;
 	((uint32_t *) to->ctx.sp)[REG_R0] = from->t_globalid;
 
 	/* If from has receive phases, lock myself */
 	from_recv_tid = ((uint32_t *) from->ctx.sp)[REG_R1];
 	if (from_recv_tid == L4_NILTHREAD) {
-		from->state = T_RUNNABLE;
+		thread_make_runnable(from);
 	} else {
 		from->state = T_RECV_BLOCKED;
 		from->ipc_from = from_recv_tid;
 
 		dbg_printf(DL_IPC, "IPC: %t receiving\n", from->t_globalid);
 	}
-
-	/* Dispatch communicating threads */
-	sched_slot_dispatch(SSI_NORMAL_THREAD, from);
-	sched_slot_dispatch(SSI_IPC_THREAD, to);
 
 	dbg_printf(DL_IPC,
 	           "IPC: %t→%t done\n", from->t_globalid, to->t_globalid);
@@ -207,6 +218,9 @@ uint32_t ipc_timeout(void *data)
 	ktimer_event_t *event = (ktimer_event_t *) data;
 	tcb_t *thr = (tcb_t *) event->data;
 
+	dbg_printf(DL_KDB, "IPC: timeout tid=%t st=%d\n",
+	           thr->t_globalid, thr->state);
+
 	if (thr->timeout_event == (uint32_t)data) {
 
 		if (thr->state == T_RECV_BLOCKED)
@@ -215,7 +229,7 @@ uint32_t ipc_timeout(void *data)
 		if (thr->state == T_SEND_BLOCKED)
 			user_ipc_error(thr, UE_IPC_TIMEOUT | UE_IPC_PHASE_SEND);
 
-		thr->state = T_RUNNABLE;
+		thread_make_runnable(thr);
 		thr->timeout_event = 0;
 	}
 
@@ -233,6 +247,9 @@ static void sys_ipc_timeout(uint32_t timeout)
 
 	kevent = ktimer_event_create(ticks, ipc_timeout, caller);
 
+	dbg_printf(DL_KDB, "IPC: sched timeout ticks=%d ev=%p\n",
+	           ticks, kevent);
+
 	caller->timeout_event = (uint32_t) kevent;
 }
 
@@ -247,6 +264,8 @@ void sys_ipc(uint32_t *param1)
 
 	if (to_tid == L4_NILTHREAD &&
 		from_tid == L4_NILTHREAD) {
+		dbg_printf(DL_KDB, "IPC: sleep tid=%t timeout=%p\n",
+		           caller->t_globalid, timeout);
 		caller->state = T_INACTIVE;
 		if (timeout)
 			sys_ipc_timeout(timeout);
@@ -258,11 +277,11 @@ void sys_ipc(uint32_t *param1)
 
 		if (to_tid == TID_TO_GLOBALID(THREAD_LOG)) {
 			user_log(caller);
-			caller->state = T_RUNNABLE;
+			thread_make_runnable(caller);
 			return;
 		} else if (to_tid == TID_TO_GLOBALID(THREAD_IRQ_REQUEST)) {
 			user_interrupt_config(caller);
-			caller->state = T_RUNNABLE;
+			thread_make_runnable(caller);
 			return;
 		} else if (to_thr &&
 		           (to_thr->state == T_RECV_BLOCKED ||
@@ -297,7 +316,7 @@ void sys_ipc(uint32_t *param1)
 					           to_tid, sp - stack_size, mp ? mp->name : "N/A");
 					user_ipc_error(caller,
 					               UE_IPC_ABORTED | UE_IPC_PHASE_SEND);
-					caller->state = T_RUNNABLE;
+					thread_make_runnable(caller);
 					return;
 				}
 
@@ -317,10 +336,10 @@ void sys_ipc(uint32_t *param1)
 				                (void *) ipc_read_mr(caller, 1),
 				                regs, to_thr);
 
-				caller->state = T_RUNNABLE;
+				thread_make_runnable(caller);
 
 				/* Start thread */
-				to_thr->state = T_RUNNABLE;
+				thread_make_runnable(to_thr);
 
 				return;
 			} else {
@@ -340,7 +359,7 @@ void sys_ipc(uint32_t *param1)
 				if (typed_last > IPC_MR_COUNT) {
 					user_ipc_error(caller,
 					               UE_IPC_MSG_OVERFLOW | UE_IPC_PHASE_SEND);
-					caller->state = T_RUNNABLE;
+					thread_make_runnable(caller);
 					return;
 				}
 
@@ -365,7 +384,7 @@ void sys_ipc(uint32_t *param1)
 							dbg_printf(DL_IPC,
 							           "IPC: REJECT unaligned map to INACTIVE %p\n",
 							           map_base);
-							caller->state = T_RUNNABLE;
+							thread_make_runnable(caller);
 							return;
 						}
 
@@ -385,7 +404,7 @@ void sys_ipc(uint32_t *param1)
 				}
 
 				/* Keep thread INACTIVE, sender continues */
-				caller->state = T_RUNNABLE;
+				thread_make_runnable(caller);
 				return;
 			}
 		} else  {
@@ -400,7 +419,7 @@ void sys_ipc(uint32_t *param1)
 				           caller->t_globalid, to_tid);
 				user_ipc_error(caller,
 				               UE_IPC_ABORTED | UE_IPC_PHASE_SEND);
-				caller->state = T_RUNNABLE;
+				thread_make_runnable(caller);
 				return;
 			}
 
@@ -414,7 +433,7 @@ void sys_ipc(uint32_t *param1)
 				           caller->t_globalid, to_tid);
 				user_ipc_error(caller,
 				               UE_IPC_ABORTED | UE_IPC_PHASE_SEND);
-				caller->state = T_RUNNABLE;
+				thread_make_runnable(caller);
 				return;
 			}
 
