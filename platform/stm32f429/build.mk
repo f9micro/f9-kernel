@@ -21,7 +21,7 @@ loader-chip-y = \
 
 # FIXME: move to toplevel definitions
 platform-flash-command = \
-	st-flash write $(1) 0x8000000 || \
+	st-flash --connect-under-reset write $(1) 0x8000000 || \
 	openocd -f interface/stlink-v2.cfg \
 		-f target/stm32f4x_stlink.cfg \
 		-c "init" \
