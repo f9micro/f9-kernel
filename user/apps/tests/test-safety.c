@@ -16,9 +16,9 @@
  */
 
 #include <l4/ipc.h>
-#include <l4/thread.h>
 #include <l4/pager.h>
 #include <l4/schedule.h>
+#include <l4/thread.h>
 #include <l4io.h>
 
 #include "tests.h"
@@ -32,33 +32,33 @@
 __USER_TEXT
 void test_ipc_timeout_send(void)
 {
-	L4_MsgTag_t tag;
-	L4_Msg_t msg;
-	L4_ThreadId_t invalid_tid;
-	L4_Time_t timeout;
+    L4_MsgTag_t tag;
+    L4_Msg_t msg;
+    L4_ThreadId_t invalid_tid;
+    L4_Time_t timeout;
 
-	TEST_RUN("ipc_timeout_send");
+    TEST_RUN("ipc_timeout_send");
 
-	/* Create an invalid TID (high number unlikely to exist) */
-	invalid_tid.raw = 0xFFFF0000;
+    /* Create an invalid TID (high number unlikely to exist) */
+    invalid_tid.raw = 0xFFFF0000;
 
-	/* Short timeout: ~10ms */
-	timeout = L4_TimePeriod(10000);
+    /* Short timeout: ~10ms */
+    timeout = L4_TimePeriod(10000);
 
-	/* Try to send - should timeout, not hang */
-	L4_MsgClear(&msg);
-	L4_MsgAppendWord(&msg, 0xDEADBEEF);
-	L4_MsgLoad(&msg);
+    /* Try to send - should timeout, not hang */
+    L4_MsgClear(&msg);
+    L4_MsgAppendWord(&msg, 0xDEADBEEF);
+    L4_MsgLoad(&msg);
 
-	tag = L4_Send_Timeout(invalid_tid, timeout);
+    tag = L4_Send_Timeout(invalid_tid, timeout);
 
-	/* Expect IPC to fail (no valid receiver) */
-	if (L4_IpcFailed(tag)) {
-		TEST_PASS("ipc_timeout_send");
-	} else {
-		printf("Unexpected: IPC succeeded to invalid TID\n");
-		TEST_FAIL("ipc_timeout_send");
-	}
+    /* Expect IPC to fail (no valid receiver) */
+    if (L4_IpcFailed(tag)) {
+        TEST_PASS("ipc_timeout_send");
+    } else {
+        printf("Unexpected: IPC succeeded to invalid TID\n");
+        TEST_FAIL("ipc_timeout_send");
+    }
 }
 
 /*
@@ -70,26 +70,26 @@ void test_ipc_timeout_send(void)
 __USER_TEXT
 void test_ipc_timeout_receive(void)
 {
-	L4_MsgTag_t tag;
-	L4_ThreadId_t from;
-	L4_Time_t timeout;
+    L4_MsgTag_t tag;
+    L4_ThreadId_t from;
+    L4_Time_t timeout;
 
-	TEST_RUN("ipc_timeout_receive");
+    TEST_RUN("ipc_timeout_receive");
 
-	/* Short timeout: ~10ms */
-	timeout = L4_TimePeriod(10000);
+    /* Short timeout: ~10ms */
+    timeout = L4_TimePeriod(10000);
 
-	/* Wait for message that will never come */
-	tag = L4_Wait_Timeout(timeout, &from);
+    /* Wait for message that will never come */
+    tag = L4_Wait_Timeout(timeout, &from);
 
-	/* Expect timeout (IPC failed) since no sender */
-	if (L4_IpcFailed(tag)) {
-		TEST_PASS("ipc_timeout_receive");
-	} else {
-		printf("Unexpected: received message from 0x%lx\n",
-		       (unsigned long)from.raw);
-		TEST_FAIL("ipc_timeout_receive");
-	}
+    /* Expect timeout (IPC failed) since no sender */
+    if (L4_IpcFailed(tag)) {
+        TEST_PASS("ipc_timeout_receive");
+    } else {
+        printf("Unexpected: received message from 0x%lx\n",
+               (unsigned long) from.raw);
+        TEST_FAIL("ipc_timeout_receive");
+    }
 }
 
 /*
@@ -107,13 +107,13 @@ void test_ipc_timeout_receive(void)
 __USER_TEXT
 void test_timer_zero_sleep(void)
 {
-	TEST_RUN("timer_zero_sleep");
+    TEST_RUN("timer_zero_sleep");
 
-	/* Small sleep should work */
-	L4_Sleep(L4_TimePeriod(1000)); /* 1ms */
+    /* Small sleep should work */
+    L4_Sleep(L4_TimePeriod(1000)); /* 1ms */
 
-	/* If we reach here without hanging, test passes */
-	TEST_PASS("timer_zero_sleep");
+    /* If we reach here without hanging, test passes */
+    TEST_PASS("timer_zero_sleep");
 }
 
 /*
@@ -131,33 +131,33 @@ __USER_BSS static volatile int monotonicity_counter;
 __USER_TEXT
 void test_timer_monotonicity(void)
 {
-	int i;
-	int prev_counter;
-	int ok = 1;
+    int i;
+    int prev_counter;
+    int ok = 1;
 
-	TEST_RUN("timer_monotonicity");
+    TEST_RUN("timer_monotonicity");
 
-	monotonicity_counter = 0;
+    monotonicity_counter = 0;
 
-	/* Sleep multiple times and verify counter increases */
-	for (i = 0; i < 5; i++) {
-		prev_counter = monotonicity_counter;
-		L4_Sleep(L4_TimePeriod(1000)); /* 1ms */
-		monotonicity_counter = i + 1;
+    /* Sleep multiple times and verify counter increases */
+    for (i = 0; i < 5; i++) {
+        prev_counter = monotonicity_counter;
+        L4_Sleep(L4_TimePeriod(1000)); /* 1ms */
+        monotonicity_counter = i + 1;
 
-		if (monotonicity_counter <= prev_counter && i > 0) {
-			printf("Monotonicity violation at iteration %d\n", i);
-			ok = 0;
-			break;
-		}
-	}
+        if (monotonicity_counter <= prev_counter && i > 0) {
+            printf("Monotonicity violation at iteration %d\n", i);
+            ok = 0;
+            break;
+        }
+    }
 
-	/* Additionally verify we can measure elapsed "time" */
-	if (ok && monotonicity_counter == 5) {
-		TEST_PASS("timer_monotonicity");
-	} else {
-		TEST_FAIL("timer_monotonicity");
-	}
+    /* Additionally verify we can measure elapsed "time" */
+    if (ok && monotonicity_counter == 5) {
+        TEST_PASS("timer_monotonicity");
+    } else {
+        TEST_FAIL("timer_monotonicity");
+    }
 }
 
 /*
@@ -176,24 +176,24 @@ void test_timer_monotonicity(void)
 __USER_TEXT
 void test_thread_priority(void)
 {
-	L4_ThreadId_t self;
-	L4_Word_t result;
+    L4_ThreadId_t self;
+    L4_Word_t result;
 
-	TEST_RUN("thread_priority");
+    TEST_RUN("thread_priority");
 
-	self = L4_Myself();
+    self = L4_Myself();
 
-	/* Try to set priority (may or may not succeed based on policy) */
-	result = L4_Set_Priority(self, 100);
+    /* Try to set priority (may or may not succeed based on policy) */
+    result = L4_Set_Priority(self, 100);
 
-	/* L4_Schedule returns thread state or 0 on error */
-	if (result != L4_SCHEDRESULT_ERROR) {
-		TEST_PASS("thread_priority");
-	} else {
-		/* Some kernels may not allow self-priority change */
-		printf("Priority change returned error (may be policy)\n");
-		TEST_PASS("thread_priority");
-	}
+    /* L4_Schedule returns thread state or 0 on error */
+    if (result != L4_SCHEDRESULT_ERROR) {
+        TEST_PASS("thread_priority");
+    } else {
+        /* Some kernels may not allow self-priority change */
+        printf("Priority change returned error (may be policy)\n");
+        TEST_PASS("thread_priority");
+    }
 }
 
 /*
@@ -204,15 +204,15 @@ void test_thread_priority(void)
 __USER_TEXT
 void test_thread_yield(void)
 {
-	int i;
+    int i;
 
-	TEST_RUN("thread_yield");
+    TEST_RUN("thread_yield");
 
-	/* Yield multiple times - should not hang */
-	for (i = 0; i < 3; i++) {
-		L4_Yield();
-	}
+    /* Yield multiple times - should not hang */
+    for (i = 0; i < 3; i++) {
+        L4_Yield();
+    }
 
-	/* If we get here, yield works */
-	TEST_PASS("thread_yield");
+    /* If we get here, yield works */
+    TEST_PASS("thread_yield");
 }

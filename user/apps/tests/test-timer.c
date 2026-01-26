@@ -14,20 +14,20 @@
 __USER_TEXT
 void test_timer_period(void)
 {
-	L4_Time_t time;
+    L4_Time_t time;
 
-	TEST_RUN("timer_period");
+    TEST_RUN("timer_period");
 
-	/* Create a 1ms time period */
-	time = L4_TimePeriod(1000);
+    /* Create a 1ms time period */
+    time = L4_TimePeriod(1000);
 
-	/* Time value should be non-zero */
-	if (time.raw != 0) {
-		TEST_PASS("timer_period");
-	} else {
-		printf("L4_TimePeriod(1000) returned zero\n");
-		TEST_FAIL("timer_period");
-	}
+    /* Time value should be non-zero */
+    if (time.raw != 0) {
+        TEST_PASS("timer_period");
+    } else {
+        printf("L4_TimePeriod(1000) returned zero\n");
+        TEST_FAIL("timer_period");
+    }
 }
 
 /*
@@ -37,11 +37,11 @@ void test_timer_period(void)
 __USER_TEXT
 void test_timer_sleep(void)
 {
-	TEST_RUN("timer_sleep");
+    TEST_RUN("timer_sleep");
 
-	/* Just verify sleep returns without hanging */
-	L4_Sleep(L4_TimePeriod(1000)); /* 1ms */
+    /* Just verify sleep returns without hanging */
+    L4_Sleep(L4_TimePeriod(1000)); /* 1ms */
 
-	/* If we get here, sleep works */
-	TEST_PASS("timer_sleep");
+    /* If we get here, sleep works */
+    TEST_PASS("timer_sleep");
 }

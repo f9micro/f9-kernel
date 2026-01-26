@@ -12,7 +12,7 @@
 /*
  * Compatibility with old naming scheme.
  */
-#define enter_kdebug(x)		L4_KDB_Enter(x)
-#define kd_inchar()		L4_KDB_ReadChar_Blocked()
+#define enter_kdebug(x) L4_KDB_Enter(x)
+#define kd_inchar() L4_KDB_ReadChar_Blocked()
 
 #endif /* !__L4__KDEBUG_H__ */

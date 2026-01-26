@@ -6,18 +6,18 @@
 #ifndef __PAGER_H__
 #define __PAGER_H__
 
-#define RES_FPAGE		0
-#define HEAP_FPAGE		1
+#define RES_FPAGE 0
+#define HEAP_FPAGE 1
 
 
-#define THREAD_MAX_NUM	32
+#define THREAD_MAX_NUM 32
 
 /* msg tag label */
-#define PAGER_REQUEST_LABEL		0xf000
-#define PAGER_REPLY_LABEL		0xf001
+#define PAGER_REQUEST_LABEL 0xf000
+#define PAGER_REPLY_LABEL 0xf001
 
-#include <user_runtime.h>
 #include <platform/link.h>
+#include <user_runtime.h>
 
 enum {
     PAGER_REQ_TYPE,
@@ -43,10 +43,10 @@ __USER_TEXT
 L4_ThreadId_t pager_create_thread(void);
 
 __USER_TEXT
-L4_Word_t pager_start_thread(L4_ThreadId_t tid, void * (*thr_routine)(void *),
+L4_Word_t pager_start_thread(L4_ThreadId_t tid,
+                             void *(*thr_routine)(void *),
                              void *arg);
 
 __USER_TEXT
-void pager_thread(user_struct *user,
-                  void * (*entry_main)(void *user));
+void pager_thread(user_struct *user, void *(*entry_main)(void *user));
 #endif

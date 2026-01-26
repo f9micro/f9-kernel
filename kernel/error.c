@@ -3,15 +3,15 @@
  * found in the LICENSE file.
  */
 
-#include <error.h>
-#include <thread.h>
 #include <debug.h>
+#include <error.h>
 #include <kdb.h>
-#include <platform/irq.h>
-#include <platform/armv7m.h>
-#include <platform/link.h>
-#include <platform/debug_device.h>
 #include <lib/stdarg.h>
+#include <platform/armv7m.h>
+#include <platform/debug_device.h>
+#include <platform/irq.h>
+#include <platform/link.h>
+#include <thread.h>
 
 #ifdef LOADER
 extern uint32_t stack_end;
@@ -22,71 +22,71 @@ extern volatile tcb_t *caller;
 
 void set_user_error(tcb_t *thread, enum user_error_t error)
 {
-	assert(thread && thread->utcb);
+    assert(thread && thread->utcb);
 
-	thread->utcb->error_code = error;
+    thread->utcb->error_code = error;
 }
 
 void set_caller_error(enum user_error_t error)
 {
-	if (caller)
-		set_user_error((tcb_t *) caller, error);
-	else
-		panic("User-level error %d during in-kernel call!", error);
+    if (caller)
+        set_user_error((tcb_t *) caller, error);
+    else
+        panic("User-level error %d during in-kernel call!", error);
 }
 #endif
 
 #ifdef CONFIG_PANIC_DUMP_STACK
 static void panic_dump_stack(void)
 {
-	uint32_t *current_sp = (uint32_t *) read_msp();
-	int word = 0;
+    uint32_t *current_sp = (uint32_t *) read_msp();
+    int word = 0;
 
-	dbg_puts("\n\nStack dump:\n");
+    dbg_puts("\n\nStack dump:\n");
 
 #ifdef LOADER
-	while (current_sp < &stack_end) {
+    while (current_sp < &stack_end) {
 #else
-	while (current_sp < &kernel_stack_end) {
+    while (current_sp < &kernel_stack_end) {
 #endif
-		dbg_printf(DL_EMERG, "%p ", *(++current_sp));
+        dbg_printf(DL_EMERG, "%p ", *(++current_sp));
 
-		if (++word % 8 == 0)
-			dbg_putchar('\n');
-	}
+        if (++word % 8 == 0)
+            dbg_putchar('\n');
+    }
 }
-#endif	/* CONFIG_PANIC_DUMP_STACK */
+#endif /* CONFIG_PANIC_DUMP_STACK */
 
 void panic_impl(char *fmt, ...)
 {
-	va_list va;
-	va_start(va, fmt);
+    va_list va;
+    va_start(va, fmt);
 
-	dbg_start_panic();
+    dbg_start_panic();
 
-	irq_disable();
-	dbg_vprintf(DL_EMERG, fmt, va);
+    irq_disable();
+    dbg_vprintf(DL_EMERG, fmt, va);
 
 #ifndef LOADER
 #ifdef CONFIG_KDB
-	kdb_dump_error();
+    kdb_dump_error();
 #endif
 #endif
 
 #ifdef CONFIG_PANIC_DUMP_STACK
-	panic_dump_stack();
+    panic_dump_stack();
 #endif
 
-	va_end(va);
+    va_end(va);
 
-	while (1)
-		/* */ ;
+    while (1)
+        /* */;
 }
 
 void assert_impl(int cond, const char *condstr, const char *funcname)
 {
-	if (!cond) {
-		/* Write to buffer */
-		panic("Assertion %s failed @%s\n", condstr, funcname);
-	}
+    if (!cond) {
+        /* Write to buffer */
+        panic("Assertion %s failed @%s\n", condstr, funcname);
+    }
 }

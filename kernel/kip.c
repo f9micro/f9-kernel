@@ -2,10 +2,10 @@
 #include <platform/link.h>
 
 kip_t kip __KIP = {
-	.kernel_id = 0x00000000,
+    .kernel_id = 0x00000000,
 
-	.api_version.raw = 0x84 << 24 | 7 << 16,	/* L4 X.2, rev 7 */
-	.api_flags.raw	= 0x00000000,		/* Little endian 32-bit */
+    .api_version.raw = 0x84 << 24 | 7 << 16, /* L4 X.2, rev 7 */
+    .api_flags.raw = 0x00000000,             /* Little endian 32-bit */
 };
 
 /* Extra information on KIP */

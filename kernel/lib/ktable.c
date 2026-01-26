@@ -3,8 +3,8 @@
  * found in the LICENSE file.
  */
 
-#include <lib/ktable.h>
 #include <debug.h>
+#include <lib/ktable.h>
 
 #ifdef CONFIG_KDB
 #include <kdb.h>
@@ -15,42 +15,42 @@ static uint8_t kdb_ktable_cnt;
 
 static void kdb_register_ktable(ktable_t *kt)
 {
-	if (kdb_ktable_cnt < (KTABLE_NUM - 1)) {
-		kdb_ktables[kdb_ktable_cnt++] = kt;
-	}
+    if (kdb_ktable_cnt < (KTABLE_NUM - 1)) {
+        kdb_ktables[kdb_ktable_cnt++] = kt;
+    }
 }
 
 void kdb_dump_ktable(void)
 {
-	int i = 0, j;
-	ktable_t *kt;
+    int i = 0, j;
+    ktable_t *kt;
 
-	for (; i < kdb_ktable_cnt; ++i) {
-		kt = kdb_ktables[i];
+    for (; i < kdb_ktable_cnt; ++i) {
+        kt = kdb_ktables[i];
 
-		/* Validate ktable before dumping to avoid crash on corruption */
-		if (!kt || !kt->bitmap || !kt->data || kt->num == 0) {
-			dbg_printf(DL_KDB,
-			           "\nKT: [%d] INVALID kt=%p\n", i, kt);
-			continue;
-		}
+        /* Validate ktable before dumping to avoid crash on corruption */
+        if (!kt || !kt->bitmap || !kt->data || kt->num == 0) {
+            dbg_printf(DL_KDB, "\nKT: [%d] INVALID kt=%p\n", i, kt);
+            continue;
+        }
 
-		dbg_printf(DL_KDB, "\nKT: %s\nbitmap:%p, data:%p, num: %d size: %d\n",
-		           kt->tname, kt->bitmap, kt->data, kt->num, kt->size);
-		/* Dump bitmap */
-		for (j = 0; j < kt->num; ++j) {
-			if (j % 64 == 0)
-				dbg_printf(DL_KDB, "%5d: ", j);
+        dbg_printf(DL_KDB, "\nKT: %s\nbitmap:%p, data:%p, num: %d size: %d\n",
+                   kt->tname, kt->bitmap, kt->data, kt->num, kt->size);
+        /* Dump bitmap */
+        for (j = 0; j < kt->num; ++j) {
+            if (j % 64 == 0)
+                dbg_printf(DL_KDB, "%5d: ", j);
 
-			dbg_putchar((bitmap_get_bit(bitmap_cursor(kt->bitmap, j))) ? 'X' : '-');
+            dbg_putchar((bitmap_get_bit(bitmap_cursor(kt->bitmap, j))) ? 'X'
+                                                                       : '-');
 
-			if ((j + 1) % 64 == 0)
-				dbg_puts("\n");
-		}
-	}
+            if ((j + 1) % 64 == 0)
+                dbg_puts("\n");
+        }
+    }
 }
 
-#endif	/* CONFIG_KDB */
+#endif /* CONFIG_KDB */
 
 /**
  * Initialize kernel table kt
@@ -59,14 +59,14 @@ void kdb_dump_ktable(void)
  * */
 void ktable_init(ktable_t *kt)
 {
-	char *kt_ptr = (char *) kt->bitmap;
-	char *kt_end = (char *) kt->bitmap + kt->num / 8;
+    char *kt_ptr = (char *) kt->bitmap;
+    char *kt_end = (char *) kt->bitmap + kt->num / 8;
 
-	while (kt_ptr != kt_end)
-		*(kt_ptr++) = 0x0;
+    while (kt_ptr != kt_end)
+        *(kt_ptr++) = 0x0;
 
 #ifdef CONFIG_KDB
-	kdb_register_ktable(kt);
+    kdb_register_ktable(kt);
 #endif
 }
 
@@ -83,10 +83,10 @@ void ktable_init(ktable_t *kt)
  * */
 int ktable_is_allocated(ktable_t *kt, int i)
 {
-	if (i > kt->num)
-		return -1;
+    if (i > kt->num)
+        return -1;
 
-	return bitmap_get_bit(bitmap_cursor(kt->bitmap, i));
+    return bitmap_get_bit(bitmap_cursor(kt->bitmap, i));
 }
 
 /**
@@ -101,20 +101,19 @@ int ktable_is_allocated(ktable_t *kt, int i)
  */
 void *ktable_alloc_id(ktable_t *kt, int i)
 {
-	bitmap_cursor_t	cursor = bitmap_cursor(kt->bitmap, i);
+    bitmap_cursor_t cursor = bitmap_cursor(kt->bitmap, i);
 
-	if (i > kt->num)
-		return NULL;
+    if (i > kt->num)
+        return NULL;
 
-	if (bitmap_test_and_set_bit(cursor)) {
-		dbg_printf(DL_KTABLE,
-		           "KT: %s allocated %d [%p]\n", kt->tname, i,
-		           kt->data + (i * kt->size));
+    if (bitmap_test_and_set_bit(cursor)) {
+        dbg_printf(DL_KTABLE, "KT: %s allocated %d [%p]\n", kt->tname, i,
+                   kt->data + (i * kt->size));
 
-		return (void *) kt->data + (i * kt->size);
-	}
+        return (void *) kt->data + (i * kt->size);
+    }
 
-	return NULL;
+    return NULL;
 }
 
 /**
@@ -129,42 +128,37 @@ void *ktable_alloc_id(ktable_t *kt, int i)
  */
 void *ktable_alloc(ktable_t *kt)
 {
-	bitmap_cursor_t	cursor;
-	int checked = 0;
+    bitmap_cursor_t cursor;
+    int checked = 0;
 
-	/* Validate ktable pointer and fields to detect corruption early.
-	 * A corrupted ktable can cause undefined behavior in bitmap ops.
-	 */
-	if (!kt || !kt->bitmap || !kt->data || kt->num == 0 || kt->size == 0) {
-		dbg_printf(DL_KDB,
-		           "KT: INVALID kt=%p bitmap=%p data=%p num=%d size=%d\n",
-		           kt,
-		           kt ? kt->bitmap : (bitmap_ptr_t)0,
-		           kt ? kt->data : (ptr_t)0,
-		           kt ? (int)kt->num : 0,
-		           kt ? (int)kt->size : 0);
-		return NULL;
-	}
+    /* Validate ktable pointer and fields to detect corruption early.
+     * A corrupted ktable can cause undefined behavior in bitmap ops.
+     */
+    if (!kt || !kt->bitmap || !kt->data || kt->num == 0 || kt->size == 0) {
+        dbg_printf(
+            DL_KDB, "KT: INVALID kt=%p bitmap=%p data=%p num=%d size=%d\n", kt,
+            kt ? kt->bitmap : (bitmap_ptr_t) 0, kt ? kt->data : (ptr_t) 0,
+            kt ? (int) kt->num : 0, kt ? (int) kt->size : 0);
+        return NULL;
+    }
 
-	/* Search for free element */
-	for_each_in_bitmap(cursor, kt->bitmap, kt->num, 0) {
-		checked++;
-		if (bitmap_test_and_set_bit(cursor)) {
-			int i = bitmap_cursor_id(cursor);
+    /* Search for free element */
+    for_each_in_bitmap (cursor, kt->bitmap, kt->num, 0) {
+        checked++;
+        if (bitmap_test_and_set_bit(cursor)) {
+            int i = bitmap_cursor_id(cursor);
 
-			dbg_printf(DL_KTABLE,
-			           "KT: %s allocated %d [%p]\n", kt->tname, i,
-			           kt->data + (i * kt->size));
+            dbg_printf(DL_KTABLE, "KT: %s allocated %d [%p]\n", kt->tname, i,
+                       kt->data + (i * kt->size));
 
-			return (void *) kt->data + (i * kt->size);
-		}
-	}
+            return (void *) kt->data + (i * kt->size);
+        }
+    }
 
-	dbg_printf(DL_KDB,
-	           "KT: %s FULL checked=%d num=%d\n",
-	           kt->tname, checked, kt->num);
+    dbg_printf(DL_KDB, "KT: %s FULL checked=%d num=%d\n", kt->tname, checked,
+               kt->num);
 
-	return NULL;
+    return NULL;
 }
 
 /**
@@ -179,13 +173,13 @@ void *ktable_alloc(ktable_t *kt)
  */
 uint32_t ktable_getid(ktable_t *kt, void *element)
 {
-	int i = ((ptr_t) element - kt->data) / kt->size;
+    int i = ((ptr_t) element - kt->data) / kt->size;
 
-	/* Element does not belong to this ktable */
-	if (i > kt->num || i < 0)
-		return -1;
+    /* Element does not belong to this ktable */
+    if (i > kt->num || i < 0)
+        return -1;
 
-	return i;
+    return i;
 }
 
 /**
@@ -197,14 +191,13 @@ uint32_t ktable_getid(ktable_t *kt, void *element)
  * */
 void ktable_free(ktable_t *kt, void *element)
 {
-	size_t i = ktable_getid(kt, element);
+    size_t i = ktable_getid(kt, element);
 
-	if (i != -1) {
-		bitmap_cursor_t	cursor = bitmap_cursor(kt->bitmap, i);
+    if (i != -1) {
+        bitmap_cursor_t cursor = bitmap_cursor(kt->bitmap, i);
 
-		dbg_printf(DL_KTABLE,
-		           "KT: %s free %d [%p]\n", kt->tname, i, element);
+        dbg_printf(DL_KTABLE, "KT: %s free %d [%p]\n", kt->tname, i, element);
 
-		bitmap_clear_bit(cursor);
-	}
+        bitmap_clear_bit(cursor);
+    }
 }

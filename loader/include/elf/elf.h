@@ -11,8 +11,8 @@
 The ELF library is designed to make the task of parsing and getting information
 out of an ELF file easier.
 
-It provides function to obtain the various different fields in the ELF header, and
-the program and segment information.
+It provides function to obtain the various different fields in the ELF header,
+and the program and segment information.
 
 Also importantly, it provides a function elf_loadFile which will load a given
 ELF file into memory.
@@ -22,35 +22,35 @@ ELF file into memory.
 #ifndef __ELF_ELF_H__
 #define __ELF_ELF_H__
 
-#include "elf32.h"
 #include <debug.h>
 #include <types.h>
+#include "elf32.h"
 
 /*
  * constants for Elf32_Phdr.p_flags
  */
-#define PF_X		1	/* readable segment */
-#define PF_W		2	/* writeable segment */
-#define PF_R		4	/* executable segment */
+#define PF_X 1 /* readable segment */
+#define PF_W 2 /* writeable segment */
+#define PF_R 4 /* executable segment */
 
 /*
  * constants for indexing into Elf64_Header_t.e_ident
  */
-#define EI_MAG0		0
-#define EI_MAG1		1
-#define EI_MAG2		2
-#define EI_MAG3		3
-#define EI_CLASS	4
-#define EI_DATA		5
-#define EI_VERSION	6
+#define EI_MAG0 0
+#define EI_MAG1 1
+#define EI_MAG2 2
+#define EI_MAG3 3
+#define EI_CLASS 4
+#define EI_DATA 5
+#define EI_VERSION 6
 
-#define ELFMAG0         '\177'
-#define ELFMAG1         'E'
-#define ELFMAG2         'L'
-#define ELFMAG3         'F'
+#define ELFMAG0 '\177'
+#define ELFMAG1 'E'
+#define ELFMAG2 'L'
+#define ELFMAG3 'F'
 
-#define ELFCLASS32      1
-#define ELFCLASS64      2
+#define ELFCLASS32 1
+#define ELFCLASS64 2
 
 #define PT_NULL 0
 #define PT_LOAD 1
@@ -64,13 +64,13 @@ ELF file into memory.
 /* Section Header type bits */
 #define SHT_PROGBITS 1
 #define SHT_SYMTAB 2
-#define	SHT_NOBITS 8
+#define SHT_NOBITS 8
 #define SHT_REL 9
 
 /* Section Header flag bits */
 #define SHF_WRITE 1
 #define SHF_ALLOC 2
-#define SHF_EXECINSTR  4
+#define SHF_EXECINSTR 4
 
 /**/
 #define ELF_PRINT_PROGRAM_HEADERS 1
@@ -198,9 +198,13 @@ bool elf_vaddrInProgramHeader(void *elfFile, uint16_t ph, uint32_t vaddr);
  * @param min Pointer to return value of the minimum
  * @param max Pointer to return value of the maximum
  *
- * \return true on success. false on failure, if for example, it is an invalid ELF file
+ * \return true on success. false on failure, if for example, it is an invalid
+ * ELF file
  */
-bool elf_getMemoryBounds(void *elfFile, bool phys, uint32_t *min, uint32_t *max);
+bool elf_getMemoryBounds(void *elfFile,
+                         bool phys,
+                         uint32_t *min,
+                         uint32_t *max);
 
 /**
  * Find the entry point of an ELF file.
@@ -215,7 +219,8 @@ uint32_t elf_getEntryPoint(void *elfFile);
  * Load an ELF file into memory
  *
  * @param elfFile Pointer to a valid ELF file
- * @param phys If true load using the physical address, otherwise using the virtual addresses
+ * @param phys If true load using the physical address, otherwise using the
+ * virtual addresses
  *
  * \return true on success, false on failure.
  *
@@ -258,9 +263,13 @@ uint32_t elf_getSectionFlags(void *elfFile, int i);
 uint32_t elf_getSectionType(void *elfFile, int i);
 
 void *elf_getSection(void *elfFile, int i);
-void elf_getProgramHeaderInfo(void *elfFile, uint16_t ph, uint32_t *p_vaddr,
-			      uint32_t *p_paddr, uint32_t *p_filesz,
-			      uint32_t *p_offset, uint32_t *p_memsz);
+void elf_getProgramHeaderInfo(void *elfFile,
+                              uint16_t ph,
+                              uint32_t *p_vaddr,
+                              uint32_t *p_paddr,
+                              uint32_t *p_filesz,
+                              uint32_t *p_offset,
+                              uint32_t *p_memsz);
 
 
 /**

@@ -8,18 +8,18 @@
 
 #include <types.h>
 
-#define QUEUE_OK		0x0
-#define	QUEUE_OVERFLOW		0x1
-#define	QUEUE_EMPTY		0x2
+#define QUEUE_OK 0x0
+#define QUEUE_OVERFLOW 0x1
+#define QUEUE_EMPTY 0x2
 
 /**
  * Queue control block
  */
 struct queue_t {
-	uint8_t *data;		/*!< pointer to the starting position of buffer */
-	uint32_t top;		/*!< queue top */
-	uint32_t end;		/*!< queue end */
-	size_t size;		/*!< the size of the allocated queue */
+    uint8_t *data; /*!< pointer to the starting position of buffer */
+    uint32_t top;  /*!< queue top */
+    uint32_t end;  /*!< queue end */
+    size_t size;   /*!< the size of the allocated queue */
 };
 
 /**

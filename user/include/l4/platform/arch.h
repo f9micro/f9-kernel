@@ -1,187 +1,187 @@
-/* Copyright (c) 2002, 2003, 2005-2010 Karlsruhe University. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
+/* Copyright (c) 2002, 2003, 2005-2010 Karlsruhe University. All rights
+ * reserved. Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
  */
 
 #ifndef __L4_PLATFORM_ARCH_H__
 #define __L4_PLATFORM_ARCH_H__
 
-#include <l4/platform/specials.h>
-#include <l4/kip.h>
 #include <l4/ipc.h>
+#include <l4/kip.h>
+#include <l4/platform/specials.h>
 
 typedef union {
-	L4_Word_t	raw;
-	struct {
-		unsigned	rwx: 4;
-		unsigned	__two: 6;
-		unsigned	s: 6;
-		unsigned	p: 16;
-	} X;
+    L4_Word_t raw;
+    struct {
+        unsigned rwx : 4;
+        unsigned __two : 6;
+        unsigned s : 6;
+        unsigned p : 16;
+    } X;
 } L4_IoFpage_t;
 
 #if defined(__cplusplus)
 L4_INLINE L4_Fpage_t L4_Fpage(L4_IoFpage_t f)
 {
-	L4_Fpage_t out;
-	out.raw = f.raw;
-	return out;
+    L4_Fpage_t out;
+    out.raw = f.raw;
+    return out;
 }
 #endif
 
 L4_INLINE L4_Fpage_t L4_IoFpage(L4_Word_t BasePort, int FpageSize)
 {
-	L4_IoFpage_t fp;
-	L4_Fpage_t out;
-	L4_Word_t msb = __L4_Msb(FpageSize);
-	fp.X.p = BasePort;
-	fp.X.__two = 2;
-	fp.X.s = (1UL << msb) < (L4_Word_t) FpageSize ? msb + 1 : msb;
-	fp.X.rwx = L4_NoAccess;
-	out.raw = fp.raw;
-	return out;
+    L4_IoFpage_t fp;
+    L4_Fpage_t out;
+    L4_Word_t msb = __L4_Msb(FpageSize);
+    fp.X.p = BasePort;
+    fp.X.__two = 2;
+    fp.X.s = (1UL << msb) < (L4_Word_t) FpageSize ? msb + 1 : msb;
+    fp.X.rwx = L4_NoAccess;
+    out.raw = fp.raw;
+    return out;
 }
 
 L4_INLINE L4_Fpage_t L4_IoFpageLog2(L4_Word_t BasePort, int FpageSize)
 {
-	L4_IoFpage_t fp;
-	L4_Fpage_t out;
-	fp.X.p = BasePort;
-	fp.X.__two = 2;
-	fp.X.s = FpageSize;
-	fp.X.rwx = L4_NoAccess;
-	out.raw = fp.raw;
-	return out;
+    L4_IoFpage_t fp;
+    L4_Fpage_t out;
+    fp.X.p = BasePort;
+    fp.X.__two = 2;
+    fp.X.s = FpageSize;
+    fp.X.rwx = L4_NoAccess;
+    out.raw = fp.raw;
+    return out;
 }
 
 L4_INLINE L4_Word_t L4_IoFpagePort(L4_Fpage_t f)
 {
-	L4_IoFpage_t iofp;
-	iofp.raw = f.raw;
-	return iofp.X.p;
+    L4_IoFpage_t iofp;
+    iofp.raw = f.raw;
+    return iofp.X.p;
 }
 
 L4_INLINE L4_Word_t L4_IoFpageSize(L4_Fpage_t f)
 {
-	L4_IoFpage_t iofp;
-	iofp.raw = f.raw;
-	return (1UL << iofp.X.s);
+    L4_IoFpage_t iofp;
+    iofp.raw = f.raw;
+    return (1UL << iofp.X.s);
 }
 
 L4_INLINE L4_Word_t L4_IoFpageSizeLog2(L4_Fpage_t f)
 {
-	L4_IoFpage_t iofp;
-	iofp.raw = f.raw;
-	return iofp.X.s;
+    L4_IoFpage_t iofp;
+    iofp.raw = f.raw;
+    return iofp.X.s;
 }
 
 L4_INLINE L4_Bool_t L4_IsIoFpage(L4_Fpage_t f)
 {
-	L4_IoFpage_t iofp;
-	iofp.raw = f.raw;
-	return (iofp.X.__two == 2);
+    L4_IoFpage_t iofp;
+    iofp.raw = f.raw;
+    return (iofp.X.__two == 2);
 }
 
 
-#define L4_CTRLXFER_GPREGS_ID		(0)
-#define L4_CTRLXFER_FPUREGS_ID		(1)
-#define L4_CTRLXFER_CREGS_ID		(2)
-#define L4_CTRLXFER_DREGS_ID		(3)
-#define L4_CTRLXFER_CSREGS_ID		(4)
-#define L4_CTRLXFER_SSREGS_ID		(5)
-#define L4_CTRLXFER_DSREGS_ID		(6)
-#define L4_CTRLXFER_ESREGS_ID		(7)
-#define L4_CTRLXFER_FSREGS_ID		(8)
-#define L4_CTRLXFER_GSREGS_ID		(9)
-#define L4_CTRLXFER_TRREGS_ID		(10)
-#define L4_CTRLXFER_LDTRREGS_ID		(11)
-#define L4_CTRLXFER_IDTRREGS_ID		(12)
-#define L4_CTRLXFER_GDTRREGS_ID		(13)
-#define L4_CTRLXFER_NONREGEXC_ID	(14)
-#define L4_CTRLXFER_EXECCTRL_ID		(15)
-#define L4_CTRLXFER_OTHERREGS_ID	(16)
-#define L4_CTRLXFER_INVALID_ID		(255)
-#define L4_CTRLXFER_FAULT_MASK(id)	(1 << id)
+#define L4_CTRLXFER_GPREGS_ID (0)
+#define L4_CTRLXFER_FPUREGS_ID (1)
+#define L4_CTRLXFER_CREGS_ID (2)
+#define L4_CTRLXFER_DREGS_ID (3)
+#define L4_CTRLXFER_CSREGS_ID (4)
+#define L4_CTRLXFER_SSREGS_ID (5)
+#define L4_CTRLXFER_DSREGS_ID (6)
+#define L4_CTRLXFER_ESREGS_ID (7)
+#define L4_CTRLXFER_FSREGS_ID (8)
+#define L4_CTRLXFER_GSREGS_ID (9)
+#define L4_CTRLXFER_TRREGS_ID (10)
+#define L4_CTRLXFER_LDTRREGS_ID (11)
+#define L4_CTRLXFER_IDTRREGS_ID (12)
+#define L4_CTRLXFER_GDTRREGS_ID (13)
+#define L4_CTRLXFER_NONREGEXC_ID (14)
+#define L4_CTRLXFER_EXECCTRL_ID (15)
+#define L4_CTRLXFER_OTHERREGS_ID (16)
+#define L4_CTRLXFER_INVALID_ID (255)
+#define L4_CTRLXFER_FAULT_MASK(id) (1 << id)
 
-#define L4_CTRLXFER_GPREGS_SIZE		(10)
-#define L4_CTRLXFER_FPUREGS_SIZE	(1)
-#define L4_CTRLXFER_CREGS_SIZE		(8)
-#define L4_CTRLXFER_DREGS_SIZE		(6)
-#define L4_CTRLXFER_SEGREG_SIZE		(4)
-#define L4_CTRLXFER_DTRREG_SIZE		(2)
-#define L4_CTRLXFER_NONREGEXC_SIZE	(10)
-#define L4_CTRLXFER_EXECCTRL_SIZE	(3)
-#define L4_CTRLXFER_OTHERREGS_SIZE	(9)
+#define L4_CTRLXFER_GPREGS_SIZE (10)
+#define L4_CTRLXFER_FPUREGS_SIZE (1)
+#define L4_CTRLXFER_CREGS_SIZE (8)
+#define L4_CTRLXFER_DREGS_SIZE (6)
+#define L4_CTRLXFER_SEGREG_SIZE (4)
+#define L4_CTRLXFER_DTRREG_SIZE (2)
+#define L4_CTRLXFER_NONREGEXC_SIZE (10)
+#define L4_CTRLXFER_EXECCTRL_SIZE (3)
+#define L4_CTRLXFER_OTHERREGS_SIZE (9)
 
-#define L4_FAULT_PAGEFAULT		2
-#define L4_FAULT_EXCEPTION		3
-#define L4_FAULT_PREEMPTION		5
-#define L4_CTRLXFER_HVM_FAULT(id)	(9+id)
-#define L4_CTRLXFER_FAULT_ID_MASK(id)	(1ULL << id)
+#define L4_FAULT_PAGEFAULT 2
+#define L4_FAULT_EXCEPTION 3
+#define L4_FAULT_PREEMPTION 5
+#define L4_CTRLXFER_HVM_FAULT(id) (9 + id)
+#define L4_CTRLXFER_FAULT_ID_MASK(id) (1ULL << id)
 
-#define L4_CTRLXFER_GPREGS_EIP		(0)
-#define L4_CTRLXFER_GPREGS_EFLAGS	(1)
-#define L4_CTRLXFER_GPREGS_EDI		(2)
-#define L4_CTRLXFER_GPREGS_ESI		(3)
-#define L4_CTRLXFER_GPREGS_EBP		(4)
-#define L4_CTRLXFER_GPREGS_ESP		(5)
-#define L4_CTRLXFER_GPREGS_EBX		(6)
-#define L4_CTRLXFER_GPREGS_EDX		(7)
-#define L4_CTRLXFER_GPREGS_ECX		(8)
-#define L4_CTRLXFER_GPREGS_EAX		(9)
+#define L4_CTRLXFER_GPREGS_EIP (0)
+#define L4_CTRLXFER_GPREGS_EFLAGS (1)
+#define L4_CTRLXFER_GPREGS_EDI (2)
+#define L4_CTRLXFER_GPREGS_ESI (3)
+#define L4_CTRLXFER_GPREGS_EBP (4)
+#define L4_CTRLXFER_GPREGS_ESP (5)
+#define L4_CTRLXFER_GPREGS_EBX (6)
+#define L4_CTRLXFER_GPREGS_EDX (7)
+#define L4_CTRLXFER_GPREGS_ECX (8)
+#define L4_CTRLXFER_GPREGS_EAX (9)
 
-#define L4_CTRLXFER_CREGS_CR0		(0)
-#define L4_CTRLXFER_CREGS_CR0_SHADOW	(1)
-#define L4_CTRLXFER_CREGS_CR0_MASK	(2)
-#define L4_CTRLXFER_CREGS_CR2		(3)
-#define L4_CTRLXFER_CREGS_CR3		(4)
-#define L4_CTRLXFER_CREGS_CR4		(5)
-#define L4_CTRLXFER_CREGS_CR4_SHADOW	(6)
-#define L4_CTRLXFER_CREGS_CR4_MASK	(7)
+#define L4_CTRLXFER_CREGS_CR0 (0)
+#define L4_CTRLXFER_CREGS_CR0_SHADOW (1)
+#define L4_CTRLXFER_CREGS_CR0_MASK (2)
+#define L4_CTRLXFER_CREGS_CR2 (3)
+#define L4_CTRLXFER_CREGS_CR3 (4)
+#define L4_CTRLXFER_CREGS_CR4 (5)
+#define L4_CTRLXFER_CREGS_CR4_SHADOW (6)
+#define L4_CTRLXFER_CREGS_CR4_MASK (7)
 
-#define L4_CTRLXFER_DREGS_DR0		(0)
-#define L4_CTRLXFER_DREGS_DR1		(1)
-#define L4_CTRLXFER_DREGS_DR2		(2)
-#define L4_CTRLXFER_DREGS_DR3		(3)
-#define L4_CTRLXFER_DREGS_DR6		(4)
-#define L4_CTRLXFER_DREGS_DR7		(5)
+#define L4_CTRLXFER_DREGS_DR0 (0)
+#define L4_CTRLXFER_DREGS_DR1 (1)
+#define L4_CTRLXFER_DREGS_DR2 (2)
+#define L4_CTRLXFER_DREGS_DR3 (3)
+#define L4_CTRLXFER_DREGS_DR6 (4)
+#define L4_CTRLXFER_DREGS_DR7 (5)
 
-#define L4_CTRLXFER_CSREGS_CS		(0)
-#define L4_CTRLXFER_CSREGS_CS_BASE	(1)
-#define L4_CTRLXFER_CSREGS_CS_LIMIT	(2)
-#define L4_CTRLXFER_CSREGS_CS_ATTR	(3)
+#define L4_CTRLXFER_CSREGS_CS (0)
+#define L4_CTRLXFER_CSREGS_CS_BASE (1)
+#define L4_CTRLXFER_CSREGS_CS_LIMIT (2)
+#define L4_CTRLXFER_CSREGS_CS_ATTR (3)
 
-#define L4_CTRLXFER_NONREGEXC_ACTIVITY	(0)
-#define L4_CTRLXFER_NONREGEXC_INT	(1)
-#define L4_CTRLXFER_NONREGEXC_DBG_EXC	(2)
-#define L4_CTRLXFER_NONREGEXC_ENT_INFO	(3)
-#define L4_CTRLXFER_NONREGEXC_ENT_EEC	(4)
-#define L4_CTRLXFER_NONREGEXC_ENT_ILEN	(5)
-#define L4_CTRLXFER_NONREGEXC_EX_INFO	(6)
-#define L4_CTRLXFER_NONREGEXC_EX_EEC	(7)
-#define L4_CTRLXFER_NONREGEXC_IDT_INFO	(8)
-#define L4_CTRLXFER_NONREGEXC_IDT_EEC	(9)
+#define L4_CTRLXFER_NONREGEXC_ACTIVITY (0)
+#define L4_CTRLXFER_NONREGEXC_INT (1)
+#define L4_CTRLXFER_NONREGEXC_DBG_EXC (2)
+#define L4_CTRLXFER_NONREGEXC_ENT_INFO (3)
+#define L4_CTRLXFER_NONREGEXC_ENT_EEC (4)
+#define L4_CTRLXFER_NONREGEXC_ENT_ILEN (5)
+#define L4_CTRLXFER_NONREGEXC_EX_INFO (6)
+#define L4_CTRLXFER_NONREGEXC_EX_EEC (7)
+#define L4_CTRLXFER_NONREGEXC_IDT_INFO (8)
+#define L4_CTRLXFER_NONREGEXC_IDT_EEC (9)
 
-#define L4_CTRLXFER_EXEC_PIN		(0)
-#define L4_CTRLXFER_EXEC_CPU		(1)
-#define L4_CTRLXFER_EXEC_EXC_BITMAP	(2)
+#define L4_CTRLXFER_EXEC_PIN (0)
+#define L4_CTRLXFER_EXEC_CPU (1)
+#define L4_CTRLXFER_EXEC_EXC_BITMAP (2)
 
-#define L4_CTRLXFER_OTHERREGS_SYS_CS	 (0)
-#define L4_CTRLXFER_OTHERREGS_SYS_EIP	 (1)
-#define L4_CTRLXFER_OTHERREGS_SYS_ESP	 (2)
-#define L4_CTRLXFER_OTHERREGS_DBG_LOW	 (3)
-#define L4_CTRLXFER_OTHERREGS_DBG_HIGH	 (4)
-#define L4_CTRLXFER_OTHERREGS_RDTSC_LOW	 (5)
+#define L4_CTRLXFER_OTHERREGS_SYS_CS (0)
+#define L4_CTRLXFER_OTHERREGS_SYS_EIP (1)
+#define L4_CTRLXFER_OTHERREGS_SYS_ESP (2)
+#define L4_CTRLXFER_OTHERREGS_DBG_LOW (3)
+#define L4_CTRLXFER_OTHERREGS_DBG_HIGH (4)
+#define L4_CTRLXFER_OTHERREGS_RDTSC_LOW (5)
 #define L4_CTRLXFER_OTHERREGS_RDTSC_HIGH (6)
-#define L4_CTRLXFER_OTHERREGS_VAPIC	 (7)
-#define L4_CTRLXFER_OTHERREGS_TPR_THRSH	 (8)
+#define L4_CTRLXFER_OTHERREGS_VAPIC (7)
+#define L4_CTRLXFER_OTHERREGS_TPR_THRSH (8)
 
 
-#define L4_CTRLXFER_REG_ID(id, reg)	((id * 0x10) + reg)
+#define L4_CTRLXFER_REG_ID(id, reg) ((id * 0x10) + reg)
 
-#endif	/* __L4_PLATFORM_ARCH_H__ */
+#endif /* __L4_PLATFORM_ARCH_H__ */
 
-#if 0	/* FIXME: IA32 specific implementation */
+#if 0 /* FIXME: IA32 specific implementation */
 /*
  * IA32 GPRegs
  */
@@ -658,31 +658,31 @@ L4_INLINE L4_Word_t L4_MsgGetOtherRegsCtrlXferItem(L4_Msg_t *msg, L4_Word_t mr, 
 }
 
 #if defined(__cplusplus)
-#define DECLARE_INIT_SET_APPEND(type)					\
-L4_INLINE void L4_Init (L4_##type##_t *c)				\
-{									\
-    L4_##type##Init(c);							\
-}									\
-									\
-L4_INLINE void L4_Set (L4_##type##_t *c, L4_Word_t reg, L4_Word_t val)	\
-{									\
-    L4_##type##Set(c, reg, val);					\
-}									\
-									\
-L4_INLINE void L4_Append (L4_Msg_t *msg, L4_##type##_t *c)	        \
-{									\
-    L4_MsgAppend##type(msg, c);						\
-}                                                                       \
-                                                                        \
-L4_INLINE void L4_Put (L4_Msg_t *msg, L4_Word_t t, L4_##type##_t *c)    \
-{									\
-    L4_MsgPut##type(msg, t, c);                                         \
-}                                                                       \
-                                                                        \
-L4_INLINE L4_Word_t L4_Get (L4_Msg_t *msg, L4_Word_t mr, L4_##type##_t *c) \
-{									\
-    return L4_MsgGet##type(msg, mr, c);                                 \
-}
+#define DECLARE_INIT_SET_APPEND(type)                                         \
+    L4_INLINE void L4_Init(L4_##type##_t *c)                                  \
+    {                                                                         \
+        L4_##type##Init(c);                                                   \
+    }                                                                         \
+                                                                              \
+    L4_INLINE void L4_Set(L4_##type##_t *c, L4_Word_t reg, L4_Word_t val)     \
+    {                                                                         \
+        L4_##type##Set(c, reg, val);                                          \
+    }                                                                         \
+                                                                              \
+    L4_INLINE void L4_Append(L4_Msg_t *msg, L4_##type##_t *c)                 \
+    {                                                                         \
+        L4_MsgAppend##type(msg, c);                                           \
+    }                                                                         \
+                                                                              \
+    L4_INLINE void L4_Put(L4_Msg_t *msg, L4_Word_t t, L4_##type##_t *c)       \
+    {                                                                         \
+        L4_MsgPut##type(msg, t, c);                                           \
+    }                                                                         \
+                                                                              \
+    L4_INLINE L4_Word_t L4_Get(L4_Msg_t *msg, L4_Word_t mr, L4_##type##_t *c) \
+    {                                                                         \
+        return L4_MsgGet##type(msg, mr, c);                                   \
+    }
 
 DECLARE_INIT_SET_APPEND(GPRegsCtrlXferItem)
 DECLARE_INIT_SET_APPEND(CRegsCtrlXferItem)
@@ -691,31 +691,31 @@ DECLARE_INIT_SET_APPEND(NonRegExcCtrlXferItem)
 DECLARE_INIT_SET_APPEND(ExecCtrlXferItem)
 DECLARE_INIT_SET_APPEND(OtherRegsCtrlXferItem)
 
-#define DECLARE_INIT_SET_APPEND_ID(type)                                \
-L4_INLINE void L4_Init (L4_##type##_t *c, L4_Word_t id)                 \
-{									\
-    L4_##type##Init(c, id);                                             \
-}									\
-									\
-L4_INLINE void L4_Set (L4_##type##_t *c, L4_Word_t reg, L4_Word_t val)	\
-{									\
-    L4_##type##Set(c, reg, val);					\
-}									\
-									\
-L4_INLINE void L4_Append (L4_Msg_t *msg, L4_##type##_t *c)	        \
-{									\
-    L4_MsgAppend##type(msg, c);						\
-}                                                                       \
-                                                                        \
-L4_INLINE void L4_Put (L4_Msg_t *msg, L4_Word_t t, L4_##type##_t *c)    \
-{									\
-    L4_MsgPut##type(msg, t, c);                                         \
-}                                                                       \
-                                                                        \
-L4_INLINE L4_Word_t L4_Get (L4_Msg_t *msg, L4_Word_t mr, L4_##type##_t *c) \
-{									\
-    return L4_MsgGet##type(msg, mr, c);                                 \
-}
+#define DECLARE_INIT_SET_APPEND_ID(type)                                      \
+    L4_INLINE void L4_Init(L4_##type##_t *c, L4_Word_t id)                    \
+    {                                                                         \
+        L4_##type##Init(c, id);                                               \
+    }                                                                         \
+                                                                              \
+    L4_INLINE void L4_Set(L4_##type##_t *c, L4_Word_t reg, L4_Word_t val)     \
+    {                                                                         \
+        L4_##type##Set(c, reg, val);                                          \
+    }                                                                         \
+                                                                              \
+    L4_INLINE void L4_Append(L4_Msg_t *msg, L4_##type##_t *c)                 \
+    {                                                                         \
+        L4_MsgAppend##type(msg, c);                                           \
+    }                                                                         \
+                                                                              \
+    L4_INLINE void L4_Put(L4_Msg_t *msg, L4_Word_t t, L4_##type##_t *c)       \
+    {                                                                         \
+        L4_MsgPut##type(msg, t, c);                                           \
+    }                                                                         \
+                                                                              \
+    L4_INLINE L4_Word_t L4_Get(L4_Msg_t *msg, L4_Word_t mr, L4_##type##_t *c) \
+    {                                                                         \
+        return L4_MsgGet##type(msg, mr, c);                                   \
+    }
 
 DECLARE_INIT_SET_APPEND_ID(SegCtrlXferItem)
 DECLARE_INIT_SET_APPEND_ID(DTRCtrlXferItem)
@@ -725,45 +725,45 @@ DECLARE_INIT_SET_APPEND_ID(DTRCtrlXferItem)
 /**********************************************************************
  *                       EVT Logging
  **********************************************************************/
-#define L4_LOG_SELECTOR_SIZE		(4096)
+#define L4_LOG_SELECTOR_SIZE (4096)
 /*
  * Must be a power f 2
  */
-#define L4_LOG_LD_MAX_RESOURCES                 2
-#define L4_LOG_MAX_RESOURCES                    (1 <<  L4_LOG_LD_MAX_RESOURCES)
-#define L4_LOG_RESOURCE_PMC			0  /* performance counters at context switch */
+#define L4_LOG_LD_MAX_RESOURCES 2
+#define L4_LOG_MAX_RESOURCES (1 << L4_LOG_LD_MAX_RESOURCES)
+#define L4_LOG_RESOURCE_PMC 0 /* performance counters at context switch */
 
-#define L4_LOG_MAX_LOGIDS			32
-#define L4_LOG_NULL_LOGID			(0xFFFFFFFF)
-#define L4_LOG_IDLE_LOGID			(0)
-#define L4_LOG_ROOTSERVER_LOGID                 (1)
+#define L4_LOG_MAX_LOGIDS 32
+#define L4_LOG_NULL_LOGID (0xFFFFFFFF)
+#define L4_LOG_IDLE_LOGID (0)
+#define L4_LOG_ROOTSERVER_LOGID (1)
 
-#define L4_LOG_EVENT_BIT			 5
-#define L4_LOG_CURRENT_BIT			 6
-#define L4_LOG_CORRESPONDENT_BIT		 7
-#define L4_LOG_TIMESTAMP_BIT                     8
-#define L4_LOG_PADDING_BIT			 10
-#define L4_LOG_COUNTER_BIT			 12
-#define L4_LOG_ADD_BIT                           13
-#define L4_LOG_ALL_FLAGS			 0xFFE0
+#define L4_LOG_EVENT_BIT 5
+#define L4_LOG_CURRENT_BIT 6
+#define L4_LOG_CORRESPONDENT_BIT 7
+#define L4_LOG_TIMESTAMP_BIT 8
+#define L4_LOG_PADDING_BIT 10
+#define L4_LOG_COUNTER_BIT 12
+#define L4_LOG_ADD_BIT 13
+#define L4_LOG_ALL_FLAGS 0xFFE0
 
 
-#define L4_LOG_TIMESTAMP_OFF                     0x0
-#define L4_LOG_TIMESTAMP_VIRTUAL		0x1
-#define L4_LOG_TIMESTAMP_RDTSC                  0x2
-#define L4_LOG_TIMESTAMP_TICK                   0x3
+#define L4_LOG_TIMESTAMP_OFF 0x0
+#define L4_LOG_TIMESTAMP_VIRTUAL 0x1
+#define L4_LOG_TIMESTAMP_RDTSC 0x2
+#define L4_LOG_TIMESTAMP_TICK 0x3
 
-#define L4_LOG_TIMESTAMP_ENABLED	(0x3 << LOG_TIMESTAMP_BIT)
-#define L4_LOG_TIMESTAMP_NOT_VIRTUAL	(0x2 << LOG_TIMESTAMP_BIT)
-#define L4_LOG_TIMESTAMP_RDTSC_OR_TICK	(0x1 << LOG_TIMESTAMP_BIT)
+#define L4_LOG_TIMESTAMP_ENABLED (0x3 << LOG_TIMESTAMP_BIT)
+#define L4_LOG_TIMESTAMP_NOT_VIRTUAL (0x2 << LOG_TIMESTAMP_BIT)
+#define L4_LOG_TIMESTAMP_RDTSC_OR_TICK (0x1 << LOG_TIMESTAMP_BIT)
 
-#define L4_LOG_CPU_TSC_PRECISION	8
+#define L4_LOG_CPU_TSC_PRECISION 8
 
-#define L4_LOG_SIZE_MASK_MASK		(0x1F)
-#define L4_LOG_MAX_LOG_SIZE_MASK        (32768 -1)
-#define L4_LOG_PADDING_MASK             (0x3 << LOG_PADDING_BIT)
+#define L4_LOG_SIZE_MASK_MASK (0x1F)
+#define L4_LOG_MAX_LOG_SIZE_MASK (32768 - 1)
+#define L4_LOG_PADDING_MASK (0x3 << LOG_PADDING_BIT)
 
-#define L4_LOG_SIZE_N_PADDING_MASK	(LOG_SIZE_MASK_MASK | LOG_PADDING_MASK)
+#define L4_LOG_SIZE_N_PADDING_MASK (LOG_SIZE_MASK_MASK | LOG_PADDING_MASK)
 
 typedef L4_Word16_t                     L4_LogSel_t;
 
@@ -791,31 +791,36 @@ typedef union {
 } __attribute__((packed)) L4_LogCtrl_t;
 
 
-#define L4_LOG_GET_IDX(offset, c)	\
-    (L4_Word_t* ) (c + (offset / sizeof(L4_LogFile_Control_t)))
+#define L4_LOG_GET_IDX(offset, c) \
+    (L4_Word_t *) (c + (offset / sizeof(L4_LogFile_Control_t)))
 
-#define L4_LOG_MASK(idx, mask)       ((L4_Word_t) (idx) & (mask))
+#define L4_LOG_MASK(idx, mask) ((L4_Word_t) (idx) & (mask))
 
-#define L4_LOG_INC_LOG(idx, ctrl)      \
-    idx = (L4_Word_t *) (L4_LOG_MASK((idx + 1), ((1UL << ctrl->X.size_mask) -1)) |\
-                         L4_LOG_MASK(idx, (~((1UL << ctrl->X.size_mask) -1))))
+#define L4_LOG_INC_LOG(idx, ctrl)                                      \
+    idx =                                                              \
+        (L4_Word_t *) (L4_LOG_MASK((idx + 1),                          \
+                                   ((1UL << ctrl->X.size_mask) - 1)) | \
+                       L4_LOG_MASK(idx, (~((1UL << ctrl->X.size_mask) - 1))))
 
-#define L4_LOG_DEC_LOG(idx, ctrl)      \
-	idx = (L4_Word_t *) (L4_LOG_MASK((idx - 1), ((1UL << ctrl->X.size_mask) -1)) | \
-                         L4_LOG_MASK(idx, (~((1UL << ctrl->X.size_mask) -1))))
+#define L4_LOG_DEC_LOG(idx, ctrl)                                      \
+    idx =                                                              \
+        (L4_Word_t *) (L4_LOG_MASK((idx - 1),                          \
+                                   ((1UL << ctrl->X.size_mask) - 1)) | \
+                       L4_LOG_MASK(idx, (~((1UL << ctrl->X.size_mask) - 1))))
 
-#define L4_LOG_NEXT_LOG(idx, ctrl)	\
-    (L4_Word_t *) (L4_LOG_MASK((idx + 1), ((1UL << ctrl->X.size_mask) -1)) |\
-			 L4_LOG_MASK(idx, (~((1UL << ctrl->X.size_mask) -1))))
+#define L4_LOG_NEXT_LOG(idx, ctrl)                                            \
+    (L4_Word_t *) (L4_LOG_MASK((idx + 1), ((1UL << ctrl->X.size_mask) - 1)) | \
+                   L4_LOG_MASK(idx, (~((1UL << ctrl->X.size_mask) - 1))))
 
-#define L4_LOG_PREV_LOG(idx, ctrl)						\
-    (L4_Word_t *) (L4_LOG_MASK((idx - 1), ((1UL << ctrl->X.size_mask) -1)) |\
-			 L4_LOG_MASK(idx, (~((1UL << ctrl->X.size_mask) -1))))
-#define L4_LOG_FIRST_LOG(ctrl) \
-    (L4_Word_t *) (L4_LOG_MASK(L4_LOG_GET_IDX(ctrl->X.current_offset, ctrl), (~((1UL << ctrl->X.size_mask) -1))))
+#define L4_LOG_PREV_LOG(idx, ctrl)                                            \
+    (L4_Word_t *) (L4_LOG_MASK((idx - 1), ((1UL << ctrl->X.size_mask) - 1)) | \
+                   L4_LOG_MASK(idx, (~((1UL << ctrl->X.size_mask) - 1))))
+#define L4_LOG_FIRST_LOG(ctrl)                                               \
+    (L4_Word_t *) (L4_LOG_MASK(L4_LOG_GET_IDX(ctrl->X.current_offset, ctrl), \
+                               (~((1UL << ctrl->X.size_mask) - 1))))
 
-#define L4_LOG_ENTRIES(ctrl)            (1UL << (ctrl->X.size_mask - 2))
-#define L4_LOG_SIZE(ctrl)               (1UL << ctrl->X.size_mask)
+#define L4_LOG_ENTRIES(ctrl) (1UL << (ctrl->X.size_mask - 2))
+#define L4_LOG_SIZE(ctrl) (1UL << ctrl->X.size_mask)
 
 
 
@@ -853,32 +858,32 @@ L4_INLINE L4_Word_t L4_Set_Logid(L4_ThreadId_t tid, L4_Word_t logid)
  **********************************************************************/
 #if 0
 /* P4 */
-#define L4_X86_PMC_TSC_WEIGHT		    (617)
-#define L4_X86_PMC_UC_WEIGHT		    (712)
-#define L4_X86_PMC_MQW_WEIGHT		    (475)
-#define L4_X86_PMC_RB_WEIGHT		     (56)
-#define L4_X86_PMC_MB_WEIGHT		  (34046)
-#define L4_X86_PMC_MR_WEIGHT		    (173)
-#define L4_X86_PMC_MLR_WEIGHT		   (2996)
-#define L4_X86_PMC_LDM_WEIGHT		   (1355)
+#define L4_X86_PMC_TSC_WEIGHT (617)
+#define L4_X86_PMC_UC_WEIGHT (712)
+#define L4_X86_PMC_MQW_WEIGHT (475)
+#define L4_X86_PMC_RB_WEIGHT (56)
+#define L4_X86_PMC_MB_WEIGHT (34046)
+#define L4_X86_PMC_MR_WEIGHT (173)
+#define L4_X86_PMC_MLR_WEIGHT (2996)
+#define L4_X86_PMC_LDM_WEIGHT (1355)
 #else
 /* Pentium D */
-#define L4_X86_PMC_TSC_WEIGHT		   (1418)
-#define L4_X86_PMC_UC_WEIGHT		   (1285)
-#define L4_X86_PMC_LDM_WEIGHT		   (881)
-#define L4_X86_PMC_MR_WEIGHT		   (649)
-#define L4_X86_PMC_MB_WEIGHT		   (23421)
-#define L4_X86_PMC_MLR_WEIGHT		   (4320)
-#define L4_X86_PMC_RB_WEIGHT		   (840)
-#define L4_X86_PMC_MQW_WEIGHT		   (75)
+#define L4_X86_PMC_TSC_WEIGHT (1418)
+#define L4_X86_PMC_UC_WEIGHT (1285)
+#define L4_X86_PMC_LDM_WEIGHT (881)
+#define L4_X86_PMC_MR_WEIGHT (649)
+#define L4_X86_PMC_MB_WEIGHT (23421)
+#define L4_X86_PMC_MLR_WEIGHT (4320)
+#define L4_X86_PMC_RB_WEIGHT (840)
+#define L4_X86_PMC_MQW_WEIGHT (75)
 #endif
 
 
-#define L4_X86_PMC_TSC                     (0)
-#define L4_X86_PMC_TSC_SHIFT               6
-#define L4_X86_PMC_UC                      (0)
-#define L4_X86_PMC_RB                      (5)
-#define L4_X86_PMC_MR                      (13)
-#define L4_X86_PMC_LDM                     (14)
+#define L4_X86_PMC_TSC (0)
+#define L4_X86_PMC_TSC_SHIFT 6
+#define L4_X86_PMC_UC (0)
+#define L4_X86_PMC_RB (5)
+#define L4_X86_PMC_MR (13)
+#define L4_X86_PMC_LDM (14)
 
-#endif	/* IA32 specific implementation */
+#endif /* IA32 specific implementation */

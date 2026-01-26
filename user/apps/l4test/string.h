@@ -8,10 +8,10 @@
 
 #include <l4/types.h>
 
-extern void hex( L4_Word_t num, char str[] );
-extern int strlen( const char *src );
-extern void strcpy( char *dst, const char *src );
-extern int strcmp( const char *str1, const char *str2 );
-extern int strcmp_of( const char *str_of, const char *search );
+extern void hex(L4_Word_t num, char str[]);
+extern int strlen(const char *src);
+extern void strcpy(char *dst, const char *src);
+extern int strcmp(const char *str1, const char *str2);
+extern int strcmp_of(const char *str_of, const char *search);
 
-#endif	/* __PIGGYBACKER__INCLUDE__STRING_H__ */
+#endif /* __PIGGYBACKER__INCLUDE__STRING_H__ */

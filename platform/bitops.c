@@ -11,78 +11,77 @@
 /* Atomic ops */
 void atomic_set(atomic_t *atom, atomic_t newval)
 {
-	__asm__ __volatile__("mov r1, %0" : : "r"(newval));
-	__asm__ __volatile__("atomic_try: ldrex r0, [%0]\n"
-	                     "strex r0, r1, [%0]\n"
-	                     "cmp r0, #0"
-	                     :
-	                     : "r"(atom));
-	__asm__ __volatile__("bne atomic_try");
+    __asm__ __volatile__("mov r1, %0" : : "r"(newval));
+    __asm__ __volatile__(
+        "atomic_try: ldrex r0, [%0]\n"
+        "strex r0, r1, [%0]\n"
+        "cmp r0, #0"
+        :
+        : "r"(atom));
+    __asm__ __volatile__("bne atomic_try");
 }
 
 uint32_t atomic_get(atomic_t *atom)
 {
-	atomic_t result;
+    atomic_t result;
 
-	__asm__ __volatile__("ldrex r0, [%0]"
-	                     :
-	                     : "r"(atom));
-	__asm__ __volatile__("clrex");
-	__asm__ __volatile__("mov %0, r0" : "=r"(result));
+    __asm__ __volatile__("ldrex r0, [%0]" : : "r"(atom));
+    __asm__ __volatile__("clrex");
+    __asm__ __volatile__("mov %0, r0" : "=r"(result));
 
-	return result;
+    return result;
 }
 
-#else	/* !CONFIG_SMP */
+#else /* !CONFIG_SMP */
 
 void atomic_set(atomic_t *atom, atomic_t newval)
 {
-	*atom = newval;
+    *atom = newval;
 }
 
 uint32_t atomic_get(atomic_t *atom)
 {
-	return *atom;
+    return *atom;
 }
 
-#endif	/* CONFIG_SMP */
+#endif /* CONFIG_SMP */
 
 uint32_t test_and_set_word(uint32_t *word)
 {
-	register int result = 1;
+    register int result = 1;
 
-	__asm__ __volatile__(
-	    "mov r1, #1\n"
-	    "mov r2, %[word]\n"
-	    "ldrex r0, [r2]\n"	/* Load value [r2] */
-	    "cmp r0, #0\n"	/* Checking is word set to 1 */
+    __asm__ __volatile__(
+        "mov r1, #1\n"
+        "mov r2, %[word]\n"
+        "ldrex r0, [r2]\n" /* Load value [r2] */
+        "cmp r0, #0\n"     /* Checking is word set to 1 */
 
-	    "itt eq\n"
-	    "strexeq r0, r1, [r2]\n"
-	    "moveq %[result], r0\n"
-	    : [result] "=r"(result)
-	    : [word] "r"(word)
-	    : "r0", "r1", "r2");
+        "itt eq\n"
+        "strexeq r0, r1, [r2]\n"
+        "moveq %[result], r0\n"
+        : [result] "=r"(result)
+        : [word] "r"(word)
+        : "r0", "r1", "r2");
 
-	return result == 0;
+    return result == 0;
 }
 
 uint32_t test_and_set_bit(uint32_t *word, int bitmask)
 {
-	register int result = 1;
+    register int result = 1;
 
-	__asm__ __volatile__(
-	    "mov r2, %[word]\n"
-	    "ldrex r0, [r2]\n"		/* Load value [r2] */
-	    "tst r0, %[bitmask]\n"	/* Compare value with bitmask */
+    __asm__ __volatile__(
+        "mov r2, %[word]\n"
+        "ldrex r0, [r2]\n"     /* Load value [r2] */
+        "tst r0, %[bitmask]\n" /* Compare value with bitmask */
 
-	    "ittt eq\n"
-	    "orreq r1, r0, %[bitmask]\n"	/* Set bit: r1 = r0 | bitmask */
-	    "strexeq r0, r1, [r2]\n"		/* Write value back to [r2] */
-	    "moveq %[result], r0\n"
-	    : [result] "=r"(result)
-	    : [word] "r"(word), [bitmask] "r"(bitmask)
-	    : "r0", "r1", "r2");
+        "ittt eq\n"
+        "orreq r1, r0, %[bitmask]\n" /* Set bit: r1 = r0 | bitmask */
+        "strexeq r0, r1, [r2]\n"     /* Write value back to [r2] */
+        "moveq %[result], r0\n"
+        : [result] "=r"(result)
+        : [word] "r"(word), [bitmask] "r"(bitmask)
+        : "r0", "r1", "r2");
 
-	return result == 0;
+    return result == 0;
 }

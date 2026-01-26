@@ -23,26 +23,26 @@ struct tcb;
  */
 
 /* Number of priority levels (0 = highest, 31 = lowest) */
-#define SCHED_PRIORITY_LEVELS	32
+#define SCHED_PRIORITY_LEVELS 32
 
 /* Priority assignments for system threads */
-#define SCHED_PRIO_SOFTIRQ	0	/* Kernel softirq thread */
-#define SCHED_PRIO_INTR		1	/* Interrupt handler threads */
-#define SCHED_PRIO_ROOT		2	/* Root thread */
-#define SCHED_PRIO_IPC		3	/* IPC fast path */
-#define SCHED_PRIO_NORMAL_MIN	4	/* Normal threads start here */
-#define SCHED_PRIO_NORMAL_MAX	30	/* Normal threads end here */
-#define SCHED_PRIO_IDLE		31	/* Idle thread (always lowest) */
+#define SCHED_PRIO_SOFTIRQ 0     /* Kernel softirq thread */
+#define SCHED_PRIO_INTR 1        /* Interrupt handler threads */
+#define SCHED_PRIO_ROOT 2        /* Root thread */
+#define SCHED_PRIO_IPC 3         /* IPC fast path */
+#define SCHED_PRIO_NORMAL_MIN 4  /* Normal threads start here */
+#define SCHED_PRIO_NORMAL_MAX 30 /* Normal threads end here */
+#define SCHED_PRIO_IDLE 31       /* Idle thread (always lowest) */
 
 /* Default priority for user threads */
-#define SCHED_PRIO_DEFAULT	16
+#define SCHED_PRIO_DEFAULT 16
 
 /**
  * Linked list node for ready queue.
  * Embedded in TCB for zero-allocation enqueueing.
  */
 typedef struct sched_link {
-	struct sched_link *prev, *next;
+    struct sched_link *prev, *next;
 } sched_link_t;
 
 /* Scheduler initialization */

@@ -1,0 +1,87 @@
+name: Coding Style
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  detect-code-related-file-changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      has_code_related_changes: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - '**/*.c'
+              - '**/*.h'
+              - '**/*.sh'
+              - '**/*.py'
+              - '.clang-format'
+              - '.ci/**'
+              - '.github/workflows/**'
+
+  coding-style:
+    needs: [detect-code-related-file-changes]
+    if: needs.detect-code-related-file-changes.outputs.has_code_related_changes == 'true'
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install formatting tools
+        run: |
+          set -euo pipefail
+
+          # Install clang-format (Ubuntu 24.04 compatible GPG key method)
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gnupg
+          sudo mkdir -p /etc/apt/keyrings
+
+          # Download and verify LLVM GPG key
+          curl -fsSL --retry 3 --connect-timeout 20 --proto '=https' \
+            -o /tmp/llvm-snapshot.gpg.key \
+            https://apt.llvm.org/llvm-snapshot.gpg.key
+          gpg --batch --quiet --with-colons --show-keys /tmp/llvm-snapshot.gpg.key \
+            | awk -F: '$1=="fpr"{print $10}' | grep -Fxq "6084F3CF814B57C1CF12EFD515CF4D18AF4F7421"
+
+          sudo gpg --dearmor -o /etc/apt/keyrings/llvm.gpg < /tmp/llvm-snapshot.gpg.key
+          sudo chmod 644 /etc/apt/keyrings/llvm.gpg
+          rm /tmp/llvm-snapshot.gpg.key
+
+          echo "deb [signed-by=/etc/apt/keyrings/llvm.gpg] https://apt.llvm.org/noble/ llvm-toolchain-noble-20 main" \
+            | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang-format-20 || \
+            sudo apt-get install -y --no-install-recommends clang-format-19 || \
+            sudo apt-get install -y --no-install-recommends clang-format
+
+          # Install shfmt for shell script formatting
+          SHFMT_URL="https://github.com/mvdan/sh/releases/download"
+          SHFMT_VER="v3.12.0"
+          SHFMT_SHA256="d9fbb2a9c33d13f47e7618cf362a914d029d02a6df124064fff04fd688a745ea"
+          curl -fsSL --retry 3 --connect-timeout 20 --proto '=https' \
+            -o /tmp/shfmt \
+            ${SHFMT_URL}/${SHFMT_VER}/shfmt_${SHFMT_VER}_linux_amd64
+          printf '%s  %s\n' "${SHFMT_SHA256}" /tmp/shfmt | sha256sum -c
+          chmod +x /tmp/shfmt
+          sudo mv /tmp/shfmt /usr/local/bin/shfmt
+
+          # Install black for Python formatting
+          python3 -m pip install --disable-pip-version-check --no-cache-dir black==24.10.0
+
+      - name: Check trailing newlines
+        run: .ci/check-newline.sh
+
+      - name: Check code formatting
+        run: .ci/check-format.sh

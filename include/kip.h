@@ -6,8 +6,8 @@
 #ifndef KIP_H_
 #define KIP_H_
 
-#include <stdint.h>
 #include <l4/kip.h>
+#include <stdint.h>
 
 extern kip_t kip;
 extern kip_mem_desc_t *mem_desc;

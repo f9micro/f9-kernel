@@ -25,48 +25,48 @@ static volatile uint32_t exti1_count;
 __USER_TEXT
 static void exti_config(uint32_t line, uint32_t mode, uint32_t trigger_type)
 {
-	struct exti_regs *exti_regs = (struct exti_regs *)EXTI_BASE;
+    struct exti_regs *exti_regs = (struct exti_regs *) EXTI_BASE;
 
-	/* Clear EXTI mask */
-	exti_regs->IMR &= ~EXTI_LINE(line);
-	exti_regs->EMR &= ~EXTI_LINE(line);
+    /* Clear EXTI mask */
+    exti_regs->IMR &= ~EXTI_LINE(line);
+    exti_regs->EMR &= ~EXTI_LINE(line);
 
-	*((volatile uint32_t *)(EXTI_BASE + mode)) |= EXTI_LINE(line);
+    *((volatile uint32_t *) (EXTI_BASE + mode)) |= EXTI_LINE(line);
 
-	if (trigger_type == EXTI_RISING_FALLING_TRIGGER) {
-		exti_regs->RTSR |= EXTI_LINE(line);
-		exti_regs->FTSR |= EXTI_LINE(line);
-	} else {
-		*((volatile uint32_t *)(EXTI_BASE + mode)) |= EXTI_LINE(line);
-	}
+    if (trigger_type == EXTI_RISING_FALLING_TRIGGER) {
+        exti_regs->RTSR |= EXTI_LINE(line);
+        exti_regs->FTSR |= EXTI_LINE(line);
+    } else {
+        *((volatile uint32_t *) (EXTI_BASE + mode)) |= EXTI_LINE(line);
+    }
 }
 
 __USER_TEXT
 static void exti_launch_sw_interrupt(uint32_t line)
 {
-	struct exti_regs *exti_regs = (struct exti_regs *)EXTI_BASE;
-	exti_regs->SWIER |= EXTI_LINE(line);
+    struct exti_regs *exti_regs = (struct exti_regs *) EXTI_BASE;
+    exti_regs->SWIER |= EXTI_LINE(line);
 }
 
 __USER_TEXT
 static void exti_clear(uint32_t line)
 {
-	struct exti_regs *exti_regs = (struct exti_regs *)EXTI_BASE;
-	exti_regs->PR = EXTI_LINE(line);
+    struct exti_regs *exti_regs = (struct exti_regs *) EXTI_BASE;
+    exti_regs->PR = EXTI_LINE(line);
 }
 
 __USER_TEXT
 static void exti0_handler(void)
 {
-	exti_clear(0);
-	exti0_count++;
+    exti_clear(0);
+    exti0_count++;
 }
 
 __USER_TEXT
 static void exti1_handler(void)
 {
-	exti_clear(1);
-	exti1_count++;
+    exti_clear(1);
+    exti1_count++;
 }
 
 /*
@@ -76,39 +76,38 @@ static void exti1_handler(void)
 __USER_TEXT
 void test_irq_exti(void)
 {
-	TEST_RUN("irq_exti");
+    TEST_RUN("irq_exti");
 
-	exti0_count = 0;
-	exti1_count = 0;
+    exti0_count = 0;
+    exti1_count = 0;
 
-	/* Register interrupt handlers */
-	request_irq(EXTI0_IRQn, exti0_handler, 1);
-	request_irq(EXTI1_IRQn, exti1_handler, 1);
+    /* Register interrupt handlers */
+    request_irq(EXTI0_IRQn, exti0_handler, 1);
+    request_irq(EXTI1_IRQn, exti1_handler, 1);
 
-	/* Configure EXTI lines */
-	exti_config(0, EXTI_INTERRUPT_MODE, EXTI_RISING_TRIGGER);
-	exti_config(1, EXTI_INTERRUPT_MODE, EXTI_RISING_TRIGGER);
+    /* Configure EXTI lines */
+    exti_config(0, EXTI_INTERRUPT_MODE, EXTI_RISING_TRIGGER);
+    exti_config(1, EXTI_INTERRUPT_MODE, EXTI_RISING_TRIGGER);
 
-	/* Trigger software interrupts */
-	exti_launch_sw_interrupt(0);
-	L4_Sleep(L4_TimePeriod(10000)); /* 10ms */
+    /* Trigger software interrupts */
+    exti_launch_sw_interrupt(0);
+    L4_Sleep(L4_TimePeriod(10000)); /* 10ms */
 
-	exti_launch_sw_interrupt(1);
-	L4_Sleep(L4_TimePeriod(10000)); /* 10ms */
+    exti_launch_sw_interrupt(1);
+    L4_Sleep(L4_TimePeriod(10000)); /* 10ms */
 
-	/* Cleanup */
-	free_irq(EXTI0_IRQn);
-	free_irq(EXTI1_IRQn);
+    /* Cleanup */
+    free_irq(EXTI0_IRQn);
+    free_irq(EXTI1_IRQn);
 
-	/* Verify interrupts fired */
-	if (exti0_count > 0 && exti1_count > 0) {
-		TEST_PASS("irq_exti");
-	} else {
-		printf("EXTI counts: exti0=%lu exti1=%lu\n",
-		       (unsigned long)exti0_count,
-		       (unsigned long)exti1_count);
-		TEST_FAIL("irq_exti");
-	}
+    /* Verify interrupts fired */
+    if (exti0_count > 0 && exti1_count > 0) {
+        TEST_PASS("irq_exti");
+    } else {
+        printf("EXTI counts: exti0=%lu exti1=%lu\n",
+               (unsigned long) exti0_count, (unsigned long) exti1_count);
+        TEST_FAIL("irq_exti");
+    }
 }
 
 #endif /* CONFIG_EXTI_INTERRUPT_TEST */

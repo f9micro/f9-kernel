@@ -10,7 +10,7 @@
 
 typedef uint32_t spinlock_t;
 
-#define SPINLOCK_INITIALIZER 	0x0
+#define SPINLOCK_INITIALIZER 0x0
 
 /* Basic spinlock ops for ARMv7M architecture */
 int spinlock_trylock(spinlock_t *sl);

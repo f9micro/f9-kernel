@@ -10,13 +10,13 @@
 
 void hwtimer_init()
 {
-	*RCC_APB1ENR |= 0x00000001;
-	*TIM2_PSC = 0;
-	*TIM2_ARR = 0xFFFFFFFF;
-	*TIM2_CR1 = 0x00000001;
+    *RCC_APB1ENR |= 0x00000001;
+    *TIM2_PSC = 0;
+    *TIM2_ARR = 0xFFFFFFFF;
+    *TIM2_CR1 = 0x00000001;
 }
 
 uint32_t hwtimer_now()
 {
-	return *TIM2_CNT;
+    return *TIM2_CNT;
 }

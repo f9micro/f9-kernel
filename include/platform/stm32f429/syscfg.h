@@ -10,19 +10,18 @@
 
 static inline void memory_remap_flash(void)
 {
-	*SYSCFG_MEMRMP = 0x0;
+    *SYSCFG_MEMRMP = 0x0;
 }
 
 static inline void memory_remap_sysflash(void)
 {
-	*SYSCFG_MEMRMP = 0x1;
+    *SYSCFG_MEMRMP = 0x1;
 }
 
 
 static inline void memory_remap_sram(void)
 {
-	*SYSCFG_MEMRMP = 0x3;
+    *SYSCFG_MEMRMP = 0x3;
 }
 
 #endif
-

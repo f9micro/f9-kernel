@@ -9,22 +9,22 @@
 #include <types.h>
 
 typedef enum {
-	KTE_SOFTIRQ,		/* Kernel timer event */
-	ASYNC_SOFTIRQ,		/* Asynchronius event */
-	SYSCALL_SOFTIRQ,
+    KTE_SOFTIRQ,   /* Kernel timer event */
+    ASYNC_SOFTIRQ, /* Asynchronius event */
+    SYSCALL_SOFTIRQ,
 
 #ifdef CONFIG_KDB
-	KDB_SOFTIRQ,		/* KDB should have least priority */
+    KDB_SOFTIRQ, /* KDB should have least priority */
 #endif
 
-	NR_SOFTIRQ
+    NR_SOFTIRQ
 } softirq_type_t;
 
 typedef void (*softirq_handler_t)(void);
 
 typedef struct {
-	uint32_t 		  schedule;
-	softirq_handler_t handler;
+    uint32_t schedule;
+    softirq_handler_t handler;
 } softirq_t;
 
 void softirq_register(softirq_type_t type, softirq_handler_t handler);

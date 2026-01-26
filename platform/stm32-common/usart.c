@@ -9,129 +9,128 @@
 #include INC_PLAT(usart.c)
 
 struct usart_regs {
-	volatile uint16_t SR;
-	uint16_t reserved0;
-	volatile uint16_t DR;
-	uint16_t reserved1;
-	volatile uint16_t BRR;
-	uint16_t reserved2;
-	volatile uint16_t CR1;
-	uint16_t reserved3;
-	volatile uint16_t CR2;
-	uint16_t reserved4;
-	volatile uint16_t CR3;
-	uint16_t reserved5;
-	volatile uint16_t GTPR;
-	uint16_t reserved6;
+    volatile uint16_t SR;
+    uint16_t reserved0;
+    volatile uint16_t DR;
+    uint16_t reserved1;
+    volatile uint16_t BRR;
+    uint16_t reserved2;
+    volatile uint16_t CR1;
+    uint16_t reserved3;
+    volatile uint16_t CR2;
+    uint16_t reserved4;
+    volatile uint16_t CR3;
+    uint16_t reserved5;
+    volatile uint16_t GTPR;
+    uint16_t reserved6;
 };
 
 /* Calculates the value for the USART_BRR */
 /* TODO: Need more precise algorithm */
 static int16_t usart_baud(uint32_t base, uint32_t baud)
 {
-	uint16_t mantissa;
-	uint16_t fraction;
-	uint32_t apb_clock;
+    uint16_t mantissa;
+    uint16_t fraction;
+    uint32_t apb_clock;
 
-	/* Detect system clock source to determine actual APB frequencies.
-	 * When HSE fails (common in QEMU), we fall back to HSI (16MHz)
-	 * with no PLL, so APB clocks are different from PLL case.
-	 */
-	uint32_t sws = *RCC_CFGR & RCC_CFGR_SWS_M;
+    /* Detect system clock source to determine actual APB frequencies.
+     * When HSE fails (common in QEMU), we fall back to HSI (16MHz)
+     * with no PLL, so APB clocks are different from PLL case.
+     */
+    uint32_t sws = *RCC_CFGR & RCC_CFGR_SWS_M;
 
-	if (sws == RCC_CFGR_SWS_PLL) {
-		/* PLL is system clock: SYSCLK=168MHz, APB1=42MHz, APB2=84MHz */
-		if (base == USART1_BASE)
-			apb_clock = 84000000;	/* APB2 for USART1/6 */
-		else
-			apb_clock = 42000000;	/* APB1 for USART2-5 */
-	} else {
-		/* HSI or HSE without PLL: assume 16MHz with no prescalers */
-		apb_clock = 16000000;
-	}
+    if (sws == RCC_CFGR_SWS_PLL) {
+        /* PLL is system clock: SYSCLK=168MHz, APB1=42MHz, APB2=84MHz */
+        if (base == USART1_BASE)
+            apb_clock = 84000000; /* APB2 for USART1/6 */
+        else
+            apb_clock = 42000000; /* APB1 for USART2-5 */
+    } else {
+        /* HSI or HSE without PLL: assume 16MHz with no prescalers */
+        apb_clock = 16000000;
+    }
 
-	mantissa = apb_clock / (16 * baud);
-	fraction = (apb_clock / baud) % 16;
+    mantissa = apb_clock / (16 * baud);
+    fraction = (apb_clock / baud) % 16;
 
-	return (mantissa << 4) | fraction;
+    return (mantissa << 4) | fraction;
 }
 
-void usart_config_interrupt(struct usart_dev *usart, uint16_t it,
-                            uint8_t state)
+void usart_config_interrupt(struct usart_dev *usart, uint16_t it, uint8_t state)
 {
-	uint32_t it_reg, it_bit;
+    uint32_t it_reg, it_bit;
 
-	if (it == USART_IT_CTS && (usart->u_num == 4 || usart->u_num == 5))
-		return;
+    if (it == USART_IT_CTS && (usart->u_num == 4 || usart->u_num == 5))
+        return;
 
-	it_reg = usart->base + USART_IT_ENB_REG_OFFSET(it);
-	it_bit = (0x1 << USART_IT_POSITION(it));
+    it_reg = usart->base + USART_IT_ENB_REG_OFFSET(it);
+    it_bit = (0x1 << USART_IT_POSITION(it));
 
-	if (state)
-		*(volatile uint32_t *) it_reg |= it_bit;
-	else
-		*(volatile uint32_t *) it_reg &= ~it_bit;
+    if (state)
+        *(volatile uint32_t *) it_reg |= it_bit;
+    else
+        *(volatile uint32_t *) it_reg &= ~it_bit;
 }
 
 int usart_interrupt_status(struct usart_dev *usart, uint16_t it)
 {
-	uint32_t it_reg, it_bit;
+    uint32_t it_reg, it_bit;
 
-	if (it == USART_IT_CTS && (usart->u_num == 4 || usart->u_num == 5))
-		return 0;
+    if (it == USART_IT_CTS && (usart->u_num == 4 || usart->u_num == 5))
+        return 0;
 
-	it_reg = usart->base + USART_IT_ENB_REG_OFFSET(it);
-	it_bit = (0x1 << USART_IT_POSITION(it));
+    it_reg = usart->base + USART_IT_ENB_REG_OFFSET(it);
+    it_bit = (0x1 << USART_IT_POSITION(it));
 
-	return (*(volatile uint32_t *) it_reg & it_bit);
+    return (*(volatile uint32_t *) it_reg & it_bit);
 }
 
 int usart_status(struct usart_dev *usart, uint16_t st)
 {
-	struct usart_regs *uregs;
+    struct usart_regs *uregs;
 
-	uregs = (struct usart_regs *) usart->base;
+    uregs = (struct usart_regs *) usart->base;
 
-	return (uregs->SR & st);
+    return (uregs->SR & st);
 }
 
 uint8_t usart_getc(struct usart_dev *usart)
 {
-	struct usart_regs *uregs;
+    struct usart_regs *uregs;
 
-	uregs = (struct usart_regs *) usart->base;
-	return (uregs->DR & 0xff);
+    uregs = (struct usart_regs *) usart->base;
+    return (uregs->DR & 0xff);
 }
 
 void usart_putc(struct usart_dev *usart, uint8_t c)
 {
-	struct usart_regs *uregs;
+    struct usart_regs *uregs;
 
-	uregs = (struct usart_regs *) usart->base;
-	uregs->DR = c;
+    uregs = (struct usart_regs *) usart->base;
+    uregs->DR = c;
 }
 
 void usart_init(struct usart_dev *usart)
 {
-	struct usart_regs *uregs;
+    struct usart_regs *uregs;
 
-	*(usart->rcc_apbenr) |= usart->rcc_reset;
-	gpio_config(&usart->tx);
-	gpio_config(&usart->rx);
+    *(usart->rcc_apbenr) |= usart->rcc_reset;
+    gpio_config(&usart->tx);
+    gpio_config(&usart->rx);
 
-	uregs = (struct usart_regs *) usart->base;
+    uregs = (struct usart_regs *) usart->base;
 
-	uregs->CR1 |= USART_CR1_UE;
+    uregs->CR1 |= USART_CR1_UE;
 
-	/* FIXME: Hardcode 8-bit */
-	uregs->CR1 &= ~(USART_CR1_M9);
+    /* FIXME: Hardcode 8-bit */
+    uregs->CR1 &= ~(USART_CR1_M9);
 
-	/* FIXME: Hardcode 1 stop bit */
-	uregs->CR2 &= ~(3 << 12);
+    /* FIXME: Hardcode 1 stop bit */
+    uregs->CR2 &= ~(3 << 12);
 
-	/* Set baud rate */
-	uregs->BRR = usart_baud(usart->base, usart->baud);
+    /* Set baud rate */
+    uregs->BRR = usart_baud(usart->base, usart->baud);
 
-	/* Enable reciever and transmitter */
-	uregs->CR1 |= (USART_CR1_RE | USART_CR1_TE);
+    /* Enable reciever and transmitter */
+    uregs->CR1 |= (USART_CR1_RE | USART_CR1_TE);
 }

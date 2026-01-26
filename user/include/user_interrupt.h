@@ -2,15 +2,15 @@
 #define _USER_INTERRUPT_H_
 #include INC_PLAT(nvic.h)
 
-#include <l4/thread.h>
-#include <l4/kip.h>
-#include <l4/utcb.h>
+#include <interrupt_ipc.h>
 #include <l4/ipc.h>
+#include <l4/kip.h>
+#include <l4/thread.h>
+#include <l4/utcb.h>
 #include <types.h>
 #include <user_runtime.h>
-#include <interrupt_ipc.h>
 
-#define IRQ_STACK_SIZE	512
+#define IRQ_STACK_SIZE 512
 
 typedef void (*irq_handler_t)(void);
 

@@ -1,0 +1,9 @@
+# Top-level EditorConfig file
+root = true
+
+# Shell script settings - use tabs (shfmt default)
+[*.sh]
+indent_style = tab
+end_of_line = lf
+trim_trailing_whitespace = true
+insert_final_newline = true

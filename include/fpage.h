@@ -9,49 +9,40 @@
 #include <memory.h>
 #include <types.h>
 
-#define FPAGE_ALWAYS    0x1     /*! Fpage is always mapped in MPU */
-#define FPAGE_CLONE     0x2     /*! Fpage is mapped from other AS */
-#define FPAGE_MAPPED    0x4     /*! Fpage is mapped with MAP (
-				   unavailable in original AS) */
+#define FPAGE_ALWAYS 0x1 /*! Fpage is always mapped in MPU */
+#define FPAGE_CLONE 0x2  /*! Fpage is mapped from other AS */
+/*! Fpage is mapped with MAP (unavailable in original AS) */
+#define FPAGE_MAPPED 0x4
 
 /**
  * Flexible page (fpage_t)
- *
- * as_next - next in address space chain
- * map_next - next in mappings chain (cycle list)
- *
- * base - base address of fpage
- * shift - size of fpage == 1 << shift
- * rwx - access bits
- * mpid - id of memory pool
- * flags - flags
  */
 struct fpage {
-	struct fpage *as_next;
-	struct fpage *map_next;
-	struct fpage *mpu_next;
+    struct fpage *as_next;  /* next in address space chain */
+    struct fpage *map_next; /* next in mappings chain (cycle list) */
+    struct fpage *mpu_next; /* next in MPU region list */
 
-	union {
-		struct {
-			uint32_t base;
-			uint32_t mpid : 6;
-			uint32_t flags : 6;
-			uint32_t shift : 16;
-			uint32_t rwx : 4;
-		} fpage;
-		uint32_t raw[2];
-	};
+    union {
+        struct {
+            uint32_t base;       /* base address of fpage */
+            uint32_t mpid : 6;   /* id of memory pool */
+            uint32_t flags : 6;  /* flags */
+            uint32_t shift : 16; /* size of fpage == 1 << shift */
+            uint32_t rwx : 4;    /* access bits */
+        } fpage;
+        uint32_t raw[2];
+    };
 
 #ifdef CONFIG_KDB
-	int used;
-#endif /* CONFIG_KDB */
+    int used; /* fpage allocation tracking for KDB */
+#endif        /* CONFIG_KDB */
 };
 
 typedef struct fpage fpage_t;
 
-#define FPAGE_BASE(fp) 	(fp)->fpage.base
-#define FPAGE_SIZE(fp)  (1 << (fp)->fpage.shift)
-#define FPAGE_END(fp)	(FPAGE_BASE(fp) + FPAGE_SIZE(fp))
+#define FPAGE_BASE(fp) (fp)->fpage.base
+#define FPAGE_SIZE(fp) (1 << (fp)->fpage.shift)
+#define FPAGE_END(fp) (FPAGE_BASE(fp) + FPAGE_SIZE(fp))
 
 /**
  * Remove fpage from a linked list (as_next or mpu_next chain).
@@ -70,20 +61,21 @@ typedef struct fpage fpage_t;
  * @param first  Name of list head field in as (e.g., first, mpu_first)
  * @param next   Name of next pointer field in fpage (e.g., as_next, mpu_next)
  */
-#define remove_fpage_from_list(as, fpage, first, next) do {	\
-	fpage_t **_curr = &(as)->first;				\
-	while (*_curr && *_curr != (fpage)) {			\
-		_curr = &(*_curr)->next;			\
-	}							\
-	if (*_curr) {						\
-		*_curr = (*_curr)->next;			\
-	}							\
-} while (0)
+#define remove_fpage_from_list(as, fpage, first, next) \
+    do {                                               \
+        fpage_t **_curr = &(as)->first;                \
+        while (*_curr && *_curr != (fpage)) {          \
+            _curr = &(*_curr)->next;                   \
+        }                                              \
+        if (*_curr) {                                  \
+            *_curr = (*_curr)->next;                   \
+        }                                              \
+    } while (0)
 
 static inline int addr_in_fpage(memptr_t addr, fpage_t *fpage, int incl_end)
 {
-	return ((addr >= FPAGE_BASE(fpage) && addr < FPAGE_END(fpage)) ||
-			(incl_end && addr == FPAGE_END(fpage)));
+    return ((addr >= FPAGE_BASE(fpage) && addr < FPAGE_END(fpage)) ||
+            (incl_end && addr == FPAGE_END(fpage)));
 }
 
 #endif /* FPAGE_H_ */

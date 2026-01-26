@@ -6,12 +6,12 @@
 #ifndef __USER_PLATFORM_ARCH_H__
 #define __USER_PLATFORM_ARCH_H__
 
-#define ARCH_NAME               "ARM-CM4"
+#define ARCH_NAME "ARM-CM4"
 
-#define PAGE_BITS		(8)
-#define PAGE_SIZE		(1 << PAGE_BITS)
-#define MAX_MEM			(4L*256L)
+#define PAGE_BITS (8)
+#define PAGE_SIZE (1 << PAGE_BITS)
+#define MAX_MEM (4L * 256L)
 
-#define STACK_PAGES             1
+#define STACK_PAGES 1
 
 #endif /* __USER_PLATFORM_ARCH_H__ */

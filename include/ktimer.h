@@ -6,6 +6,8 @@
 #ifndef KTIMER_H_
 #define KTIMER_H_
 
+#include <types.h>
+
 void ktimer_handler(void);
 
 /* Returns 0 if successfully handled
@@ -15,11 +17,11 @@ typedef uint32_t (*ktimer_event_handler_t)(void *data);
 
 
 typedef struct ktimer_event {
-	struct ktimer_event *next;
-	ktimer_event_handler_t handler;
+    struct ktimer_event *next;
+    ktimer_event_handler_t handler;
 
-	uint32_t delta;
-	void *data;
+    uint32_t delta;
+    void *data;
 } ktimer_event_t;
 
 void ktimer_event_init(void);
