@@ -1,5 +1,6 @@
 #include <thread.h>
 #include <ipc.h>
+#include <sched.h>
 #include <platform/irq.h>
 #include <interrupt.h>
 #include <interrupt_ipc.h>
@@ -70,18 +71,6 @@ static void user_irq_queue_push(struct user_irq *uirq)
 		user_irq_queue.tail->next = uirq;
 		user_irq_queue.tail = uirq;
 	}
-}
-
-static struct user_irq *user_irq_queue_pop(void)
-{
-	if (user_irq_queue_is_empty())
-		return NULL;
-
-	struct user_irq *uirq = user_irq_queue.head;
-	user_irq_queue.head = uirq->next;
-	uirq->next = NULL;
-
-	return uirq;
 }
 
 static void user_irq_queue_delete(int irq)
@@ -173,6 +162,11 @@ static int irq_handler_enable(int irq)
 
 	irq_handler_ipc(uirq);
 
+	/* Wake up the interrupt thread directly */
+	thr->priority = SCHED_PRIO_INTR;
+	thr->state = T_RUNNABLE;
+	sched_enqueue(thr);
+
 	return 0;
 }
 
@@ -189,24 +183,6 @@ static void irq_schedule(int irq)
 	irq_enable();
 
 	irq_handler_enable(irq);
-}
-
-static tcb_t *irq_handler_sched(struct sched_slot *slot)
-{
-	tcb_t *thr = NULL;
-
-	irq_disable();
-	struct user_irq *uirq = user_irq_queue_pop();
-
-	if (uirq && (thr = uirq->thr) &&
-	    thr->state == T_RECV_BLOCKED) {
-		thr->state = T_RUNNABLE;
-		sched_slot_dispatch(SSI_INTR_THREAD, thr);
-	}
-
-	irq_enable();
-
-	return thr;
 }
 
 void __interrupt_handler(int irq)
@@ -227,7 +203,6 @@ void __interrupt_handler(int irq)
 void interrupt_init(void)
 {
 	user_irq_reset_all();
-	sched_slot_set_handler(SSI_INTR_THREAD, irq_handler_sched);
 }
 
 INIT_HOOK(interrupt_init, INIT_LEVEL_KERNEL_EARLY);
@@ -300,6 +275,7 @@ void user_interrupt_handler_update(tcb_t *thr)
 				/* reply ipc immediately */
 				irq_handler_ipc(uirq);
 				thr->state = T_RUNNABLE;
+				sched_enqueue(thr);
 				break;
 			}
 			break;

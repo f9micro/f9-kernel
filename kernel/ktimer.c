@@ -133,15 +133,25 @@ int ktimer_event_schedule(uint32_t ticks, ktimer_event_t *kte)
 
 	if (!ticks)
 		return -1;
-	ticks -= ktimer_time;
+	dbg_printf(DL_KDB, "KTE: sched ev=%p ticks=%d kt=%d q=%p\n",
+	           kte, ticks, ktimer_time, event_queue);
+
+	/* Adjust for elapsed time. If timeout has already passed
+	 * (ticks <= ktimer_time), schedule for next tick (ticks=1)
+	 * to avoid unsigned underflow.
+	 */
+	if (ticks <= (uint32_t)ktimer_time)
+		ticks = 1;
+	else
+		ticks -= ktimer_time;
 	kte->next = NULL;
 
 	if (!event_queue) {
 		/* All other events are already handled, so simply schedule
 		 * and enable timer
 		 */
-		dbg_printf(DL_KTIMER,
-		           "KTE: Scheduled dummy event %p on %d\n",
+		dbg_printf(DL_KDB,
+		           "KTE: Scheduled event %p on %d (head)\n",
 		           kte, ticks);
 
 		kte->delta = ticks;

@@ -6,6 +6,7 @@
 #include <platform/irq.h>
 #include <softirq.h>
 #include <thread.h>
+#include <sched.h>
 #include <ktimer.h>
 
 /*
@@ -43,8 +44,10 @@ void create_root_thread(void)
 	                   (uint32_t) &root_stack_start;
 	thread_init_canary(root);
 
-	sched_slot_dispatch(SSI_ROOT_THREAD, root);
+	root->priority = SCHED_PRIO_ROOT;
+	root->base_priority = SCHED_PRIO_ROOT;
 	root->state = T_RUNNABLE;
+	sched_enqueue(root);
 }
 
 void create_kernel_thread(void)
@@ -64,8 +67,10 @@ void create_kernel_thread(void)
 	/* This will prevent running other threads
 	 * than kernel until it will be initialized
 	 */
-	sched_slot_dispatch(SSI_SOFTIRQ, kernel);
+	kernel->priority = SCHED_PRIO_SOFTIRQ;
+	kernel->base_priority = SCHED_PRIO_SOFTIRQ;
 	kernel->state = T_RUNNABLE;
+	sched_enqueue(kernel);
 }
 
 void create_idle_thread(void)
@@ -78,8 +83,10 @@ void create_idle_thread(void)
 	                   (uint32_t) &idle_stack_start;
 	thread_init_canary(idle);
 
-	sched_slot_dispatch(SSI_IDLE, idle);
+	idle->priority = SCHED_PRIO_IDLE;
+	idle->base_priority = SCHED_PRIO_IDLE;
 	idle->state = T_RUNNABLE;
+	sched_enqueue(idle);
 }
 
 void switch_to_kernel(void) __NAKED;
@@ -93,7 +100,14 @@ void switch_to_kernel(void)
 
 void set_kernel_state(thread_state_t state)
 {
+	/* Strict queue invariant: dequeue before blocking */
+	if (state != T_RUNNABLE)
+		sched_dequeue(kernel);
+
 	kernel->state = state;
+
+	if (state == T_RUNNABLE)
+		sched_enqueue(kernel);
 }
 
 static void kernel_thread(void)

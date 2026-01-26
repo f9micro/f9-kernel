@@ -19,7 +19,8 @@ user-apps-tests-y += \
 	test-thread.o \
 	test-timer.o \
 	test-kip.o \
-	test-safety.o
+	test-safety.o \
+	test-sched.o
 
 # IRQ tests only for normal test suite (not fault tests)
 ifdef CONFIG_EXTI_INTERRUPT_TEST

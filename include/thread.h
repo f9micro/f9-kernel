@@ -85,13 +85,22 @@ typedef struct {
  * Contains pointers to thread's UTCB (User TCB) and address space
  */
 struct tcb {
-	l4_thread_t t_globalid;
-	l4_thread_t t_localid;
+	/* Hot scheduler fields - Cache Line 0 */
+	struct {
+		struct tcb *prev, *next;
+	} sched_link;			/* 8 bytes (0-7) */
 
-	thread_state_t state;
+	thread_state_t state;		/* 4 bytes (8-11) */
+	uint8_t priority;		/* 1 byte  (12) - effective priority */
+	uint8_t base_priority;		/* 1 byte  (13) - natural priority */
+	uint8_t _sched_pad[2];		/* 2 bytes (14-15) - Alignment */
 
-	memptr_t stack_base;
-	size_t stack_size;
+	l4_thread_t t_globalid;		/* 4 bytes (16-19) */
+	l4_thread_t t_localid;		/* 4 bytes (20-23) */
+
+	memptr_t stack_base;		/* 4 bytes (24-27) */
+	size_t stack_size;		/* 4 bytes (28-31) */
+	/* End of Cache Line 0 (32 bytes) */
 
 	context_t ctx;
 
