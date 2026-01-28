@@ -38,6 +38,14 @@ CFLAGS_DEFINE = \
 	-D __CHIP__=$(CHIP) \
 	-D __BOARD__=$(BOARD) \
 	-D'INC_PLAT(x)=<platform/__CHIP__/x>'
+
+# Define QEMU_BUILD for QEMU emulation targets
+# This enables conditional compilation of hardware-specific tests that
+# cannot run in QEMU (e.g., ARM MPU/FPU register access that hangs QEMU)
+# Uses CONFIG_QEMU from board/Kconfig for better scalability
+ifeq ($(CONFIG_QEMU),y)
+CFLAGS_DEFINE += -DQEMU_BUILD
+endif
 CFLAGS_MISC_DEFINE = \
 	-DGIT_HEAD=\"$(GIT_HEAD)\" \
 	-DMACH_TYPE=\"$(MACH_TYPE)\" \

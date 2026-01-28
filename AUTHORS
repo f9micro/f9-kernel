@@ -16,7 +16,4 @@ F9 was derived from l4xpresso project developed by
 
 The external parts were copyrighted by:
   University of California (FreeBSD)
-  Karlsruhe University (L4Ka)
-  University of New South Wales (L4Ka, OKL4)
-  Volkmar Uhlig, IBM Corporation (L4Ka)
   Rich Felker (musl-libc)

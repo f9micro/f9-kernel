@@ -27,6 +27,7 @@
 typedef struct {
     int passed;
     int failed;
+    int skipped;
 } test_context_t;
 
 /* Global test context - defined in main.c */
@@ -44,6 +45,7 @@ extern test_context_t test_ctx;
 /* ANSI color codes */
 #define ANSI_GREEN "\033[32m"
 #define ANSI_RED "\033[31m"
+#define ANSI_YELLOW "\033[33m"
 #define ANSI_RESET "\033[0m"
 
 #define TEST_START(suite)                      \
@@ -68,9 +70,16 @@ extern test_context_t test_ctx;
         printf("Test %-40s[" ANSI_RED "FAIL" ANSI_RESET "]\n", name); \
     } while (0)
 
-#define TEST_SUMMARY()                                              \
-    printf("[TEST:SUMMARY] passed=%d failed=%d\n", test_ctx.passed, \
-           test_ctx.failed)
+#define TEST_SKIP(name)                                                  \
+    do {                                                                 \
+        test_ctx.skipped++;                                              \
+        printf("[TEST:SKIP] %s\n", name);                                \
+        printf("Test %-40s[" ANSI_YELLOW "SKIP" ANSI_RESET "]\n", name); \
+    } while (0)
+
+#define TEST_SUMMARY()                                                         \
+    printf("[TEST:SUMMARY] passed=%d failed=%d skipped=%d\n", test_ctx.passed, \
+           test_ctx.failed, test_ctx.skipped)
 
 #define TEST_EXIT(code) printf("[TEST:EXIT] %d\n", code)
 
@@ -131,6 +140,63 @@ void test_pts_threshold_set(void);
 void test_pts_threshold_bounds(void);
 void test_pts_reduced_preemption(void);
 void test_pts_priority_inheritance(void);
+
+/* ExchangeRegisters tests (test-exreg.c) */
+void test_exreg_halt(void);
+void test_exreg_resume(void);
+void test_exreg_sp_ip(void);
+void test_exreg_pager(void);
+void test_exreg_status(void);
+void test_exreg_cross_space(void);
+
+/* ThreadControl tests (test-tcontrol.c) */
+void test_tcontrol_create(void);
+void test_tcontrol_config(void);
+void test_tcontrol_delete(void);
+void test_tcontrol_utcb(void);
+void test_tcontrol_invalid(void);
+void test_tcontrol_preemption(void);
+
+/* Memory operation tests (test-memory.c) */
+void test_memory_map(void);
+void test_memory_grant(void);
+void test_memory_rights(void);
+void test_memory_unmap(void);
+void test_memory_sharing(void);
+void test_memory_xspace_write(void);
+void test_memory_invalid(void);
+void test_memory_mpu_exhaustion(void);
+void test_memory_mpu_cleanup(void);
+
+/* IPC pagefault tests (test-ipc-pf.c) */
+void test_ipc_pf_unmapped(void);
+void test_ipc_pf_receive(void);
+void test_ipc_pf_map_retry(void);
+void test_ipc_pf_abort(void);
+
+/* IPC error tests (test-ipc-error.c) */
+void test_ipc_error_nonexist_send(void);
+void test_ipc_error_nonexist_recv(void);
+void test_ipc_error_cancelled_send(void);
+void test_ipc_error_cancelled_recv(void);
+void test_ipc_error_overflow_send(void);
+void test_ipc_error_timeout_sender(void);
+void test_ipc_error_timeout_current(void);
+void test_ipc_error_timeout_partner(void);
+void test_ipc_error_aborted_send(void);
+void test_ipc_error_aborted_recv(void);
+
+/* ARM architecture tests (test-arm.c) */
+void test_arm_mpu_config(void);
+void test_arm_lazy_fpu(void);
+void test_arm_irq_latency(void);
+void test_arm_pendsv(void);
+void test_arm_utcb_align(void);
+void test_arm_stack_align(void);
+void test_arm_unaligned(void);
+
+/* Test helper functions (tests_helper_core.c) */
+void test_skip(const char *name, const char *reason);
 
 /* Fault test type constants */
 #define FAULT_MPU 1

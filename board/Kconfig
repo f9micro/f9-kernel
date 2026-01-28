@@ -48,6 +48,47 @@ config QEMU
 	  Enable this when running under QEMU. Disable for real hardware
 	  to get better performance.
 
+# Hardware feature availability flags
+# These control which ARM architecture tests can run based on
+# platform capabilities and emulation limitations.
+
+config HAS_PRECISE_TIMING
+	bool "Cycle-accurate timing available (DWT/SysTick)"
+	default !QEMU
+	help
+	  Enable tests that require cycle-accurate timing measurements.
+	  This covers DWT cycle counter and SysTick precision timing.
+
+	  Tests requiring this feature:
+	  - FPU lazy stacking timing (requires DWT cycle counter)
+	  - Interrupt latency measurement (requires SysTick precision)
+
+	  Disabled in QEMU because timing is not cycle-accurate.
+
+config MPU_MOCK
+	bool "Software MPU mock for testing"
+	depends on QEMU
+	default y if QEMU
+	help
+	  Enable minimal MPU register mock for test_arm_mpu_config in QEMU.
+
+	  Returns MPU_TYPE = 0x800 (8 regions, unified) to validate that
+	  MPU_TYPE register is readable without QEMU hanging.
+
+	  For full MPU validation, test on real hardware with actual MPU.
+
+config SCB_MOCK
+	bool "Software SCB mock for testing"
+	depends on QEMU
+	default y if QEMU
+	help
+	  Enable minimal SCB register mock for test_arm_unaligned in QEMU.
+
+	  Returns SCB_CCR = 0x200 (STKALIGN enabled, UNALIGN_TRP disabled)
+	  to validate SCB_CCR register readability without QEMU hanging.
+
+	  For full SCB validation, test on real hardware with actual SCB.
+
 endmenu
 
 # Platform symbols (selected by board choice)

@@ -51,6 +51,7 @@ class TestResults:
 
     passed: int = 0
     failed: int = 0
+    skipped: int = 0
     tests_run: list = field(default_factory=list)
     exit_code: Optional[int] = None
     unexpected_output: list = field(default_factory=list)
@@ -92,14 +93,25 @@ def parse_test_line(line: str, results: TestResults) -> bool:
         results.failed += 1
         return False
 
-    if match := re.match(r"\[TEST:SUMMARY\]\s+passed=(\d+)\s+failed=(\d+)", line):
+    if match := re.match(r"\[TEST:SKIP\]\s+(\S+)", line):
+        results.skipped += 1
+        return False
+
+    if match := re.match(
+        r"\[TEST:SUMMARY\]\s+passed=(\d+)\s+failed=(\d+)\s+skipped=(\d+)", line
+    ):
         # Verify counts match our tracking
         reported_passed = int(match.group(1))
         reported_failed = int(match.group(2))
-        if reported_passed != results.passed or reported_failed != results.failed:
+        reported_skipped = int(match.group(3))
+        if (
+            reported_passed != results.passed
+            or reported_failed != results.failed
+            or reported_skipped != results.skipped
+        ):
             print(
-                f"[WARN] Count mismatch: tracked {results.passed}/{results.failed}, "
-                f"reported {reported_passed}/{reported_failed}"
+                f"[WARN] Count mismatch: tracked {results.passed}/{results.failed}/{results.skipped}, "
+                f"reported {reported_passed}/{reported_failed}/{reported_skipped}"
             )
         return False
 
@@ -204,8 +216,16 @@ def run_qemu(elf_path: str, timeout: int) -> TestResults:
                         sys.stdout.write(f"  {stripped}\n")
                         sys.stdout.flush()
                     elif not stripped.startswith("[TEST:"):
+                        # Filter known debug messages (not unexpected)
+                        # Use exact prefixes to avoid hiding real errors
+                        is_known_debug = stripped.startswith(
+                            "IPC: "
+                        ) or stripped.startswith("THREAD_CREATE:")
                         # Buffer unexpected output for debugging (bounded)
-                        if len(results.unexpected_output) < MAX_UNEXPECTED_LINES:
+                        if (
+                            not is_known_debug
+                            and len(results.unexpected_output) < MAX_UNEXPECTED_LINES
+                        ):
                             results.unexpected_output.append(stripped)
 
                 if exit_requested:
@@ -496,7 +516,9 @@ def main():
 
         print()
         print("=" * 60)
-        print(f"SUMMARY: {results.passed} passed, {results.failed} failed")
+        print(
+            f"SUMMARY: {results.passed} passed, {results.failed} failed, {results.skipped} skipped"
+        )
         print("=" * 60)
 
         if results.failed > 0:

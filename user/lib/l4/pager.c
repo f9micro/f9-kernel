@@ -252,8 +252,6 @@ L4_ThreadId_t pager_create_thread(void)
     L4_MsgTag_t tag;
     L4_ThreadId_t pager_tid = L4_Pager();
 
-    printf("pager_create: me=%p pager=%p\n", L4_Myself().raw, pager_tid.raw);
-
     L4_MsgClear(&msg);
     L4_Set_Label(&msg.tag, PAGER_REQUEST_LABEL);
     L4_MsgAppendWord(&msg, THREAD_CREATE);
@@ -277,8 +275,6 @@ L4_Word_t pager_start_thread(L4_ThreadId_t tid,
     L4_Msg_t msg;
     L4_MsgTag_t tag;
     L4_Word_t ret;
-
-    printf("pager_start: tid=%p\n", tid.raw);
 
     L4_MsgClear(&msg);
     L4_Set_Label(&msg.tag, PAGER_REQUEST_LABEL);
@@ -305,8 +301,6 @@ void pager_thread(user_struct *user, void *(*entry_main)(void *) )
     L4_Word_t fpage_num;
     L4_ThreadId_t main_tid;
     struct thread_pool *pool;
-
-    printf("pager: starting\n");
 
     fpage_num = user_fpage_number(user->fpages);
 

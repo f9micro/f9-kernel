@@ -22,6 +22,7 @@ static void run_all_tests(void)
 {
     test_ctx.passed = 0;
     test_ctx.failed = 0;
+    test_ctx.skipped = 0;
 
     TEST_START("test_suite");
 
@@ -64,6 +65,60 @@ static void run_all_tests(void)
     test_pts_threshold_bounds();
     test_pts_reduced_preemption();
     test_pts_priority_inheritance();
+
+    /* ExchangeRegisters tests */
+    test_exreg_halt();
+    test_exreg_resume();
+    test_exreg_sp_ip();
+    test_exreg_pager();
+    test_exreg_status();
+    test_exreg_cross_space();
+
+    /* ThreadControl tests */
+    test_tcontrol_create();
+    test_tcontrol_config();
+    test_tcontrol_delete();
+    test_tcontrol_utcb();
+    test_tcontrol_invalid();
+    test_tcontrol_preemption();
+
+    /* Memory operation tests */
+    test_memory_map();
+    test_memory_grant();
+    test_memory_rights();
+    test_memory_unmap();
+    test_memory_sharing();
+    test_memory_xspace_write();
+    test_memory_invalid();
+    test_memory_mpu_exhaustion();
+    test_memory_mpu_cleanup();
+
+    /* IPC pagefault tests */
+    test_ipc_pf_unmapped();
+    test_ipc_pf_receive();
+    test_ipc_pf_map_retry();
+    test_ipc_pf_abort();
+
+    /* IPC error tests */
+    test_ipc_error_nonexist_send();
+    test_ipc_error_nonexist_recv();
+    test_ipc_error_cancelled_send();
+    test_ipc_error_cancelled_recv();
+    test_ipc_error_overflow_send();
+    test_ipc_error_timeout_sender();
+    test_ipc_error_timeout_current();
+    test_ipc_error_timeout_partner();
+    test_ipc_error_aborted_send();
+    test_ipc_error_aborted_recv();
+
+    /* ARM architecture tests */
+    test_arm_mpu_config();
+    test_arm_lazy_fpu();
+    test_arm_irq_latency();
+    test_arm_pendsv();
+    test_arm_utcb_align();
+    test_arm_stack_align();
+    test_arm_unaligned();
 
 #ifdef CONFIG_EXTI_INTERRUPT_TEST
     /* IRQ test (requires hardware EXTI support) */
