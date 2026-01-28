@@ -6,3 +6,7 @@ user-lib-dirs = \
 	l4 \
 	io \
 	libposix \
+
+# MPU and SCB mocks (conditional, for QEMU testing)
+user-lib-$(CONFIG_MPU_MOCK) += mpu_mock.o
+user-lib-$(CONFIG_SCB_MOCK) += scb_mock.o

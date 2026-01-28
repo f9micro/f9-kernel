@@ -111,3 +111,11 @@ $(foreach rule, $(shell ls $(dir-rules)), \
 	$(eval include $(dir-rules)/$(rule)))
 
 include mk/generic.mk
+
+# Run tests with clean output (filtered debug messages)
+.PHONY: qemu-clean
+qemu-clean:
+	@echo "Running F9 tests (clean output)..."
+	@python3 scripts/qemu-test.py $(out)/f9.elf -t 75 2>&1 | \
+		grep -vE "^(IPC: |pager_|THREAD_CREATE:)" | \
+		grep -vE "^\[TEST:(RUN|PASS|FAIL|SKIP|START)\]" || true

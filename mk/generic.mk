@@ -129,6 +129,29 @@ else
 	@python3 scripts/qemu-test.py $(out)/$(PROJECT).elf -t 45
 endif
 
+# Compile-only build for hardware code paths (catches syntax errors)
+# This builds for STM32F4 Discovery (no CONFIG_QEMU), forcing compilation of
+# all hardware-specific test code that normally skips in QEMU builds.
+# Does NOT run tests - just ensures hardware code compiles.
+.PHONY: compile-hw-tests
+compile-hw-tests:
+	@echo "Compile-only check for hardware test paths..."
+	@if [ ! -f .config ]; then \
+		echo "Error: No .config found. Run 'make config' first."; \
+		exit 1; \
+	fi
+	@echo "  Saving current config..."
+	@cp .config .config.bak
+	@echo "  Switching to discoveryf4 (hardware target)..."
+	@$(MAKE) discoveryf4_defconfig $(silent)
+	@echo "  Building hardware test code..."
+	@$(MAKE) $(out)/$(PROJECT).elf $(silent)
+	@echo "  Restoring original config..."
+	@mv .config.bak .config
+	@echo "  Cleaning build artifacts..."
+	@$(MAKE) clean $(silent)
+	@echo "✓ Hardware test code compiles successfully"
+
 # Kconfiglib download target
 $(KCONFIG_DIR)/kconfiglib.py:
 	@echo "  CLONE   Kconfiglib"
