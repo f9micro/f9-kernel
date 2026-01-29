@@ -292,6 +292,11 @@ void thread_destroy(tcb_t *thr)
     if (thr->as)
         as_put(thr->as);
 
+    /* Increment generation counter for use-after-free detection.
+     * Any code holding old generation value can detect TCB invalidation.
+     */
+    thr->notify_generation++;
+
     thread_deinit(thr);
 }
 

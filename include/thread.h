@@ -120,6 +120,52 @@ struct tcb {
     struct tcb *t_child;
 
     uint32_t timeout_event;
+
+    /* Event-chaining callback for notification objects.
+     * Invoked after IPC delivery with interrupts enabled.
+     * SAFETY: Must be internal kernel handler only.
+     * RE-ENTRANCY: Callback must be re-entrant safe.
+     * CONSTRAINT: Callback MUST NOT destroy its own TCB.
+     *
+     * Callback signature:
+     *   void callback(tcb_t *tcb, uint32_t notify_bits, uint32_t notify_data)
+     * - notify_bits: Notification bit mask being delivered
+     * - notify_data: Optional event-specific data (0 for IPC notifications)
+     */
+    void (*ipc_notify)(struct tcb *tcb,
+                       uint32_t notify_bits,
+                       uint32_t notify_data);
+
+    /* Notification bit mask for event multiplexing.
+     * Used by user-space reactor pattern (multi-source events).
+     */
+    uint32_t notify_bits;
+
+    /* Optional event-specific data payload.
+     * Used for extended notifications (e.g., IRQ number for high IRQs).
+     * Set by notification_post() and retrieved by notification_get_extended().
+     */
+    uint32_t notify_data;
+
+    /* Recursion protection: prevent infinite callback nesting.
+     * 0 = not in callback, >0 = callback depth.
+     * Updated atomically with IRQ masking to prevent races.
+     */
+    uint8_t notify_depth;
+
+    /* Lifecycle tracking: generation counter for use-after-free detection.
+     * Incremented on thread destruction. Used to detect TCB invalidation
+     * after callback execution (debug/safety feature).
+     */
+    uint8_t notify_generation;
+
+    /* Fast-path optimization: pending notification flag.
+     * Set when notify_bits != 0, cleared when notify_bits == 0.
+     * Allows IPC path to skip notification checks with single word read.
+     */
+    uint8_t notify_pending;
+
+    uint8_t _notify_pad[1]; /* Alignment padding */
 };
 typedef struct tcb tcb_t;
 

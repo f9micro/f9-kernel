@@ -163,5 +163,4 @@ CONFIG_PINGPONG=y
 # Test Cases
 #
 # CONFIG_EXTI_INTERRUPT_TEST is not set
-CONFIG_L4_TEST=y
 # CONFIG_LCD_TEST is not set

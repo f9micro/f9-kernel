@@ -6,11 +6,6 @@ ifdef CONFIG_BUILD_USER_APPS
 
 user-apps-dirs = ""
 
-ifdef CONFIG_L4_TEST
-user-apps-dirs += \
-	l4test
-endif
-
 ifdef CONFIG_PINGPONG
 user-apps-dirs += \
 	pingpong

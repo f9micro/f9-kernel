@@ -166,6 +166,8 @@ def run_qemu(elf_path: str, timeout: int) -> TestResults:
             stderr=subprocess.STDOUT,
             stdin=subprocess.PIPE,
             text=True,
+            encoding="utf-8",
+            errors="replace",  # Replace invalid UTF-8 with replacement character
             bufsize=1,
         )
     except FileNotFoundError:
@@ -197,6 +199,10 @@ def run_qemu(elf_path: str, timeout: int) -> TestResults:
                         eof_reached = True
                 except (IOError, OSError):
                     pass  # No data available yet (non-blocking)
+                except UnicodeDecodeError as e:
+                    # Handle invalid UTF-8 (should be rare with errors='replace')
+                    print(f"[WARNING] Unicode decode error: {e}", file=sys.stderr)
+                    pass
 
             # Process complete lines (even after EOF to drain buffer)
             while "\n" in line_buffer:
@@ -336,6 +342,8 @@ def run_qemu_fault(elf_path: str, timeout: int) -> FaultTestResults:
             stderr=subprocess.STDOUT,
             stdin=subprocess.PIPE,
             text=True,
+            encoding="utf-8",
+            errors="replace",  # Replace invalid UTF-8 with replacement character
             bufsize=1,
         )
     except FileNotFoundError:
@@ -362,6 +370,10 @@ def run_qemu_fault(elf_path: str, timeout: int) -> FaultTestResults:
                     elif chunk == "":
                         eof_reached = True
                 except (IOError, OSError):
+                    pass
+                except UnicodeDecodeError as e:
+                    # Handle invalid UTF-8 (should be rare with errors='replace')
+                    print(f"[WARNING] Unicode decode error: {e}", file=sys.stderr)
                     pass
 
             # Process complete lines

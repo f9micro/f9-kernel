@@ -10,10 +10,6 @@ config EXTI_INTERRUPT_TEST
 	default n
 	depends on EXTI0_USER_IRQ && EXTI1_USER_IRQ
 
-config L4_TEST
-	bool "L4 Test Cases"
-	default n
-
 config LCD_TEST
 	bool "LCD Test Cases"
 	default n

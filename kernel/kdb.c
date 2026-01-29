@@ -29,6 +29,7 @@ extern void kdb_dump_mempool(void);
 extern void kdb_dump_as(void);
 extern void kdb_show_sampling(void);
 extern void kdb_show_tickless_verify(void);
+extern void kdb_dump_notifications(void);
 
 struct kdb_t kdb_functions[] = {
     {.option = 'K',
@@ -47,6 +48,10 @@ struct kdb_t kdb_functions[] = {
      .name = "SOFTIRQ",
      .menuentry = "show softirqs",
      .function = kdb_dump_softirq},
+    {.option = 'N',
+     .name = "NOTIFICATIONS",
+     .menuentry = "show unified notifications",
+     .function = kdb_dump_notifications},
     {.option = 't',
      .name = "THREADS",
      .menuentry = "dump threads",

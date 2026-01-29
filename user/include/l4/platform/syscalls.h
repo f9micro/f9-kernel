@@ -50,6 +50,10 @@ L4_Word_t L4_Schedule(L4_ThreadId_t dest,
                       L4_Word_t PreemptionControl,
                       L4_Word_t *old_TimeControl);
 __USER_TEXT
+L4_Word_t L4_TimerNotify(L4_Word_t ticks,
+                         L4_Word_t notify_bits,
+                         L4_Word_t periodic);
+__USER_TEXT
 L4_MsgTag_t L4_Ipc(L4_ThreadId_t to,
                    L4_ThreadId_t FromSpecifier,
                    L4_Word_t Timeouts,
