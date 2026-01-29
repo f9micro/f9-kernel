@@ -23,7 +23,8 @@ typedef enum {
     DL_SYSCALL = 0x0010,
     DL_SCHEDULE = 0x0020,
     DL_MEMORY = 0x0040,
-    DL_IPC = 0x0080
+    DL_IPC = 0x0080,
+    DL_NOTIFICATIONS = 0x0100 /* Unified notification system */
 } dbg_layer_t;
 
 #ifndef CONFIG_DEBUG

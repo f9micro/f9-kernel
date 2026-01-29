@@ -27,7 +27,8 @@ user-apps-tests-y += \
 	test-memory.o \
 	test-ipc-pf.o \
 	test-ipc-error.o \
-	test-arm.o
+	test-arm.o \
+	test-notification.o
 
 # IRQ tests only for normal test suite (not fault tests)
 ifdef CONFIG_EXTI_INTERRUPT_TEST

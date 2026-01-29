@@ -62,10 +62,9 @@ jobs:
     - name: Enable test suite
       run: |
         # Enable test suite, disable conflicting apps
+        sed -i 's/^CONFIG_PINGPONG=y/# CONFIG_PINGPONG is not set/' .config
         echo "CONFIG_TESTS=y" >> .config
-        echo "# CONFIG_PINGPONG is not set" >> .config
-        echo "# CONFIG_L4_TEST is not set" >> .config
-        make oldconfig
+        python3 tools/kconfig/genconfig.py --header-path include/autoconf.h Kconfig
 
     - name: Build kernel with tests
       run: make

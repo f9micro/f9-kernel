@@ -125,6 +125,13 @@ static void run_all_tests(void)
     test_irq_exti();
 #endif
 
+    /* Unified notification system tests */
+    test_notification_architecture(); /* Always run - documents system */
+    test_notification_timer_oneshot();
+    test_notification_timer_periodic();
+    test_notification_multi_timer();
+    test_notification_statistics();
+
     /* Summary and exit */
     TEST_SUMMARY();
     TEST_EXIT(test_ctx.failed > 0 ? 1 : 0);

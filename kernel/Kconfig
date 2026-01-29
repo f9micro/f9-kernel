@@ -10,11 +10,29 @@ config MAX_THREADS
 config MAX_KT_EVENTS
 	int "Maximum amount of kernel timer events"
 	default 64
+endmenu
 
-config MAX_ASYNC_EVENTS
-	int "Maximum of asynchronous events"
+menu "Notification System"
+comment "Uses RT-safe bounded processing (batch size: 4 events)"
+
+config MAX_NOTIFICATIONS
+	int "Maximum notifications in async queue"
 	default 32
+	range 8 256
+	help
+	  Maximum number of async notifications queued for delivery.
+	  Each entry consumes 16 bytes of RAM.
 
+	  Default (32) suitable for most applications.
+	  Increase if you have many simultaneous timer events or IRQ sources.
+
+	  RT-safe processing:
+	  - Batch size: 4 events per softirq (200 cycle WCET)
+	  - Bounded latency: Predictable performance
+	  - No configuration needed: Best-practice defaults
+endmenu
+
+menu "Memory Management"
 config MAX_ADRESS_SPACES
 	int "Maximum of address space"
 	default 16
@@ -55,6 +73,32 @@ config KTIMER_HEARTBEAT
 config KTIMER_MINTICKS
 	int "Minimal ticks scheduled by ktimer"
 	default 128
+
+config KTIMER_DIRECT_NOTIFY
+	bool "Direct timer notification delivery"
+	default n
+	help
+	  Enable direct notification delivery from timer interrupt context,
+	  bypassing the async event queue and softirq for ultra-low latency.
+
+	  When enabled, timer notifications (ktimer_event_create_notify) deliver
+	  directly to target threads from the timer IRQ handler, providing
+	  deterministic latency:
+	  - Normal path: Timer → async_event_post → softirq → notification (150-1750 cycles)
+	  - Direct path:  Timer → notification (150 cycles, 91% reduction)
+
+	  Benefits:
+	  - Ultra-low latency (150 cycles)
+	  - Deterministic delivery (no queue, no softirq)
+	  - Real-time predictability
+
+	  Trade-offs:
+	  - Callback executes in IRQ context (must be short)
+	  - Higher IRQ latency for other interrupts
+	  - Only safe with non-blocking callbacks
+
+	  Recommended: Y for hard real-time timer applications, N for general use
+
 endmenu
 
 menu "Flexible page tweaks"

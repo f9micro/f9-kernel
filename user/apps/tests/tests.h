@@ -195,6 +195,13 @@ void test_arm_utcb_align(void);
 void test_arm_stack_align(void);
 void test_arm_unaligned(void);
 
+/* Notification system tests (test-notification.c) */
+void test_notification_timer_oneshot(void);
+void test_notification_timer_periodic(void);
+void test_notification_multi_timer(void);
+void test_notification_statistics(void);
+void test_notification_architecture(void);
+
 /* Test helper functions (tests_helper_core.c) */
 void test_skip(const char *name, const char *reason);
 

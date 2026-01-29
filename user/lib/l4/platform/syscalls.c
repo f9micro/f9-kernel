@@ -100,6 +100,23 @@ L4_Word_t L4_Schedule(L4_ThreadId_t dest,
 }
 
 __USER_TEXT
+L4_Word_t L4_TimerNotify(L4_Word_t ticks,
+                         L4_Word_t notify_bits,
+                         L4_Word_t periodic)
+{
+    register L4_Word_t r0 __asm__("r0") = ticks;
+    register L4_Word_t r1 __asm__("r1") = notify_bits;
+    register L4_Word_t r2 __asm__("r2") = periodic;
+
+    __asm__ __volatile__("svc %[syscall_num]\n"
+                         : "+r"(r0)
+                         : "r"(r1), "r"(r2), [syscall_num] "i"(SYS_TIMER_NOTIFY)
+                         : "memory");
+
+    return r0;
+}
+
+__USER_TEXT
 L4_MsgTag_t L4_Ipc(L4_ThreadId_t to,
                    L4_ThreadId_t FromSpecifier,
                    L4_Word_t Timeouts,

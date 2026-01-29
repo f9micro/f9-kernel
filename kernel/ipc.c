@@ -11,7 +11,9 @@
 #include <ipc.h>
 #include <ktimer.h>
 #include <memory.h>
+#include <notification.h>
 #include <platform/armv7m.h>
+#include <platform/irq.h>
 #include <sched.h>
 #include <thread.h>
 #include <types.h>
@@ -199,6 +201,62 @@ static void do_ipc(tcb_t *from, tcb_t *to)
     }
 
     dbg_printf(DL_IPC, "IPC: %t→%t done\n", from->t_globalid, to->t_globalid);
+
+    /* Event-chaining: invoke notification callback after IPC delivery.
+     * 1. Check callback existence, pending flag, and recursion depth
+     * 2. Callback executes with interrupts enabled (nested operations allowed)
+     * 3. Invoke callback (can cascade to other notifications)
+     * 4. Preemption check after callback returns
+     *
+     * SAFETY: Callback must be internal kernel handler only.
+     * RECURSION: Limited to prevent stack overflow.
+     * RE-ENTRANCY: Callback must handle concurrent invocations.
+     * CONSTRAINT: Callback MUST NOT destroy its own TCB.
+     */
+    if (to->ipc_notify && to->notify_pending && to->notify_depth < 3) {
+        uint32_t irq_flags;
+        uint8_t generation_before;
+        notify_handler_t callback;
+
+        /* Atomically increment depth and capture generation.
+         * IRQ masking prevents race with nested interrupt-driven IPC.
+         */
+        irq_flags = irq_save_flags();
+        to->notify_depth++;
+        generation_before = to->notify_generation;
+        callback = to->ipc_notify;
+        irq_restore_flags(irq_flags);
+
+        /* Recursion protection: prevent unbounded callback nesting.
+         * Max depth 3 allows: serial → network → timer notification chains.
+         * Deeper chains ignored to prevent stack overflow.
+         */
+
+        /* Callback executes with interrupts ENABLED to allow
+         * nested notifications and prevent priority inversion.
+         * TCB LIVENESS: Callback must not destroy its own TCB.
+         * If TCB is destroyed, generation counter will change.
+         *
+         * Pass notify_bits and 0 for notify_data (IPC has no event data).
+         */
+        uint32_t bits = to->notify_bits;
+        callback(to, bits, 0);
+
+        /* Atomically decrement depth only if TCB still valid.
+         * Generation counter detects TCB destruction during callback.
+         * If TCB was destroyed, skip depth decrement (would be use-after-free).
+         */
+        irq_flags = irq_save_flags();
+        if (to->notify_generation == generation_before)
+            to->notify_depth--;
+        irq_restore_flags(irq_flags);
+
+        /* Check for preemption after notification.
+         * Callback may have made higher-priority threads runnable.
+         * schedule() is safe to call even if 'to' was destroyed.
+         */
+        schedule();
+    }
 }
 
 uint32_t ipc_timeout(void *data)

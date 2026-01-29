@@ -9,8 +9,8 @@
 #include <types.h>
 
 typedef enum {
-    KTE_SOFTIRQ,   /* Kernel timer event */
-    ASYNC_SOFTIRQ, /* Asynchronius event */
+    KTE_SOFTIRQ,          /* Kernel timer event */
+    NOTIFICATION_SOFTIRQ, /* Unified notification system */
     SYSCALL_SOFTIRQ,
 
 #ifdef CONFIG_KDB

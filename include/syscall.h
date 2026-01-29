@@ -19,6 +19,7 @@ typedef enum {
     SYS_SPACE_CONTROL,
     SYS_PROCESSOR_CONTROL,
     SYS_MEMORY_CONTROL,
+    SYS_TIMER_NOTIFY, /* Timer notification syscall */
 } syscall_t;
 
 void svc_handler(void);

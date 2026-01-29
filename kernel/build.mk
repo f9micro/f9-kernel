@@ -36,6 +36,13 @@ TICKLESS-VERIFY-$(CONFIG_KTIMER_TICKLESS_VERIFY) = \
 
 kernel-y += $(KDB-y) $(KPROBES-y) $(SYMMAP-y) $(TICKLESS-VERIFY-y)
 
+# Unified notification system (CORE - always enabled)
+# - Basic notifications (atomic bit operations)
+# - Async notifications (queue-based delivery)
+# - Notification masks (multi-bit aggregation)
+# Aligned with seL4: notifications are fundamental L4 IPC mechanism
+kernel-y += notification.o
+
 loader-kernel-y = \
 	error.loader.o \
 	debug.loader.o
