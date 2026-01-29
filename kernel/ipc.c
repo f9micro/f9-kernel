@@ -214,18 +214,19 @@ static void do_ipc(tcb_t *from, tcb_t *to)
      * CONSTRAINT: Callback MUST NOT destroy its own TCB.
      */
     if (to->ipc_notify && to->notify_pending && to->notify_depth < 3) {
-        uint32_t irq_flags;
+        uint32_t basepri;
         uint8_t generation_before;
         notify_handler_t callback;
 
         /* Atomically increment depth and capture generation.
-         * IRQ masking prevents race with nested interrupt-driven IPC.
+         * BASEPRI masking prevents race with nested interrupt-driven IPC.
+         * Zero-latency ISRs (0x0-0x2) can still preempt during this operation.
          */
-        irq_flags = irq_save_flags();
+        basepri = irq_kernel_critical_enter();
         to->notify_depth++;
         generation_before = to->notify_generation;
         callback = to->ipc_notify;
-        irq_restore_flags(irq_flags);
+        irq_kernel_critical_exit(basepri);
 
         /* Recursion protection: prevent unbounded callback nesting.
          * Max depth 3 allows: serial → network → timer notification chains.
@@ -245,11 +246,27 @@ static void do_ipc(tcb_t *from, tcb_t *to)
         /* Atomically decrement depth only if TCB still valid.
          * Generation counter detects TCB destruction during callback.
          * If TCB was destroyed, skip depth decrement (would be use-after-free).
+         *
+         * SAFETY: We must verify 'to' is still a valid TCB before accessing it.
+         * Search thread_map to confirm the pointer hasn't been freed and
+         * reused.
          */
-        irq_flags = irq_save_flags();
-        if (to->notify_generation == generation_before)
+        basepri = irq_kernel_critical_enter();
+
+        /* Verify TCB is still valid by checking thread_map */
+        int tcb_valid = 0;
+        for (int i = 1; i < thread_count; ++i) {
+            if (thread_map[i] == to) {
+                tcb_valid = 1;
+                break;
+            }
+        }
+
+        /* Only decrement if TCB is valid AND generation hasn't changed */
+        if (tcb_valid && to->notify_generation == generation_before)
             to->notify_depth--;
-        irq_restore_flags(irq_flags);
+
+        irq_kernel_critical_exit(basepri);
 
         /* Check for preemption after notification.
          * Callback may have made higher-priority threads runnable.

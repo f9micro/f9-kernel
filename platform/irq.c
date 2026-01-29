@@ -13,6 +13,12 @@
  */
 volatile uint32_t __irq_saved_regs[8];
 
+/*
+ * System state tracking for ISR context.
+ * 0 = Thread mode (PSP), 1+ = Handler mode (MSP).
+ */
+volatile uint32_t irq_system_state = 0;
+
 void irq_init(void)
 {
     /* Set all 4-bit to pre-emption priority bit */
