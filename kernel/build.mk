@@ -21,7 +21,8 @@ kernel-y = \
 	interrupt.o
 
 KDB-$(CONFIG_KDB) = \
-	kdb.o
+	kdb.o \
+	kdb-latency.o
 
 KPROBES-$(CONFIG_KPROBES) = \
 	kprobes.o

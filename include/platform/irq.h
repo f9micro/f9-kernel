@@ -15,6 +15,34 @@
 
 void irq_init(void);
 
+/*
+ * Interrupt Priority Levels (ARM Cortex-M 4-bit priorities)
+ */
+#define IRQ_PRIO_ZERO_LATENCY_MAX 0x2 /* Highest priority, never masked */
+#define IRQ_PRIO_SYSTICK 0x3          /* System timer */
+#define IRQ_PRIO_KERNEL_MASK 0x40     /* BASEPRI mask (0x4 << 4) */
+#define IRQ_PRIO_USER_DEFAULT 0x8     /* Default user IRQ priority */
+#define IRQ_PRIO_LOWEST 0xF           /* SVCall, PendSV */
+
+/*
+ * System state tracking for ISR context.
+ * 0 = Thread mode (PSP), 1+ = Handler mode (MSP, tracks nesting depth).
+ */
+extern volatile uint32_t irq_system_state;
+
+/*
+ * Fast ISR context check using hardware IPSR register.
+ * Returns: true if currently in exception handler, false if in thread mode.
+ * Zero overhead: Single MRS instruction, no memory access or race conditions.
+ */
+static inline bool in_isr_context(void)
+{
+    return IPSR() != 0;
+}
+
+/*
+ * PRIMASK-based critical sections (blocks ALL interrupts).
+ */
 static inline void irq_disable(void)
 {
     __asm__ __volatile__("cpsid i" ::: "memory");
@@ -43,6 +71,53 @@ static inline uint32_t irq_save_flags(void)
 static inline void irq_restore_flags(uint32_t flags)
 {
     __asm__ __volatile__("msr primask, %0" ::"r"(flags) : "memory");
+}
+
+/*
+ * BASEPRI-based critical sections (blocks interrupts >= priority level).
+ * Zero-latency ISRs at priority 0x0-0x2 can preempt kernel critical sections.
+ */
+static inline void irq_disable_below(uint8_t priority)
+{
+    uint32_t basepri = (priority << 4) & 0xFF;
+    __asm__ __volatile__("msr basepri, %0" ::"r"(basepri) : "memory");
+}
+
+static inline void irq_enable_all(void)
+{
+    __asm__ __volatile__("msr basepri, %0" ::"r"(0) : "memory");
+}
+
+static inline uint32_t irq_save_basepri(uint8_t priority)
+{
+    uint32_t prev_basepri;
+    uint32_t new_basepri = (priority << 4) & 0xFF;
+    __asm__ __volatile__(
+        "mrs %0, basepri\n\t"
+        "msr basepri, %1"
+        : "=r"(prev_basepri)
+        : "r"(new_basepri)
+        : "memory");
+    return prev_basepri;
+}
+
+static inline void irq_restore_basepri(uint32_t basepri)
+{
+    __asm__ __volatile__("msr basepri, %0" ::"r"(basepri) : "memory");
+}
+
+/*
+ * Kernel critical section (masks interrupts >= 0x4, allows 0x0-0x3).
+ * Use this as the default for scheduler, IPC, and memory operations.
+ */
+static inline uint32_t irq_kernel_critical_enter(void)
+{
+    return irq_save_basepri(IRQ_PRIO_KERNEL_MASK >> 4);
+}
+
+static inline void irq_kernel_critical_exit(uint32_t basepri)
+{
+    irq_restore_basepri(basepri);
 }
 
 static inline void irq_svc(void)
@@ -242,7 +317,6 @@ extern volatile uint32_t __irq_saved_regs[8];
         request_schedule();    \
         irq_return();          \
     }
-
 extern volatile tcb_t *current;
 
 #endif /* PLATFORM_IRQ_H_ */

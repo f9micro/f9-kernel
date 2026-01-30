@@ -21,7 +21,8 @@ platform-y = \
 	debug_device.o \
 	mpu.o \
 	spinlock.o \
-	irq.o
+	irq.o \
+	irq-latency.o
 
 platform-$(CONFIG_DEBUG_DEV_UART) += debug_uart.o
 platform-$(CONFIG_DEBUG_DEV_RAM) += debug_ram.o

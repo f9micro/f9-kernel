@@ -30,6 +30,8 @@ extern void kdb_dump_as(void);
 extern void kdb_show_sampling(void);
 extern void kdb_show_tickless_verify(void);
 extern void kdb_dump_notifications(void);
+extern void kdb_show_latency(void);
+extern void kdb_reset_latency(void);
 
 struct kdb_t kdb_functions[] = {
     {.option = 'K',
@@ -84,6 +86,14 @@ struct kdb_t kdb_functions[] = {
      .menuentry = "show tickless scheduling stat",
      .function = kdb_show_tickless_verify},
 #endif
+    {.option = 'L',
+     .name = "LATENCY",
+     .menuentry = "show interrupt latency",
+     .function = kdb_show_latency},
+    {.option = 'r',
+     .name = "RESET LATENCY",
+     .menuentry = "reset latency statistics",
+     .function = kdb_reset_latency},
     /* Insert KDB functions here */
 };
 

@@ -100,25 +100,25 @@ void sched_enqueue(tcb_t *thread)
 {
     uint8_t prio;
     tcb_t *head;
-    uint32_t flags;
+    uint32_t basepri;
 
     if (!thread)
         return;
 
-    flags = irq_save_flags();
+    basepri = irq_kernel_critical_enter();
 
     /* Strict invariant: only runnable threads in ready queues
      * Check inside critical section to prevent race with state changes
      */
     if (thread->state != T_RUNNABLE) {
-        irq_restore_flags(flags);
+        irq_kernel_critical_exit(basepri);
         panic("SCHED: Enqueueing non-runnable thread %t (state %d)\n",
               thread->t_globalid, thread->state);
     }
 
     /* Don't double-enqueue */
     if (sched_is_queued(thread)) {
-        irq_restore_flags(flags);
+        irq_kernel_critical_exit(basepri);
         return;
     }
 
@@ -147,7 +147,7 @@ void sched_enqueue(tcb_t *thread)
         /* Bitmap already set - no update needed */
     }
 
-    irq_restore_flags(flags);
+    irq_kernel_critical_exit(basepri);
 }
 
 /**
@@ -159,16 +159,16 @@ void sched_dequeue(tcb_t *thread)
 {
     uint8_t prio;
     tcb_t *prev, *next;
-    uint32_t flags;
+    uint32_t basepri;
 
     if (!thread)
         return;
 
-    flags = irq_save_flags();
+    basepri = irq_kernel_critical_enter();
 
     /* Not in queue */
     if (!sched_is_queued(thread)) {
-        irq_restore_flags(flags);
+        irq_kernel_critical_exit(basepri);
         return;
     }
 
@@ -197,7 +197,7 @@ void sched_dequeue(tcb_t *thread)
     /* Mark as not queued */
     sched_link_init(thread);
 
-    irq_restore_flags(flags);
+    irq_kernel_critical_exit(basepri);
 }
 
 /**
@@ -210,15 +210,15 @@ void sched_yield(void)
     tcb_t *curr = thread_current();
     uint8_t prio;
     tcb_t *head;
-    uint32_t flags;
+    uint32_t basepri;
 
     if (!curr)
         return;
 
-    flags = irq_save_flags();
+    basepri = irq_kernel_critical_enter();
 
     if (!sched_is_queued(curr)) {
-        irq_restore_flags(flags);
+        irq_kernel_critical_exit(basepri);
         return;
     }
 
@@ -245,7 +245,7 @@ void sched_yield(void)
         ready_queue[prio] = head->sched_link.next;
     }
 
-    irq_restore_flags(flags);
+    irq_kernel_critical_exit(basepri);
 }
 
 /**
@@ -268,15 +268,15 @@ tcb_t *schedule_select(void)
     uint32_t prio;
     tcb_t *thread;
     tcb_t *curr;
-    uint32_t flags;
+    uint32_t basepri;
 
-    flags = irq_save_flags();
+    basepri = irq_kernel_critical_enter();
 
     /* CLZ returns 32 if bitmap is 0 (no branches needed) */
     prio = clz32(ready_bitmap);
 
     if (prio >= SCHED_PRIORITY_LEVELS) {
-        irq_restore_flags(flags);
+        irq_kernel_critical_exit(basepri);
         /* Not reached: idle thread should always be runnable */
         panic("SCHED: Empty ready_bitmap (idle missing)\n");
         return NULL;
@@ -286,7 +286,7 @@ tcb_t *schedule_select(void)
 
     /* Safety check for consistency */
     if (!thread) {
-        irq_restore_flags(flags);
+        irq_kernel_critical_exit(basepri);
         panic("SCHED: Inconsistent bitmap/queue at prio %d\n", prio);
         return NULL;
     }
@@ -310,7 +310,7 @@ tcb_t *schedule_select(void)
                        "SCHED: PTS defer prio %d (curr %t thresh %d)\n", prio,
                        curr->t_globalid, curr->preempt_threshold);
 
-            irq_restore_flags(flags);
+            irq_kernel_critical_exit(basepri);
             return curr; /* Continue running current thread */
         }
     }
@@ -320,7 +320,7 @@ tcb_t *schedule_select(void)
      */
     preempted_bitmap &= ~(1UL << (31 - prio));
 
-    irq_restore_flags(flags);
+    irq_kernel_critical_exit(basepri);
     /* Strict invariant: queued threads are always runnable */
     return thread;
 }
@@ -335,7 +335,7 @@ tcb_t *schedule_select(void)
  */
 void sched_set_priority(tcb_t *thread, uint8_t new_prio)
 {
-    uint32_t flags;
+    uint32_t basepri;
     int was_queued;
 
     if (!thread)
@@ -344,11 +344,11 @@ void sched_set_priority(tcb_t *thread, uint8_t new_prio)
     if (new_prio >= SCHED_PRIORITY_LEVELS)
         new_prio = SCHED_PRIO_IDLE;
 
-    flags = irq_save_flags();
+    basepri = irq_kernel_critical_enter();
 
     /* Check if priority actually changes */
     if (thread->priority == new_prio) {
-        irq_restore_flags(flags);
+        irq_kernel_critical_exit(basepri);
         return;
     }
 
@@ -364,7 +364,7 @@ void sched_set_priority(tcb_t *thread, uint8_t new_prio)
     if (was_queued)
         sched_enqueue(thread);
 
-    irq_restore_flags(flags);
+    irq_kernel_critical_exit(basepri);
 }
 
 /**
@@ -389,7 +389,7 @@ int sched_preemption_change(tcb_t *thread,
                             uint8_t new_threshold,
                             uint8_t *old_threshold)
 {
-    uint32_t flags;
+    uint32_t basepri;
     uint8_t old_thresh;
     int should_reschedule = 0;
 
@@ -410,7 +410,7 @@ int sched_preemption_change(tcb_t *thread,
         return -1;
     }
 
-    flags = irq_save_flags();
+    basepri = irq_kernel_critical_enter();
 
     /* Save old threshold (return user-set value) */
     old_thresh = thread->user_preempt_threshold;
@@ -456,7 +456,7 @@ int sched_preemption_change(tcb_t *thread,
         }
     }
 
-    irq_restore_flags(flags);
+    irq_kernel_critical_exit(basepri);
 
     /* Trigger reschedule if needed (outside critical section) */
     if (should_reschedule) {
