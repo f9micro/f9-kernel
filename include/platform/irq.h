@@ -317,6 +317,38 @@ extern volatile uint32_t __irq_saved_regs[8];
         request_schedule();    \
         irq_return();          \
     }
+
+/*
+ * SVC_HANDLER - Specialized handler for SVC exceptions requiring R4-R11
+ * preservation.
+ *
+ * Unlike IRQ_HANDLER, this variant saves R4-R11 to __irq_saved_regs BEFORE
+ * calling the C handler, ensuring message registers are captured untouched.
+ *
+ * This is critical for IPC fastpath optimization where user message registers
+ * (MR0-MR7 in R4-R11) must be available before any C code runs.
+ *
+ * IMPORTANT: Must restore R4-R11 before returning since the C handler may
+ * clobber these registers.
+ *
+ * Usage: SVC_HANDLER(svc_handler, __svc_handler);
+ */
+#define SVC_HANDLER(name, sub)                                            \
+    void name(void) __NAKED;                                              \
+    void name(void)                                                       \
+    {                                                                     \
+        irq_enter();                                                      \
+        irq_save_regs_only();                                             \
+        sub();                                                            \
+        request_schedule();                                               \
+        /* Restore R4-R11 before returning */                             \
+        __asm__ __volatile__(                                             \
+            "ldr r0, =__irq_saved_regs\n\t"                               \
+            "ldm r0, {r4-r11}" ::                                         \
+                : "r0", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", \
+                  "memory");                                              \
+        irq_return();                                                     \
+    }
 extern volatile tcb_t *current;
 
 #endif /* PLATFORM_IRQ_H_ */

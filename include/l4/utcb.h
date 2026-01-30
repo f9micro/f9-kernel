@@ -25,8 +25,15 @@ struct utcb {
     uint32_t thread_word_1;
     uint32_t thread_word_2;
     /* +12w */
-    uint32_t mr[8]; /* MRs 8-15 (0-8 are laying in
-               r4..r11 [thread's context]) */
+    /* Message Registers (MR) mapping with short message buffer:
+     * MR0-MR7:   Hardware registers R4-R11 (ctx.regs[0-7]) - 32 bytes
+     * MR8-MR39:  Short message buffer (tcb->msg_buffer[0-31]) - 128 bytes
+     * MR40-MR47: UTCB overflow (mr[0-7]) - 32 bytes
+     *
+     * Total message capacity: 192 bytes (48 words)
+     * Fastpath capacity: 160 bytes (40 words, MR0-MR39)
+     */
+    uint32_t mr[8]; /* MRs 40-47 (overflow beyond short buffer) */
                     /* +20w */
     uint32_t br[8];
     /* +28w */

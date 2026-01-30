@@ -166,6 +166,22 @@ struct tcb {
     uint8_t notify_pending;
 
     uint8_t _notify_pad[1]; /* Alignment padding */
+
+    /* Short message buffer for IPC fastpath optimization.
+     * Extends fastpath coverage from 32 bytes (registers only) to 160 bytes.
+     * Maps to L4 virtual registers MR8-MR39 (32 additional 4-byte registers).
+     *
+     * Memory layout:
+     * - MR0-MR7:   ctx.regs[0-7]     (32 bytes, R4-R11 hardware registers)
+     * - MR8-MR39:  msg_buffer[0-31]  (128 bytes, TCB-embedded buffer)
+     * - MR40-MR47: utcb->mr[0-7]     (32 bytes, UTCB overflow)
+     *
+     * Fastpath eligibility: n_untyped <= 39 (160 bytes total)
+     * Expected fastpath coverage: 70% → 95%
+     *
+     * RAM impact: 128 bytes × 20 threads = 2.5 KB (1.3% of 192KB)
+     */
+    uint32_t msg_buffer[32];
 };
 typedef struct tcb tcb_t;
 
