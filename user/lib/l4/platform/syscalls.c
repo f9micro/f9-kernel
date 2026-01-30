@@ -127,10 +127,16 @@ L4_MsgTag_t L4_Ipc(L4_ThreadId_t to,
     register L4_Word_t r1 __asm__("r1") = FromSpecifier.raw;
     register L4_Word_t r2 __asm__("r2") = Timeouts;
 
+    /* CRITICAL: Declare R4-R11 as clobbered to force compiler to preserve
+     * global register variables (__L4_MR0-__L4_MR7) across the SVC call.
+     * Without this, compiler may generate code that uses R4-R11 as scratch
+     * registers before the SVC, corrupting the message registers.
+     */
     __asm__ __volatile__("svc %[syscall_num]\n"
                          : "+r"(r0)
                          : "r"(r1), "r"(r2), [syscall_num] "i"(SYS_IPC)
-                         : "memory");
+                         : "memory", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
+                           "r11");
 
     result.raw = __L4_MR0;
 

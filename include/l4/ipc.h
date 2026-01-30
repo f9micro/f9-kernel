@@ -9,7 +9,13 @@
 #define IPC_TI_MAP_GRANT 0x8
 #define IPC_TI_GRANT 0x2
 
-#define IPC_MR_COUNT 16
+/* Total MR capacity with short message buffer:
+ * MR0-MR7:   8 words in registers (ctx.regs[0-7])
+ * MR8-MR39: 32 words in msg_buffer[0-31]
+ * MR40-MR47: 8 words in UTCB (utcb->mr[0-7])
+ * Total: 48 MRs = 192 bytes
+ */
+#define IPC_MR_COUNT 48
 
 typedef union {
     struct {

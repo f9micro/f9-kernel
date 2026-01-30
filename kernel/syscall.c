@@ -10,6 +10,7 @@
 #include <l4/utcb.h>
 #include <memory.h>
 #include <platform/armv7m.h>
+#include <platform/ipc-fastpath.h>
 #include <platform/irq.h>
 #include <sched.h>
 #include <softirq.h>
@@ -28,24 +29,82 @@
 
 tcb_t *caller;
 
-void __svc_handler(void)
+/* Always returns 0; fastpath and slowpath both use PendSV for context switching
+ */
+int __svc_handler(void)
 {
     extern tcb_t *kernel;
+    uint32_t *svc_param;
+    uint8_t svc_num;
 
     /* Kernel requests context switch, satisfy it */
     if (thread_current() == kernel)
-        return;
+        return 0;
 
     caller = thread_current();
 
-    /* Dequeue before blocking (strict queue invariant) */
-    sched_dequeue(caller);
-    caller->state = T_SVC_BLOCKED;
+    /* CRITICAL: Read SVC frame from CURRENT PSP, not stale ctx.sp!
+     * ctx.sp is only updated during context switch, but user thread may have
+     * pushed/popped since then. Hardware SVC frame is on the CURRENT stack.
+     */
+    uint32_t psp;
+    __asm__ __volatile__("mrs %0, psp" : "=r"(psp));
+    svc_param = (uint32_t *) psp;
+    svc_num = ((char *) svc_param[REG_PC])[-2];
 
-    softirq_schedule(SYSCALL_SOFTIRQ);
+    if (svc_num == SYS_IPC) {
+        extern volatile uint32_t __irq_saved_regs[8];
+
+        /* Try fastpath with saved message registers */
+        if (ipc_fastpath_helper(caller, svc_param, __irq_saved_regs)) {
+            /* Fastpath succeeded - MRs copied, threads enqueued, PendSV
+             * requested. Caller is already T_RUNNABLE and enqueued by fastpath.
+             * Just return normally - PendSV will do the context switch. */
+            return 0; /* Normal return, PendSV will switch */
+        }
+
+        /* Fastpath failed, use slowpath */
+        /* Slowpath will dequeue caller in softirq handler */
+        sched_dequeue(caller);
+        caller->state = T_SVC_BLOCKED;
+        softirq_schedule(SYSCALL_SOFTIRQ);
+        return 0;
+    } else {
+        /* Non-IPC syscall */
+        sched_dequeue(caller);
+        caller->state = T_SVC_BLOCKED;
+        softirq_schedule(SYSCALL_SOFTIRQ);
+        return 0;
+    }
 }
 
-IRQ_HANDLER(svc_handler, __svc_handler);
+/* Custom SVC handler with fastpath support */
+void svc_handler(void) __NAKED;
+void svc_handler(void)
+{
+    /* Save LR and R4-R11 before any C code */
+    __asm__ __volatile__("push {lr}");
+    __asm__ __volatile__(
+        "ldr r0, =__irq_saved_regs\n\t"
+        "stm r0, {r4-r11}" ::
+            : "r0", "memory");
+
+    /* Call C handler - always returns 0 (context switch via PendSV) */
+    __svc_handler();
+
+    /* Restore R4-R11 BEFORE returning so PendSV saves original values */
+    __asm__ __volatile__(
+        "ldr r0, =__irq_saved_regs\n\t"
+        "ldm r0, {r4-r11}\n\t"
+        /* Now set PendSV and return normally */
+        "ldr r0, =0xE000ED04\n\t" /* SCB_ICSR */
+        "ldr r1, [r0]\n\t"
+        "orr r1, #0x10000000\n\t" /* SCB_ICSR_PENDSVSET */
+        "str r1, [r0]\n\t"
+        "pop {lr}\n\t"
+        "bx lr" ::
+            : "r0", "r1", "memory");
+}
 
 void syscall_init()
 {

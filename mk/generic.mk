@@ -105,6 +105,25 @@ qemu: $(out)/$(PROJECT).bin
 	-killall -q qemu-system-arm
 	$(QEMU) -M netduinoplus2 -nographic -kernel $(out)/$(PROJECT).elf -serial mon:stdio
 
+# QEMU with GDB debugging
+# Terminal 1: make qemu-gdb
+# Terminal 2: make gdb-attach
+.PHONY: qemu-gdb
+qemu-gdb: $(out)/$(PROJECT).bin
+	@echo "Starting QEMU with GDB server on port 1234..."
+	@echo "In another terminal, run: make gdb-attach"
+	@echo "Press Ctrl+C to exit"
+	-killall -q qemu-system-arm
+	$(QEMU) -M netduinoplus2 -nographic -kernel $(out)/$(PROJECT).elf -s -S
+
+.PHONY: gdb-attach
+gdb-attach: $(out)/$(PROJECT).elf
+	@echo "Connecting to QEMU GDB server..."
+	arm-none-eabi-gdb $(out)/$(PROJECT).elf \
+		-ex "target remote :1234" \
+		-ex "layout src" \
+		-ex "layout regs"
+
 # QEMU automated testing
 # Usage: make run-tests              (test suite)
 #        make run-tests FAULT=mpu    (MPU fault test)

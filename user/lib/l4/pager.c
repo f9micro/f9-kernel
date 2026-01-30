@@ -173,6 +173,9 @@ static void start_thread(L4_ThreadId_t t,
 {
     L4_Msg_t msg;
 
+    /* CRITICAL: Do NOT call functions after L4_MsgLoad!
+     * Any function call (including printf) will clobber R4-R11 (MR0-MR7)!
+     */
     L4_MsgClear(&msg);
     L4_MsgAppendWord(&msg, (L4_Word_t) thread_container);
     L4_MsgAppendWord(&msg, sp);

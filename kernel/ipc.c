@@ -35,19 +35,33 @@ static inline void thread_make_runnable(tcb_t *thr)
     sched_enqueue(thr);
 }
 
+/* Read message register with short buffer support.
+ * MR0-MR7:   Hardware registers R4-R11 (ctx.regs[0-7])
+ * MR8-MR39:  Short message buffer (msg_buffer[0-31]) - NEW
+ * MR40-MR47: UTCB overflow (utcb->mr[0-7])
+ */
 uint32_t ipc_read_mr(tcb_t *from, int i)
 {
-    if (i >= 8)
-        return from->utcb->mr[i - 8];
-    return from->ctx.regs[i];
+    if (i < 8)
+        return from->ctx.regs[i];
+    if (i < 40)
+        return from->msg_buffer[i - 8];
+    return from->utcb->mr[i - 40];
 }
 
+/* Write message register with short buffer support.
+ * MR0-MR7:   Hardware registers R4-R11 (ctx.regs[0-7])
+ * MR8-MR39:  Short message buffer (msg_buffer[0-31]) - NEW
+ * MR40-MR47: UTCB overflow (utcb->mr[0-7])
+ */
 void ipc_write_mr(tcb_t *to, int i, uint32_t data)
 {
-    if (i >= 8)
-        to->utcb->mr[i - 8] = data;
-    else
+    if (i < 8)
         to->ctx.regs[i] = data;
+    else if (i < 40)
+        to->msg_buffer[i - 8] = data;
+    else
+        to->utcb->mr[i - 40] = data;
 }
 
 static void user_ipc_error(tcb_t *thr, enum user_error_t error)
@@ -351,18 +365,18 @@ void sys_ipc(uint32_t *param1)
         } else if (to_thr && to_thr->state == T_INACTIVE &&
                    GLOBALID_TO_TID(to_thr->utcb->t_pager) ==
                        GLOBALID_TO_TID(caller->t_globalid)) {
-            if (ipc_read_mr(caller, 0) == 0x00000005) {
-                /* mr1: thread func, mr2: stack addr,
-                 * mr3: stack size
-                 * mr4: thread entry, mr5: thread args
-                 * thread start protocol */
+            uint32_t tag = ipc_read_mr(caller, 0);
+            if (tag == 0x00000005) {
+                /* Thread start protocol from pager:
+                 * mr1: thread_container (wrapper), mr2: sp,
+                 * mr3: stack size, mr4: entry point, mr5: entry arg */
 
+                uint32_t mr1_container = ipc_read_mr(caller, 1);
                 memptr_t sp = ipc_read_mr(caller, 2);
                 size_t stack_size = ipc_read_mr(caller, 3);
+                uint32_t entry_point = ipc_read_mr(caller, 4);
+                uint32_t entry_arg = ipc_read_mr(caller, 5);
                 uint32_t regs[4]; /* r0, r1, r2, r3 */
-
-                dbg_printf(DL_IPC, "IPC: %t thread start sp:%p stack_size:%p\n",
-                           to_tid, sp, stack_size);
 
                 /* Security check: Ensure stack is in user-writable memory */
                 int pid = mempool_search(sp - stack_size, stack_size);
@@ -387,10 +401,12 @@ void sys_ipc(uint32_t *param1)
 
                 regs[REG_R0] = (uint32_t) &kip;
                 regs[REG_R1] = (uint32_t) to_thr->utcb;
-                regs[REG_R2] = ipc_read_mr(caller, 4);
-                regs[REG_R3] = ipc_read_mr(caller, 5);
-                thread_init_ctx((void *) sp, (void *) ipc_read_mr(caller, 1),
-                                regs, to_thr);
+                regs[REG_R2] =
+                    entry_point; /* Actual entry passed to container */
+                regs[REG_R3] = entry_arg;
+
+                thread_init_ctx((void *) sp, (void *) mr1_container, regs,
+                                to_thr);
 
                 thread_make_runnable(caller);
 
