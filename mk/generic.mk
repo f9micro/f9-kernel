@@ -50,11 +50,18 @@ OLDCONFIG := $(KCONFIG_DIR)/oldconfig.py
 SAVEDEFCONFIG := $(KCONFIG_DIR)/savedefconfig.py
 
 # Kconfiglib commands
-cmd_menuconfig = KCONFIG_CONFIG=$(CONFIG) python3 $(MENUCONFIG) $(KCONFIG)
-cmd_genconfig = KCONFIG_CONFIG=$(CONFIG) python3 $(GENCONFIG) --header-path include/autoconf.h $(KCONFIG)
-cmd_board_defconfig = KCONFIG_CONFIG=$(CONFIG) python3 $(DEFCONFIG) --kconfig $(KCONFIG) board/$*/defconfig
-cmd_oldconfig = KCONFIG_CONFIG=$(CONFIG) python3 $(OLDCONFIG) $(KCONFIG)
-cmd_savedefconfig = KCONFIG_CONFIG=$(CONFIG) python3 $(SAVEDEFCONFIG) --kconfig $(KCONFIG) --out board/$(BOARD)/defconfig
+cmd_menuconfig = KCONFIG_CONFIG=$(CONFIG) $(PYTHON) $(MENUCONFIG) $(KCONFIG)
+cmd_genconfig = KCONFIG_CONFIG=$(CONFIG) $(PYTHON) $(GENCONFIG) --header-path include/autoconf.h $(KCONFIG)
+cmd_board_defconfig = KCONFIG_CONFIG=$(CONFIG) $(PYTHON) $(DEFCONFIG) --kconfig $(KCONFIG) board/$*/defconfig
+cmd_oldconfig = KCONFIG_CONFIG=$(CONFIG) $(PYTHON) $(OLDCONFIG) $(KCONFIG)
+cmd_savedefconfig = KCONFIG_CONFIG=$(CONFIG) $(PYTHON) $(SAVEDEFCONFIG) --kconfig $(KCONFIG) --out board/$(BOARD)/defconfig
+
+# Auto-regenerate autoconf.h when .config changes
+# Error handling: Remove partial file on failure to force retry on next build
+include/autoconf.h: $(CONFIG) $(GENCONFIG)
+	@echo "  GENCONFIG include/autoconf.h (config changed)"
+	@$(cmd_genconfig) || { rm -f include/autoconf.h; \
+		echo "ERROR: Failed to generate autoconf.h"; false; }
 
 .PHONY: bare
 bare: $(out)/$(PROJECT).bin
@@ -71,16 +78,18 @@ $(out)/%.list: $(out)/%.elf
 $(out)/%.elf: $(out)/f9_nosym.elf $(symmap_obj-list)
 	$(call quiet,elf_relink,LD     )
 
-$(out)/f9_nosym.elf: $(objs)
+# Build depends on valid autoconf.h
+$(out)/f9_nosym.elf: $(objs) include/autoconf.h
 	$(call quiet,elf,LD     )
 
-$(out)/user/%.o:user/%.c
+# All compilation depends on autoconf.h being up-to-date
+$(out)/user/%.o:user/%.c include/autoconf.h
 	$(call quiet,c_to_o_user,CC     )
 
-$(out)/%.o:%.c
+$(out)/%.o:%.c include/autoconf.h
 	$(call quiet,c_to_o,CC     )
 
-$(out)/%.o:%.S
+$(out)/%.o:%.S include/autoconf.h
 	$(call quiet,c_to_o,AS     )
 
 $(build-utils): $(out)/%:%.c

@@ -1,18 +1,63 @@
-# Copyright (c) 2015-2017 The F9 Microkernel Project. All rights reserved.
+# Copyright (c) 2015-2017,2026 The F9 Microkernel Project. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 menu "User Space"
 
-config BUILD_USER_APPS
-	bool "Build user applications for F9 microkernel"
+choice
+	prompt "User Application"
+	default USER_APP_TESTS
+	help
+	  Select which user application to build and run.
+	  Only one application can be active at a time to avoid
+	  memory contention and resource conflicts.
+
+config USER_APP_TESTS
+	bool "Test Suite (Automated Testing)"
+	help
+	  Machine-parseable test suite for automated CI/CD.
+
+	  Commands:
+	    make run-tests              - Run test suite
+	    make run-tests FAULT=mpu    - Run MPU fault test
+	    make run-tests FAULT=canary - Run stack canary test
+
+	  Test suite verifies IPC, threads, scheduler, timer, memory,
+	  and notification subsystems. Recommended for development and CI/CD.
+
+config USER_APP_PINGPONG
+	bool "Pingpong Demo"
+	help
+	  Simple IPC demonstration with two threads exchanging messages.
+	  Useful for testing basic IPC functionality and as a minimal example.
+
+config USER_APP_NONE
+	bool "No user application"
+	help
+	  Do not build any user application. Kernel-only build.
+	  Useful for kernel development and KDB debugging.
+
+endchoice
+
+# Hardware-specific test cases (requires user application)
+menu "Hardware Test Cases"
+	depends on USER_APP_TESTS || USER_APP_PINGPONG
+
+config LCD_TEST
+	bool "LCD Test Cases"
 	default n
-	---help---
-		Enable this options to will compile userspace apps
-		into f9-kernel, This may let you unable to use kdb.
+	help
+	  LCD hardware test cases for boards with LCD support.
+	  Available when user application is enabled.
 
-source "user/Kconfig.apps"
+config EXTI_INTERRUPT_TEST
+	bool "EXTI interrupt test case"
+	default n
+	depends on EXTI0_USER_IRQ && EXTI1_USER_IRQ
+	help
+	  External interrupt (EXTI) test for hardware validation.
+	  Requires EXTI0 and EXTI1 user IRQ support.
 
-source "user/Kconfig.tests"
+endmenu
 
 endmenu

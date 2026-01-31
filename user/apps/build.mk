@@ -2,22 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-ifdef CONFIG_BUILD_USER_APPS
-
 user-apps-dirs = ""
 
-ifdef CONFIG_PINGPONG
+ifdef CONFIG_USER_APP_PINGPONG
 user-apps-dirs += \
 	pingpong
+endif
+
+ifdef CONFIG_USER_APP_TESTS
+user-apps-dirs += \
+	tests
 endif
 
 ifdef CONFIG_LCD_TEST
 user-apps-dirs += \
 	lcd_test
-endif
-
-ifdef CONFIG_TESTS
-user-apps-dirs += \
-	tests
-endif
 endif
