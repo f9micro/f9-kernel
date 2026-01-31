@@ -16,6 +16,9 @@ NM = $(CROSS_COMPILE)nm
 
 BUILDCC = $(HOST_COMPILE)gcc
 
+# Python interpreter for build scripts (Kconfig tools, test runners)
+PYTHON ?= python3
+
 # Misc Information
 GIT_HEAD = $(shell git rev-parse HEAD)
 MACH_TYPE = $(shell uname -m)
