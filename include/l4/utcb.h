@@ -25,24 +25,31 @@ struct utcb {
     uint32_t thread_word_1;
     uint32_t thread_word_2;
     /* +12w */
-    /* Message Registers (MR) mapping with short message buffer:
-     * MR0-MR7:   Hardware registers R4-R11 (ctx.regs[0-7]) - 32 bytes
-     * MR8-MR39:  Short message buffer (tcb->msg_buffer[0-31]) - 128 bytes
-     * MR40-MR47: UTCB overflow (mr[0-7]) - 32 bytes
+    /* Message Registers (MR) storage:
      *
-     * Total message capacity: 192 bytes (48 words)
-     * Fastpath capacity: 160 bytes (40 words, MR0-MR39)
+     * User-space perspective (via L4_LoadMR/L4_StoreMR):
+     * - MR0-MR7:   mr_low[0-7] (UTCB storage, marshaled to R4-R11 by L4_Ipc)
+     * - MR8-MR39:  tcb->msg_buffer[0-31] (kernel copies to receiver)
+     * - MR40-MR47: mr[0-7] (UTCB overflow)
+     *
+     * Kernel perspective (ctx.regs[] = saved R4-R11):
+     * - On SVC entry: kernel reads R4-R11 from exception frame
+     * - On SVC exit: kernel restores R4-R11 to exception frame
+     * - L4_Ipc loads mr_low→R4-R11 before SVC, stores after
+     *
+     * This decouples MRs from physical registers, preventing corruption
+     * when C functions are called between L4_LoadMR and L4_Ipc.
      */
+    uint32_t mr_low[8]; /* MRs 0-7 (user-space cache, R4-R11 equivalent) */
+    /* +20w */
     uint32_t mr[8]; /* MRs 40-47 (overflow beyond short buffer) */
-                    /* +20w */
-    uint32_t br[8];
     /* +28w */
-    uint32_t reserved[4];
-    /* +32w */
+    uint32_t br[8];
+    /* +36w */
 };
 
 typedef struct utcb utcb_t;
 
-#define UTCB_SIZE 128
+#define UTCB_SIZE 144
 
 #endif /* L4_UTCB_H_ */

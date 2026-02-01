@@ -35,6 +35,16 @@ static inline void thread_make_runnable(tcb_t *thr)
     sched_enqueue(thr);
 }
 
+/* Make sender runnable, restoring base priority.
+ * IPC senders should not retain receiver's priority boost.
+ */
+static inline void thread_make_sender_runnable(tcb_t *thr)
+{
+    if (thr->priority != thr->base_priority)
+        sched_set_priority(thr, thr->base_priority);
+    thread_make_runnable(thr);
+}
+
 /* Read message register with short buffer support.
  * MR0-MR7:   Hardware registers R4-R11 (ctx.regs[0-7])
  * MR8-MR39:  Short message buffer (msg_buffer[0-31]) - NEW
@@ -194,20 +204,41 @@ static void do_ipc(tcb_t *from, tcb_t *to)
 
     to->utcb->sender = from->t_globalid;
 
-    /* Temporarily boost receiver priority for IPC fast path.
-     * base_priority is preserved; effective priority restored
-     * when thread is descheduled (in thread_switch).
+    /* Conditionally boost receiver priority for IPC fast path.
+     * Only boost if receiver was waiting for ANY message (ipc_from ==
+     * ANYTHREAD). If waiting for a specific reply, skip boost - thread was just
+     * processing an IPC and will return to user code immediately after
+     * receiving reply.
+     *
+     * This prevents priority inversion where reply receivers accumulate
+     * priority 3 and starve lower-priority threads indefinitely.
      */
-    sched_set_priority(to, SCHED_PRIO_IPC);
-    thread_make_runnable(to);
-    to->ipc_from = L4_NILTHREAD;
+    /* Write receiver's R0 (sender ID) and UTCB sender BEFORE making runnable.
+     * If enqueue happens first and scheduler runs preemptively,
+     * receiver could see stale R0 value.
+     */
     ((uint32_t *) to->ctx.sp)[REG_R0] = from->t_globalid;
+    to->utcb->sender = from->t_globalid;
+
+    /* Check ipc_from BEFORE clearing it for priority boost decision */
+    if (to->ipc_from == L4_ANYTHREAD)
+        sched_set_priority(to, SCHED_PRIO_IPC);
+    to->ipc_from = L4_NILTHREAD;
+    thread_make_runnable(to);
 
     /* If from has receive phases, lock myself */
     from_recv_tid = ((uint32_t *) from->ctx.sp)[REG_R1];
     if (from_recv_tid == L4_NILTHREAD) {
-        thread_make_runnable(from);
+        /* Sender doesn't have receive phase - restore base priority.
+         * This prevents IPC priority boost from accumulating across calls.
+         */
+        thread_make_sender_runnable(from);
     } else {
+        /* Sender has receive phase - restore base priority before blocking.
+         * When woken up, receiver will be boosted appropriately.
+         */
+        if (from->priority != from->base_priority)
+            sched_set_priority(from, from->base_priority);
         from->state = T_RECV_BLOCKED;
         from->ipc_from = from_recv_tid;
 
@@ -335,7 +366,8 @@ void sys_ipc(uint32_t *param1)
     l4_thread_t to_tid = param1[REG_R0], from_tid = param1[REG_R1];
     uint32_t timeout = param1[REG_R2];
 
-
+    dbg_printf(DL_KDB, "IPC: %t->%t from=%t timeout=%p\n", caller->t_globalid,
+               to_tid, from_tid, timeout);
 
     if (to_tid == L4_NILTHREAD && from_tid == L4_NILTHREAD) {
         dbg_printf(DL_KDB, "IPC: sleep tid=%t timeout=%p\n", caller->t_globalid,
@@ -362,10 +394,14 @@ void sys_ipc(uint32_t *param1)
             /* To thread who is waiting for us or sends to myself */
             do_ipc(caller, to_thr);
             return;
-        } else if (to_thr && to_thr->state == T_INACTIVE &&
+        } else if (to_thr && to_thr->state == T_INACTIVE && to_thr->utcb &&
                    GLOBALID_TO_TID(to_thr->utcb->t_pager) ==
                        GLOBALID_TO_TID(caller->t_globalid)) {
+            dbg_printf(DL_KDB,
+                       "IPC: INACTIVE thread %t accepted (pager match)\n",
+                       to_tid);
             uint32_t tag = ipc_read_mr(caller, 0);
+            dbg_printf(DL_KDB, "IPC: startup tag=%p\n", tag);
             if (tag == 0x00000005) {
                 /* Thread start protocol from pager:
                  * mr1: thread_container (wrapper), mr2: sp,
@@ -378,13 +414,19 @@ void sys_ipc(uint32_t *param1)
                 uint32_t entry_arg = ipc_read_mr(caller, 5);
                 uint32_t regs[4]; /* r0, r1, r2, r3 */
 
+                dbg_printf(DL_KDB,
+                           "IPC: start sp=%p size=%p entry=%p container=%p\n",
+                           sp, stack_size, entry_point, mr1_container);
+
                 /* Security check: Ensure stack is in user-writable memory */
                 int pid = mempool_search(sp - stack_size, stack_size);
                 mempool_t *mp = mempool_getbyid(pid);
 
+                dbg_printf(DL_KDB, "IPC: mempool pid=%d mp=%p\n", pid, mp);
+
                 if (!mp || !(mp->flags & MP_UW)) {
                     dbg_printf(
-                        DL_IPC,
+                        DL_KDB,
                         "IPC: REJECT invalid stack for %t: %p (pool %s)\n",
                         to_tid, sp - stack_size, mp ? mp->name : "N/A");
                     user_ipc_error(caller, UE_IPC_ABORTED | UE_IPC_PHASE_SEND);
@@ -396,7 +438,7 @@ void sys_ipc(uint32_t *param1)
                 to_thr->stack_size = stack_size;
                 thread_init_canary(to_thr);
 
-                dbg_printf(DL_IPC, "IPC: %t stack_base:%p stack_size:%p\n",
+                dbg_printf(DL_KDB, "IPC: %t stack_base:%p stack_size:%p\n",
                            to_tid, to_thr->stack_base, to_thr->stack_size);
 
                 regs[REG_R0] = (uint32_t) &kip;
@@ -405,14 +447,21 @@ void sys_ipc(uint32_t *param1)
                     entry_point; /* Actual entry passed to container */
                 regs[REG_R3] = entry_arg;
 
+                dbg_printf(DL_KDB, "IPC: calling thread_init_ctx\n");
                 thread_init_ctx((void *) sp, (void *) mr1_container, regs,
                                 to_thr);
+                dbg_printf(DL_KDB, "IPC: thread_init_ctx done\n");
 
+                dbg_printf(DL_KDB, "IPC: making caller %t runnable\n",
+                           caller->t_globalid);
                 thread_make_runnable(caller);
 
                 /* Start thread */
+                dbg_printf(DL_KDB, "IPC: making to_thr %t runnable\n",
+                           to_thr->t_globalid);
                 thread_make_runnable(to_thr);
 
+                dbg_printf(DL_KDB, "IPC: startup complete for %t\n", to_tid);
                 return;
             } else {
                 /* Non-start IPC to INACTIVE thread: process
@@ -494,12 +543,18 @@ void sys_ipc(uint32_t *param1)
             }
 
             if (to_thr->state == T_INACTIVE && !timeout) {
-                /* T_INACTIVE thread with no timeout.
-                 * Would block forever - return error.
-                 * With timeout, we can safely block and wait.
-                 */
+                /* T_INACTIVE thread with no timeout - would block forever */
                 dbg_printf(DL_IPC, "IPC: %t send to INACTIVE %t (no timeout)\n",
                            caller->t_globalid, to_tid);
+                if (to_thr->utcb) {
+                    dbg_printf(
+                        DL_IPC,
+                        "IPC: INACTIVE reject: caller=%t pager=%t utcb=%p\n",
+                        caller->t_globalid, to_thr->utcb->t_pager,
+                        to_thr->utcb);
+                } else {
+                    dbg_printf(DL_IPC, "IPC: INACTIVE reject: utcb=NULL\n");
+                }
                 user_ipc_error(caller, UE_IPC_ABORTED | UE_IPC_PHASE_SEND);
                 thread_make_runnable(caller);
                 return;

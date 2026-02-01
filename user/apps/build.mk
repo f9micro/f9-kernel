@@ -18,3 +18,8 @@ ifdef CONFIG_LCD_TEST
 user-apps-dirs += \
 	lcd_test
 endif
+
+ifdef CONFIG_USER_APP_POSIX
+user-apps-dirs += \
+	posix
+endif

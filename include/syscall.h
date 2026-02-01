@@ -20,6 +20,9 @@ typedef enum {
     SYS_PROCESSOR_CONTROL,
     SYS_MEMORY_CONTROL,
     SYS_TIMER_NOTIFY, /* Timer notification syscall */
+    SYS_NOTIFY_WAIT,  /* Wait for notification bits */
+    SYS_NOTIFY_POST,  /* Post notification bits to thread */
+    SYS_NOTIFY_CLEAR, /* Clear notification bits (non-blocking) */
 } syscall_t;
 
 void svc_handler(void);

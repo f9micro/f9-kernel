@@ -49,6 +49,22 @@ static uint32_t ktimer_enabled = 0;
 static uint32_t ktimer_delta = 0;
 static long long ktimer_time = 0;
 
+/* Get current kernel time in ticks since boot.
+ * Returns 64-bit monotonically increasing tick count.
+ * Used by SYS_SYSTEM_CLOCK syscall for userspace time queries.
+ *
+ * ATOMICITY: Disables interrupts to prevent torn reads on 32-bit ARM.
+ * Without this, the timer ISR could update ktimer_now between reading
+ * the low and high words, producing non-monotonic or corrupted values.
+ */
+uint64_t ktimer_get_now(void)
+{
+    uint32_t flags = irq_save_flags();
+    uint64_t now = ktimer_now;
+    irq_restore_flags(flags);
+    return now;
+}
+
 extern uint32_t SystemCoreClock;
 
 static void ktimer_init(void)
@@ -281,11 +297,10 @@ static uint32_t ktimer_notify_handler(void *data)
     /* Deliver notification immediately (in IRQ context) */
     notification_signal(thr, kte->notify_bits);
 
-    /* Wake thread if blocked */
-    if (thr->state == T_RECV_BLOCKED) {
-        thr->state = T_RUNNABLE;
-        sched_enqueue(thr);
-    }
+    /* Wake thread with proper SYS_NOTIFY_WAIT protocol:
+     * - Check mask match, clear matched bits, write R0, wake
+     */
+    notify_wake_thread(thr);
 #else
     /* Notification delivery with optional coalescing.
      * If coalescing active: accumulate bits in cache, deliver once per thread.

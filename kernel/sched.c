@@ -474,6 +474,8 @@ int sched_preemption_change(tcb_t *thread,
 int schedule(void)
 {
     tcb_t *scheduled = schedule_select();
+    dbg_printf(DL_KDB, "SCHED: switching to %t state=%d\n",
+               scheduled->t_globalid, scheduled->state);
     thread_switch(scheduled);
     return 1;
 }

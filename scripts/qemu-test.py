@@ -212,13 +212,25 @@ def run_qemu(elf_path: str, timeout: int) -> TestResults:
                 # Parse test markers (before display filtering)
                 exit_requested = parse_test_line(line, results)
 
-                # Check for test suite start marker
-                if "=== Running" in stripped:
+                # Check for test suite start marker (various formats)
+                if "[TEST:START]" in stripped or (
+                    "===" in stripped
+                    and (
+                        "Running" in stripped
+                        or "PSE5" in stripped
+                        or "Compliance" in stripped
+                        or "test_suite" in stripped
+                    )
+                ):
                     test_started = True
 
-                # Display only test results (=== Running or Test lines)
+                # Display only test results (=== headers or Test result lines)
                 if test_started and stripped:
-                    if stripped.startswith("=== ") or stripped.startswith("Test "):
+                    if (
+                        stripped.startswith("=== ")
+                        or stripped.startswith("Test ")
+                        or stripped.startswith("[TEST:")
+                    ):
                         sys.stdout.write(f"  {stripped}\n")
                         sys.stdout.flush()
                     elif not stripped.startswith("[TEST:"):
@@ -535,12 +547,18 @@ def main():
 
         if results.failed > 0:
             print("[RESULT] FAILED")
+            results.exit_code = 1
             if results.unexpected_output:
                 print("\n[DEBUG] Unexpected output:")
                 for line in results.unexpected_output[-20:]:
                     print(f"  {line}")
         elif results.passed > 0:
-            print("[RESULT] PASSED")
+            # Only report PASSED if run_qemu didn't already set an error.
+            # This preserves timeout or missing [TEST:EXIT] errors.
+            if results.exit_code == 0:
+                print("[RESULT] PASSED")
+            else:
+                print(f"[RESULT] PASSED (but exit_code={results.exit_code})")
         else:
             print("[RESULT] NO TESTS RUN")
             results.exit_code = 1

@@ -81,4 +81,14 @@ L4_Word_t L4_ProcessorControl(L4_Word_t ProcessorNo,
 __USER_TEXT
 L4_Word_t L4_MemoryControl(L4_Word_t control, const L4_Word_t *attributes);
 
+/* Notification syscalls - direct kernel notification without pager IPC */
+__USER_TEXT
+L4_Word_t L4_NotifyWait(L4_Word_t mask);
+
+__USER_TEXT
+L4_Word_t L4_NotifyPost(L4_ThreadId_t target, L4_Word_t bits);
+
+__USER_TEXT
+L4_Word_t L4_NotifyClear(L4_Word_t bits);
+
 #endif /* !__L4_PLATFORM_SYSCALLS_H__ */

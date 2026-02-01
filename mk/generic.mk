@@ -134,27 +134,38 @@ gdb-attach: $(out)/$(PROJECT).elf
 		-ex "layout regs"
 
 # QEMU automated testing
-# Usage: make run-tests              (test suite)
+# Usage: make run-tests              (runs tests based on USER_APP_* config)
 #        make run-tests FAULT=mpu    (MPU fault test)
 #        make run-tests FAULT=canary (stack canary test)
+#
+# Test suite selection is determined by .config:
+#   CONFIG_USER_APP_TESTS=y  -> Kernel test suite (IPC, threads, memory, etc.)
+#   CONFIG_USER_APP_POSIX=y  -> POSIX compliance tests (PSE51 + PSE52)
 .PHONY: run-tests
-run-tests:
+
+run-tests: $(out)/$(PROJECT).elf
 ifeq ($(FAULT),mpu)
 	@echo "Building with FAULT_TYPE=1 (MPU)..."
 	@$(MAKE) clean $(silent)
 	@$(MAKE) FAULT_TYPE=1 $(out)/$(PROJECT).elf $(silent)
 	@echo "Running MPU fault test under QEMU..."
-	@python3 scripts/qemu-test.py $(out)/$(PROJECT).elf --fault -t 30
+	@python3 -u scripts/qemu-test.py $(out)/$(PROJECT).elf --fault -t 30
 else ifeq ($(FAULT),canary)
 	@echo "Building with FAULT_TYPE=2 (canary)..."
 	@$(MAKE) clean $(silent)
 	@$(MAKE) FAULT_TYPE=2 $(out)/$(PROJECT).elf $(silent)
 	@echo "Running stack canary fault test under QEMU..."
-	@python3 scripts/qemu-test.py $(out)/$(PROJECT).elf --fault -t 30
+	@python3 -u scripts/qemu-test.py $(out)/$(PROJECT).elf --fault -t 30
+else ifeq ($(CONFIG_USER_APP_POSIX),y)
+	@echo "=== POSIX Compliance Tests (PSE51 + PSE52) ==="
+	@python3 -u scripts/qemu-test.py $(out)/$(PROJECT).elf -t 45
+else ifeq ($(CONFIG_USER_APP_TESTS),y)
+	@echo "=== Kernel Test Suite ==="
+	@python3 -u scripts/qemu-test.py $(out)/$(PROJECT).elf -t 45
 else
-	@echo "Running test suite under QEMU..."
-	@$(MAKE) $(out)/$(PROJECT).elf $(silent)
-	@python3 scripts/qemu-test.py $(out)/$(PROJECT).elf -t 45
+	@echo "Error: No test application configured."
+	@echo "Enable CONFIG_USER_APP_TESTS or CONFIG_USER_APP_POSIX in .config"
+	@exit 1
 endif
 
 # Compile-only build for hardware code paths (catches syntax errors)

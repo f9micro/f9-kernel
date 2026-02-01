@@ -3,87 +3,31 @@
  * found in the LICENSE file.
  */
 
-#ifndef __TESTS_H__
-#define __TESTS_H__
+#ifndef TESTS_H
+#define TESTS_H
 
-#include <l4io.h>
+#include <test_framework.h>
 
-/*
- * Test Framework
+/**
+ * Kernel Test Suite
  *
- * Machine-parseable test output format for automated testing.
- * Output is parsed by scripts/qemu-test.py to determine pass/fail.
- *
- * Format:
- *   [TEST:START] suite_name
- *   [TEST:RUN] test_name
- *   [TEST:PASS] test_name
- *   [TEST:FAIL] test_name
- *   [TEST:SUMMARY] passed=N failed=M
- *   [TEST:EXIT] code
+ * Uses unified test framework from user/include/test_framework.h
+ * Tests IPC, threads, scheduler, memory, and architecture features.
  */
-
-/* Test context structure */
-typedef struct {
-    int passed;
-    int failed;
-    int skipped;
-} test_context_t;
 
 /* Global test context - defined in main.c */
 extern test_context_t test_ctx;
 
 /*
- * Test output macros
- *
- * Format matches libiui style:
- *   Test <name padded to 40 chars>[ OK ] or [FAIL]
- *
- * Machine-parseable markers [TEST:*] are also emitted for qemu-test.py
+ * Backward-compatible macros using global test_ctx
  */
+#define TEST_START(suite) TEST_SUITE_START(suite)
+#define TEST_PASS(name) TEST_PASS_MSG(test_ctx, name)
+#define TEST_FAIL(name) TEST_FAIL_MSG(test_ctx, name)
+#define TEST_SKIP(name) TEST_SKIP_MSG(test_ctx, name)
 
-/* ANSI color codes */
-#define ANSI_GREEN "\033[32m"
-#define ANSI_RED "\033[31m"
-#define ANSI_YELLOW "\033[33m"
-#define ANSI_RESET "\033[0m"
-
-#define TEST_START(suite)                      \
-    do {                                       \
-        printf("[TEST:START] %s\n", suite);    \
-        printf("=== Running %s ===\n", suite); \
-    } while (0)
-
-#define TEST_RUN(name) printf("[TEST:RUN] %s\n", name)
-
-#define TEST_PASS(name)                                                 \
-    do {                                                                \
-        test_ctx.passed++;                                              \
-        printf("[TEST:PASS] %s\n", name);                               \
-        printf("Test %-40s[ " ANSI_GREEN "OK" ANSI_RESET " ]\n", name); \
-    } while (0)
-
-#define TEST_FAIL(name)                                               \
-    do {                                                              \
-        test_ctx.failed++;                                            \
-        printf("[TEST:FAIL] %s\n", name);                             \
-        printf("Test %-40s[" ANSI_RED "FAIL" ANSI_RESET "]\n", name); \
-    } while (0)
-
-#define TEST_SKIP(name)                                                  \
-    do {                                                                 \
-        test_ctx.skipped++;                                              \
-        printf("[TEST:SKIP] %s\n", name);                                \
-        printf("Test %-40s[" ANSI_YELLOW "SKIP" ANSI_RESET "]\n", name); \
-    } while (0)
-
-#define TEST_SUMMARY()                                                         \
-    printf("[TEST:SUMMARY] passed=%d failed=%d skipped=%d\n", test_ctx.passed, \
-           test_ctx.failed, test_ctx.skipped)
-
-#define TEST_EXIT(code) printf("[TEST:EXIT] %d\n", code)
-
-/* Test assertion - non-blocking unlike L4_KDB_Enter */
+/* Redefine TEST_ASSERT for backward compatibility (2-arg form) */
+#undef TEST_ASSERT
 #define TEST_ASSERT(name, condition) \
     do {                             \
         if (condition) {             \
@@ -214,4 +158,4 @@ void test_skip(const char *name, const char *reason);
 void run_fault_test(void);
 #endif
 
-#endif /* __TESTS_H__ */
+#endif /* TESTS_H */
