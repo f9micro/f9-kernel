@@ -40,9 +40,9 @@
  *
  * Copies MR0-MR{n_untyped} from sender to receiver:
  * - MR0-MR7:   From saved_mrs to receiver->ctx.regs[0-7]
- * - MR8-MR39:  From sender->msg_buffer to receiver->msg_buffer (NEW)
+ * - MR8-MR39:  From sender->msg_buffer to receiver->msg_buffer
  *
- * WCET: ~20 cycles (MR0-MR7) + ~100 cycles (MR8-MR39, if used)
+ * WCET: ~16-24 cycles (MR0-MR7 via ldmia/stmia) + ~100 cycles (MR8-MR39)
  */
 static inline void ipc_fastpath_copy_mrs(volatile uint32_t *saved_mrs,
                                          struct tcb *sender,
@@ -50,19 +50,35 @@ static inline void ipc_fastpath_copy_mrs(volatile uint32_t *saved_mrs,
                                          int n_untyped)
 {
     int count = n_untyped + 1; /* +1 for tag in MR0 */
-    int i;
 
-    /* Phase 1: Copy MR0-MR7 from saved registers (R4-R11) */
-    for (i = 0; i < count && i < 8; i++)
-        receiver->ctx.regs[i] = saved_mrs[i];
+    /* MR0-MR7: Use ldmia/stmia for full 8-word copy (~16-24 cycles),
+     * otherwise C loop for partial copy (~3-5 cycles/word).
+     *
+     * ldmia/stmia constraints:
+     * - Base register must NOT be in the register list (UNPREDICTABLE)
+     * - Must clobber r4-r11 and use "memory" barrier
+     * - Both arrays are word-aligned (ctx.regs, __irq_saved_regs)
+     */
+    if (count >= 8) {
+        register uint32_t *src = (uint32_t *) saved_mrs;
+        register uint32_t *dst = (uint32_t *) receiver->ctx.regs;
+        __asm__ __volatile__(
+            "ldmia %[src], {r4-r11}\n\t"
+            "stmia %[dst], {r4-r11}\n\t"
+            : [src] "+r"(src), [dst] "+r"(dst)
+            :
+            : "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "memory");
+    } else {
+        for (int i = 0; i < count; i++)
+            receiver->ctx.regs[i] = saved_mrs[i];
+    }
 
-    /* Phase 2: Copy MR8-MR39 from sender's msg_buffer (if needed) */
+    /* MR8-MR39: C loop (ldmia/stmia not practical without spare registers) */
     if (count > 8) {
-        int buf_count = count - 8; /* Number of words in buffer */
+        int buf_count = count - 8;
         if (buf_count > 32)
-            buf_count = 32; /* Clamp to buffer size */
-
-        for (i = 0; i < buf_count; i++)
+            buf_count = 32;
+        for (int i = 0; i < buf_count; i++)
             receiver->msg_buffer[i] = sender->msg_buffer[i];
     }
 }
@@ -152,20 +168,30 @@ static inline int ipc_fastpath_helper(struct tcb *caller,
     caller->timeout_event = 0;
     to_thr->timeout_event = 0;
 
-    /* Receiver becomes runnable with IPC priority boost */
+    /* Receiver becomes runnable.
+     * Only boost priority if receiver was waiting for ANY message.
+     * If waiting for a specific reply, skip boost - thread was just
+     * processing an IPC and will return to user code immediately.
+     * This prevents priority inversion where reply receivers accumulate
+     * priority 3 and starve lower-priority threads indefinitely.
+     */
     to_thr->state = T_RUNNABLE;
+    if (to_thr->ipc_from == L4_ANYTHREAD)
+        sched_set_priority(to_thr, SCHED_PRIO_IPC);
     to_thr->ipc_from = L4_NILTHREAD;
-    sched_set_priority(to_thr, SCHED_PRIO_IPC);
     sched_enqueue(to_thr);
 
     /* Caller continues (send-only, no reply expected)
      * Fastpath only handles from_tid==NILTHREAD (simple send).
      * For L4_Call (send+receive), slowpath handles blocking.
      *
-     * Re-enqueue caller (was dequeued at SVC entry).
-     * It's safe to enqueue current thread - sched has double-enqueue
-     * protection.
+     * Restore caller's base priority before re-enqueueing.
+     * This mirrors slowpath behavior (thread_make_sender_runnable)
+     * and prevents IPC priority boost from accumulating, which would
+     * cause starvation of lower-priority threads.
      */
+    if (caller->priority != caller->base_priority)
+        sched_set_priority(caller, caller->base_priority);
     caller->state = T_RUNNABLE;
     sched_enqueue(caller);
 
@@ -196,9 +222,27 @@ static inline int ipc_fastpath_helper(struct tcb *caller,
 static inline int ipc_try_fastpath(struct tcb *caller, uint32_t *svc_param)
 {
     extern volatile uint32_t __irq_saved_regs[8];
+    uint32_t local_mrs[8];
 
-    /* Read from global __irq_saved_regs saved by SVC_HANDLER */
-    return ipc_fastpath_helper(caller, svc_param, __irq_saved_regs);
+    /* Copy __irq_saved_regs to local buffer IMMEDIATELY to prevent
+     * corruption from nested interrupts. A higher-priority IRQ could
+     * overwrite the global before we finish reading, corrupting MR0-MR7.
+     *
+     * This is safe because SVC has the lowest exception priority on
+     * Cortex-M, so we can't be interrupted by another SVC, but we
+     * could be interrupted by higher-priority IRQs that also save
+     * to __irq_saved_regs.
+     */
+    local_mrs[0] = __irq_saved_regs[0];
+    local_mrs[1] = __irq_saved_regs[1];
+    local_mrs[2] = __irq_saved_regs[2];
+    local_mrs[3] = __irq_saved_regs[3];
+    local_mrs[4] = __irq_saved_regs[4];
+    local_mrs[5] = __irq_saved_regs[5];
+    local_mrs[6] = __irq_saved_regs[6];
+    local_mrs[7] = __irq_saved_regs[7];
+
+    return ipc_fastpath_helper(caller, svc_param, local_mrs);
 }
 
 #endif /* PLATFORM_IPC_FASTPATH_H_ */

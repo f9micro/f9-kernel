@@ -64,7 +64,9 @@ typedef enum {
     T_RUNNABLE,
     T_SVC_BLOCKED,
     T_RECV_BLOCKED,
-    T_SEND_BLOCKED
+    T_SEND_BLOCKED,
+    T_NOTIFY_BLOCKED /* Blocked on SYS_NOTIFY_WAIT - distinct from IPC receive
+                      */
 } thread_state_t;
 
 typedef struct {
@@ -140,6 +142,11 @@ struct tcb {
      * Used by user-space reactor pattern (multi-source events).
      */
     uint32_t notify_bits;
+
+    /* Wait mask for SYS_NOTIFY_WAIT syscall.
+     * Thread blocks until (notify_bits & notify_mask) != 0.
+     */
+    uint32_t notify_mask;
 
     /* Optional event-specific data payload.
      * Used for extended notifications (e.g., IRQ number for high IRQs).

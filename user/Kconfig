@@ -31,6 +31,21 @@ config USER_APP_PINGPONG
 	  Simple IPC demonstration with two threads exchanging messages.
 	  Useful for testing basic IPC functionality and as a minimal example.
 
+config USER_APP_POSIX
+	bool "POSIX Compliance Tests (PSE51 + PSE52 Partial)"
+	help
+	  PSE51 (POSIX Minimal Realtime System Profile) compliance test suite
+	  with PSE52 (Realtime Controller) extensions.
+
+	  Tests IEEE Std 1003.13-2003 compliance:
+	    - POSIX Threads: create, join, detach, attributes
+	    - Mutexes: lock, trylock, timedlock, recursive, deadlock detection
+	    - Condition variables: wait, timedwait, signal, broadcast
+	    - Semaphores: wait, trywait, post, getvalue
+	    - PSE52: Read-write locks, barriers
+
+	  See user/lib/posix/README.md for implementation details.
+
 config USER_APP_NONE
 	bool "No user application"
 	help

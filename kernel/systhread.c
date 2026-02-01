@@ -3,6 +3,7 @@
  * found in the LICENSE file.
  */
 
+#include <debug.h>
 #include <ktimer.h>
 #include <platform/irq.h>
 #include <sched.h>

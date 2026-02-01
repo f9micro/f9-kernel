@@ -20,9 +20,7 @@ __USER_BSS test_context_t test_ctx;
 __USER_TEXT
 static void run_all_tests(void)
 {
-    test_ctx.passed = 0;
-    test_ctx.failed = 0;
-    test_ctx.skipped = 0;
+    TEST_INIT(test_ctx);
 
     TEST_START("test_suite");
 
@@ -133,7 +131,7 @@ static void run_all_tests(void)
     test_notification_statistics();
 
     /* Summary and exit */
-    TEST_SUMMARY();
+    TEST_SUMMARY(test_ctx);
     TEST_EXIT(test_ctx.failed > 0 ? 1 : 0);
 }
 #endif /* !FAULT_TYPE */

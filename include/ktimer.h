@@ -13,6 +13,12 @@ struct tcb;
 
 void ktimer_handler(void);
 
+/* Get current kernel time in ticks since boot.
+ * Returns 64-bit monotonically increasing tick count.
+ * Used by SYS_SYSTEM_CLOCK syscall for userspace time queries.
+ */
+uint64_t ktimer_get_now(void);
+
 /* Returns 0 if successfully handled
  * or number ticks if need to be rescheduled
  */

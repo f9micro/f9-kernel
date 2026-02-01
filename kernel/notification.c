@@ -7,6 +7,7 @@
 #include <init_hook.h>
 #include <lib/ktable.h>
 #include <notification.h>
+#include <platform/armv7m.h>
 #include <platform/irq.h>
 #include <sched.h>
 #include <softirq.h>
@@ -192,16 +193,66 @@ static uint32_t notification_async_reschedules = 0;
 #define KDB_MAX_PENDING_DISPLAY 10
 
 /**
- * Wake thread if blocked waiting for events.
- * Transitions T_RECV_BLOCKED -> T_RUNNABLE and enqueues for scheduling.
+ * Wake thread blocked on SYS_NOTIFY_WAIT with proper semantics.
+ *
+ * This function implements the full notification wake protocol:
+ * 1. Check if thread is T_NOTIFY_BLOCKED (not T_RECV_BLOCKED)
+ * 2. Check if signaled bits match thread's notify_mask
+ * 3. Clear matched bits from notify_bits
+ * 4. Write matched bits to thread's saved R0 (return value)
+ * 5. Clear notify_mask and transition to T_RUNNABLE
+ *
+ * T_RECV_BLOCKED threads are NOT woken - they're waiting for IPC, not
+ * notifications. This prevents spurious wakes of IPC-blocked threads.
+ *
+ * @param thr Thread to potentially wake
+ * @return 1 if thread was woken, 0 otherwise
  */
-static inline void wake_if_blocked(tcb_t *thr)
+int notify_wake_thread(tcb_t *thr)
 {
-    if (thr->state == T_RECV_BLOCKED) {
-        thr->state = T_RUNNABLE;
-        sched_enqueue(thr);
+    if (!thr)
+        return 0;
+
+    /* IRQ masking required for atomic state-check-clear-wake sequence.
+     * The entire sequence must be atomic to prevent a nested ISR from:
+     * 1. Seeing stale T_NOTIFY_BLOCKED state after we've decided to wake
+     * 2. Overwriting the R0 return value with different matched bits
+     * 3. Double-enqueueing (inefficient, though sched_enqueue is idempotent)
+     * 4. Racing between state check and bit clearing (TOCTOU)
+     */
+    uint32_t flags = irq_save_flags();
+
+    /* State check MUST be inside critical section to prevent TOCTOU race */
+    if (thr->state != T_NOTIFY_BLOCKED) {
+        irq_restore_flags(flags);
+        return 0;
     }
+
+    /* Check if any signaled bits match the thread's wait mask */
+    uint32_t matched = thr->notify_bits & thr->notify_mask;
+    if (!matched) {
+        irq_restore_flags(flags);
+        return 0;
+    }
+
+    /* Clear matched bits from notify_bits */
+    thr->notify_bits &= ~matched;
+    update_notify_pending(thr);
+
+    /* Write matched bits to thread's R0 (syscall return value) */
+    uint32_t *thr_sp = (uint32_t *) thr->ctx.sp;
+    thr_sp[REG_R0] = matched;
+
+    /* Clear mask and wake thread - must be inside critical section */
+    thr->notify_mask = 0;
+    thr->state = T_RUNNABLE;
+    sched_enqueue(thr);
+
+    irq_restore_flags(flags);
+
+    return 1;
 }
+
 
 /**
  * notification_post_softirq - Direct softirq-safe notification delivery
@@ -247,7 +298,7 @@ int notification_post_softirq(tcb_t *thr, uint32_t notify_bits)
     /* Direct signal (atomic OR operation) */
     notification_signal(thr, notify_bits);
 
-    wake_if_blocked(thr);
+    notify_wake_thread(thr);
 
     dbg_printf(DL_NOTIFICATIONS,
                "SOFTIRQ: Fast-path delivery to %t bits=0x%x\n", thr->t_globalid,
@@ -390,7 +441,7 @@ static void notification_async_handler(void)
         /* Wake thread if blocked waiting for events.
          * Callback (if set) executes after scheduler runs the thread.
          */
-        wake_if_blocked(thr);
+        notify_wake_thread(thr);
 
         /* Free event back to pool */
         ktable_free(&notification_async_table, event);

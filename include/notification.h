@@ -115,6 +115,23 @@ uint32_t notification_get(tcb_t *tcb);
 uint32_t notification_read_clear(tcb_t *tcb, uint32_t mask);
 
 /**
+ * Wake thread blocked on SYS_NOTIFY_WAIT with proper semantics.
+ *
+ * Implements the full notification wake protocol:
+ * 1. Check if thread is T_NOTIFY_BLOCKED (not T_RECV_BLOCKED)
+ * 2. Check if signaled bits match thread's notify_mask
+ * 3. Clear matched bits from notify_bits
+ * 4. Write matched bits to thread's saved R0 (return value)
+ * 5. Clear notify_mask and transition to T_RUNNABLE
+ *
+ * T_RECV_BLOCKED threads are NOT woken - they're waiting for IPC.
+ *
+ * @param thr Thread to potentially wake
+ * @return 1 if thread was woken, 0 otherwise
+ */
+int notify_wake_thread(tcb_t *thr);
+
+/**
  * Extended notification event structure.
  * Contains both notification bits and optional event data payload.
  */

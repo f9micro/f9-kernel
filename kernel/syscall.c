@@ -9,6 +9,7 @@
 #include <ktimer.h>
 #include <l4/utcb.h>
 #include <memory.h>
+#include <notification.h>
 #include <platform/armv7m.h>
 #include <platform/ipc-fastpath.h>
 #include <platform/irq.h>
@@ -16,6 +17,8 @@
 #include <softirq.h>
 #include <syscall.h>
 #include <thread.h>
+
+#include INC_PLAT(systick.h)
 
 /* L4 Schedule result codes */
 #define L4_SCHEDRESULT_ERROR 0
@@ -196,6 +199,10 @@ static void sys_schedule(uint32_t *param1, uint32_t *param2)
     case T_SVC_BLOCKED:
         param1[REG_R0] = L4_SCHEDRESULT_WAITING;
         break;
+    case T_NOTIFY_BLOCKED:
+        /* Thread blocked on SYS_NOTIFY_WAIT - report as waiting */
+        param1[REG_R0] = L4_SCHEDRESULT_WAITING;
+        break;
     default:
         param1[REG_R0] = L4_SCHEDRESULT_ERROR;
         break;
@@ -311,6 +318,194 @@ static void sys_timer_notify(uint32_t *param1)
                ticks, notify_bits, periodic, timer);
 }
 
+/**
+ * Notification wait syscall handler.
+ * Blocks caller until any notification bits in mask are set.
+ *
+ * Parameters:
+ *   R0: mask - notification bits to wait for (any bit triggers wake)
+ *
+ * Returns (R0):
+ *   Bits that were set (and are now cleared)
+ *   0 if mask was invalid
+ *
+ * Blocking: Yes - caller blocks until bits arrive
+ *
+ * Performance:
+ *   - Non-blocking path (bits already set): ~50 cycles
+ *   - Blocking path: context switch overhead + wake latency
+ */
+static void sys_notify_wait(uint32_t *param1)
+{
+    uint32_t mask = param1[REG_R0];
+
+    if (mask == 0) {
+        param1[REG_R0] = 0;
+        caller->notify_mask = 0; /* Clear stale mask */
+        caller->state = T_RUNNABLE;
+        sched_enqueue(caller);
+        return;
+    }
+
+    /* Disable interrupts to make check-and-block atomic.
+     * This prevents a race where notification arrives between checking
+     * bits and setting T_NOTIFY_BLOCKED, which would cause missed wakeup.
+     */
+    uint32_t flags = irq_save_flags();
+
+    /* Check if any requested bits are already set */
+    uint32_t current = notification_get(caller);
+    uint32_t matched = current & mask;
+
+    if (matched) {
+        /* Fast path: bits already available, clear and return */
+        notification_clear(caller, matched);
+        irq_restore_flags(flags);
+        param1[REG_R0] = matched;
+        caller->notify_mask = 0; /* Clear mask - not waiting anymore */
+        caller->state = T_RUNNABLE;
+        sched_enqueue(caller);
+        return;
+    }
+
+    /* Slow path: block until bits arrive.
+     * Set mask and state atomically (interrupts still disabled).
+     * This ensures notify_wake_thread sees consistent state.
+     */
+    caller->notify_mask = mask;
+    caller->state = T_NOTIFY_BLOCKED;
+    irq_restore_flags(flags);
+    /* Don't enqueue - thread is blocked */
+}
+
+/**
+ * Notification post syscall handler.
+ * Signals notification bits to target thread.
+ *
+ * Parameters:
+ *   R0: target_tid - thread to notify (global ID)
+ *   R1: bits - notification bits to signal
+ *
+ * Returns (R0):
+ *   1 on success
+ *   0 on failure (invalid thread or bits)
+ *
+ * Blocking: No - returns immediately
+ *
+ * Performance:
+ *   - thread_by_globalid(): O(1) lookup
+ *   - notification_signal(): O(1) atomic OR
+ *   - wake check: O(1)
+ *   Total: ~100 cycles
+ */
+static void sys_notify_post(uint32_t *param1)
+{
+    l4_thread_t target_tid = param1[REG_R0];
+    uint32_t bits = param1[REG_R1];
+
+    if (bits == 0) {
+        param1[REG_R0] = 0;
+        return;
+    }
+
+    tcb_t *target = thread_by_globalid(target_tid);
+    if (!target) {
+        param1[REG_R0] = 0;
+        return;
+    }
+
+    /* Signal the bits (atomic OR with IRQ protection) */
+    notification_signal(target, bits);
+
+    /* Wake target if blocked waiting for these bits.
+     * Use notify_wake_thread which has proper IRQ protection to prevent
+     * races with concurrent IRQ notifications. Without this, two wakeups
+     * could race on the check/clear/write sequence and lose bits.
+     */
+    notify_wake_thread(target);
+
+    param1[REG_R0] = 1; /* Success */
+}
+
+/**
+ * Notification clear syscall handler.
+ * Clears specified notification bits from calling thread (non-blocking).
+ *
+ * Parameters:
+ *   R0: bits - notification bits to clear
+ *
+ * Returns (R0):
+ *   The bits that were actually cleared (intersection of requested and set)
+ *
+ * Use case: Clear stale timeout notifications after early mutex acquire
+ * to prevent spurious timeouts in subsequent timed waits.
+ */
+static void sys_notify_clear(uint32_t *param1)
+{
+    uint32_t bits = param1[REG_R0];
+
+    if (bits == 0) {
+        param1[REG_R0] = 0;
+        return;
+    }
+
+    /* Atomic get+clear under IRQ protection to prevent race with IRQ posting */
+    uint32_t flags = irq_save_flags();
+    uint32_t current = notification_get(caller);
+    uint32_t cleared = current & bits;
+    notification_clear(caller, cleared);
+    irq_restore_flags(flags);
+
+    param1[REG_R0] = cleared;
+}
+
+/**
+ * System clock syscall handler.
+ * Returns monotonically increasing time in microseconds since boot.
+ *
+ * Parameters: None
+ *
+ * Returns (R0, R1):
+ *   R0: Low 32 bits of microseconds
+ *   R1: High 32 bits of microseconds
+ *
+ * Performance:
+ *   - ktimer_get_now(): O(1) - direct read of static variable
+ *   - Fixed-point multiply and shift: O(1)
+ *   Total: ~30 cycles @ 168MHz
+ *
+ * Conversion uses fixed-point arithmetic to avoid 64-bit division (libgcc):
+ *   usec = (ticks * USEC_PER_TICK_FP) >> FP_SHIFT
+ *   Where USEC_PER_TICK_FP = (1000000 << FP_SHIFT) / TICKS_PER_SEC
+ *   Compile-time division, runtime multiply+shift only.
+ *   Precision: < 0.002% error (sub-microsecond per tick).
+ */
+
+/* Ticks per second derived from platform configuration */
+#define TICKS_PER_SEC (CORE_CLOCK / CONFIG_KTIMER_HEARTBEAT)
+
+/* Fixed-point conversion factor (16-bit fractional precision).
+ * Computed at compile time: (1000000 * 65536) / TICKS_PER_SEC
+ * For 168MHz/65536: (1000000 << 16) / 2563 = 25570199
+ * Max error: 1/65536 of USEC_PER_TICK ≈ 0.006µs per tick.
+ */
+#define FP_SHIFT 16
+#define USEC_PER_TICK_FP ((1000000ULL << FP_SHIFT) / TICKS_PER_SEC)
+
+static void sys_system_clock(uint32_t *param1)
+{
+    uint64_t ticks = ktimer_get_now();
+
+    /* Convert ticks to microseconds using fixed-point multiply.
+     * No runtime division - just multiply and shift.
+     * Overflow safe: 2^64 / USEC_PER_TICK_FP ≈ 7e11 ticks = years of uptime.
+     */
+    uint64_t usec = (ticks * USEC_PER_TICK_FP) >> FP_SHIFT;
+
+    param1[REG_R0] = (uint32_t) usec;         /* Low 32 bits */
+    param1[REG_R1] = (uint32_t) (usec >> 32); /* High 32 bits */
+}
+
 void syscall_handler()
 {
     uint32_t *svc_param1 = (uint32_t *) caller->ctx.sp;
@@ -330,13 +525,33 @@ void syscall_handler()
         sys_schedule(svc_param1, svc_param2);
         caller->state = T_RUNNABLE;
         sched_enqueue(caller);
+    } else if (svc_num == SYS_SYSTEM_CLOCK) {
+        /* System clock syscall - return monotonic time in microseconds */
+        sys_system_clock(svc_param1);
+        caller->state = T_RUNNABLE;
+        sched_enqueue(caller);
     } else if (svc_num == SYS_TIMER_NOTIFY) {
         /* Timer notification syscall - create notification timer */
         sys_timer_notify(svc_param1);
         caller->state = T_RUNNABLE;
         sched_enqueue(caller);
+    } else if (svc_num == SYS_NOTIFY_WAIT) {
+        /* Notification wait - block until bits arrive */
+        sys_notify_wait(svc_param1);
+        /* Note: sys_notify_wait handles state/enqueue internally */
+    } else if (svc_num == SYS_NOTIFY_POST) {
+        /* Notification post - signal bits to target thread */
+        sys_notify_post(svc_param1);
+        caller->state = T_RUNNABLE;
+        sched_enqueue(caller);
+    } else if (svc_num == SYS_NOTIFY_CLEAR) {
+        /* Notification clear - clear bits from caller (non-blocking) */
+        sys_notify_clear(svc_param1);
+        caller->state = T_RUNNABLE;
+        sched_enqueue(caller);
     } else if (svc_num == SYS_IPC) {
         sys_ipc(svc_param1);
+        dbg_printf(DL_KDB, "SYSCALL: sys_ipc returned\n");
     } else {
         dbg_printf(DL_SYSCALL, "SVC: %d called [%d, %d, %d, %d]\n", svc_num,
                    svc_param1[REG_R0], svc_param1[REG_R1], svc_param1[REG_R2],

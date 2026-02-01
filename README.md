@@ -44,6 +44,55 @@ while adding advanced features from industrial RTOSes.
 - Profiling: Thread uptime, stack usage, memory fragmentation analysis
 - Test Suite: Automated regression tests with QEMU integration
 
+## API Sets
+
+F9 provides two API layers for application development:
+
+### Native API (L4-style)
+The kernel exposes an L4-family system call interface derived from [L4Ka::Pistachio](https://github.com/l4ka/pistachio)
+and [seL4](https://sel4.systems/).
+Key syscalls:
+
+| Syscall | Description |
+|---------|-------------|
+| `L4_Ipc` | Synchronous message passing between threads |
+| `L4_ThreadControl` | Create, configure, and delete threads |
+| `L4_Schedule` | Set thread scheduling parameters |
+| `L4_SpaceControl` | Configure address spaces |
+| `L4_ExchangeRegisters` | Read/write thread register state |
+| `L4_SystemClock` | Read system time (microseconds) |
+| `L4_KernelInterface` | Access Kernel Interface Page (KIP) |
+
+Extensions for embedded real-time:
+- `L4_TimerNotify`: Hardware timer with notification delivery
+- `L4_NotifyWait` / `L4_NotifyPost` / `L4_NotifyClear`: Lightweight notification primitives
+
+### POSIX API (PSE51/PSE52)
+A user-space compatibility layer implementing [IEEE Std 1003.13-2003](https://standards.ieee.org/ieee/1003.13/3322/)
+profiles for portable real-time applications:
+
+| Profile | Description | Status |
+|---------|-------------|--------|
+| PSE51 | Minimal Realtime System | API Compliant |
+| PSE52 | Realtime Controller System | Partial |
+
+Note: POSIX timer functions (`timer_create`, `timer_settime`) have limited functionality.
+Core threading, synchronization, and `clock_gettime`/`nanosleep` are fully operational.
+
+Supported POSIX interfaces:
+
+| Category | Functions |
+|----------|-----------|
+| Threads | `pthread_create`, `pthread_join`, `pthread_detach`, `pthread_self`, `pthread_equal`, `pthread_cancel`, `pthread_testcancel` |
+| Mutexes | `pthread_mutex_*` (normal, recursive, errorcheck), `pthread_mutex_timedlock` |
+| Condition Variables | `pthread_cond_wait`, `pthread_cond_signal`, `pthread_cond_broadcast`, `pthread_cond_timedwait` |
+| Spinlocks | `pthread_spin_init`, `pthread_spin_lock`, `pthread_spin_trylock`, `pthread_spin_unlock` |
+| Semaphores | `sem_init`, `sem_wait`, `sem_trywait`, `sem_timedwait`, `sem_post`, `sem_getvalue` |
+| Time | `clock_gettime`, `nanosleep` |
+
+The POSIX layer is implemented entirely in user space atop the native notification system,
+requiring no kernel modifications. See [user/lib/posix](user/lib/posix) for implementation details.
+
 ## Documentation
 
 Comprehensive documentation is available in the [Documentation/](Documentation/) directory:
@@ -81,7 +130,7 @@ Press `Ctrl+A` and then `X` to exit QEMU. Press `?` in KDB for debug menu (requi
 - STM32F4DISCOVERY (STM32F407VG)
 - STM32F429I-DISC1 (STM32F429ZI)
 - NUCLEO-F429ZI (STM32F429ZI)
-- Netduino Plus 2 (STM32F405RG) - QEMU emulated
+- Netduino Plus 2 (STM32F405RG) - QEMU only, used for automated testing
 
 For detailed instructions including toolchain setup, serial configuration, and debugging,
 see [Documentation/quick-start.md](Documentation/quick-start.md).
