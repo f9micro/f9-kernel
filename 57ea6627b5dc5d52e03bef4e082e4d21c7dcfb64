@@ -1,0 +1,138 @@
+scripts/qemu-kdb.sh
+  b66029c0caa22cbf 22,36-38,51
+kernel/memory.c
+  557bbcf060820150 60-64
+include/platform/irq.h
+  b66029c0caa22cbf 203-252
+include/platform/debug_device.h
+  b66029c0caa22cbf 12-13,25-26
+user/apps/tests/main.c
+  b66029c0caa22cbf 184-189
+  557bbcf060820150 168-169,172,176
+kernel/init.c
+  b66029c0caa22cbf 43-60,65-69
+kernel/ipc.c
+  b66029c0caa22cbf 506-508
+platform/stm32-common/mpu.c
+  557bbcf060820150 16-34,43,46-47
+scripts/qemu-test.py
+  05418cd9282a2f79 9,31,170-174,176-177,179,197,300-302,325-326
+  b66029c0caa22cbf 157-161,163-167,175,178,180-181
+platform/kdb_uart.c
+  b66029c0caa22cbf 1-88
+platform/stm32l4/usart.c
+  b66029c0caa22cbf 1-101
+platform/stm32-common/rcc.c
+  b66029c0caa22cbf 21-28,43,65-68,76,78,108-109,126-132,139-149,160-162,171-175,177-178,180,192-196,208,215,224,226,233,242,301-302,308-311,313,319,322,334-349,353-354
+include/platform/stm32l4/registers.h
+  b66029c0caa22cbf 58-62,69,299,301,303,306,309,632,652-655
+  05418cd9282a2f79 77
+platform/stm32l4/f9_sram.ld
+  b66029c0caa22cbf 5,153-157
+include/platform/stm32l4/usart.h
+  b66029c0caa22cbf 37-40
+include/platform/stm32l4/exti.h
+  b66029c0caa22cbf 1-2,4
+platform/build.mk
+  b66029c0caa22cbf 16-24,35
+include/platform/stm32l4/systick.h
+  b66029c0caa22cbf 1-2,6
+platform/stm32-common/usart.c
+  b66029c0caa22cbf 61,63-67,96,98
+user/apps/tests/test-fault.c
+  557bbcf060820150 135,137
+.github/workflows/build.yml
+  b66029c0caa22cbf 17,71,73-77,96
+platform/Kconfig.debug
+  b66029c0caa22cbf 6-13,16,18-19,21-26,30,32-35,37-49
+platform/stm32l4/f9_flash.ld
+  b66029c0caa22cbf 5,150-154
+scripts/qemu-kdb-auto.py
+  b66029c0caa22cbf 84
+platform/stm32-common/gpio-l4.c
+  b66029c0caa22cbf 75-76,120-121,138-139
+user/root_thread.c
+  b66029c0caa22cbf 20-23,25,28,55-61,63,65-74,80-84,86,88-90,92,97-98,114,116,127,130,134-138,156,161-164,169-171,173,175-177,179,191,200,206-213,222-223
+  09257024955dabbd 26
+  05418cd9282a2f79 106,108,132,140,142-143,145,147-155,178,180,186-187,189
+README.md
+  b66029c0caa22cbf 39,127,129-130,136,155,157
+platform/debug_device.c
+  b66029c0caa22cbf 15-17,33,38-40,54-58,60,93-102,149
+user/lib/io/semihost-io.c
+  b66029c0caa22cbf 92-95
+Documentation/quick-start.md
+  557bbcf060820150 10-11,92-93,96-98,101-103
+user/lib/l4/platform/syscalls.c
+  b66029c0caa22cbf 151-153,160-166,172,175
+platform/stm32l4/f9.ld
+  b66029c0caa22cbf 5,152-153,155-156
+kernel/start.c
+  b66029c0caa22cbf 54-64
+mk/generic.mk
+  b66029c0caa22cbf 31,111,115-121,123,132-137
+kernel/thread.c
+  b66029c0caa22cbf 59,91-127,367-373
+  05418cd9282a2f79 135-137,139,142-143,145,148,151,153,164,185,210-213,215-217,267,269,271-276,454-472,502,504-505,545-549,562-567
+platform/semihosting.c
+  b66029c0caa22cbf 64-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "57ea6627b5dc5d52e03bef4e082e4d21c7dcfb64",
+  "prompts": {
+    "05418cd9282a2f79": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d217b-6e06-7483-87fb-dfe3fff1f51c",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Jim Huang <jserv@ccns.ncku.edu.tw>",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 98,
+      "overriden_lines": 0
+    },
+    "09257024955dabbd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d22a8-1fa6-70b0-858a-81275430b70f",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Jim Huang <jserv@ccns.ncku.edu.tw>",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    },
+    "557bbcf060820150": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d23ef-496c-7f43-93a5-01e9109bc20c",
+        "model": "gpt-5.4"
+      },
+      "human_author": null,
+      "messages": [],
+      "total_additions": 17953,
+      "total_deletions": 18,
+      "accepted_lines": 43,
+      "overriden_lines": 0
+    },
+    "b66029c0caa22cbf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6d1b60e2-13d3-458b-9e40-4f818801d7a5",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": null,
+      "messages": [],
+      "total_additions": 40,
+      "total_deletions": 46,
+      "accepted_lines": 687,
+      "overriden_lines": 0
+    }
+  }
+}
