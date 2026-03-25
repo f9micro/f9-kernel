@@ -1,0 +1,155 @@
+user/apps/tests/test-fault.c
+  557bbcf060820150 135,137
+platform/build.mk
+  b66029c0caa22cbf 16-24,35
+platform/Kconfig.debug
+  b66029c0caa22cbf 6-13,16,18-19,21-26,30,32-35,37-49
+platform/stm32-common/mpu.c
+  557bbcf060820150 16-34,43,46-47
+kernel/memory.c
+  557bbcf060820150 60-64
+include/platform/debug_device.h
+  b66029c0caa22cbf 12-13,25-26
+platform/semihosting.c
+  b66029c0caa22cbf 64-72
+kernel/thread.c
+  b66029c0caa22cbf 59,91-127,367-373
+  05418cd9282a2f79 135-137,139,142-143,145,148,151,153,164,185,210-213,215-217,267,269,271-276,454-472,502,504-505,545-549,562-567
+.github/workflows/qemu-build.yml
+  611d7ea924a94637 1-76
+scripts/qemu-test.py
+  05418cd9282a2f79 9,31,171-172,213,220,223-224
+  b66029c0caa22cbf 158-162,164-168,214-219,222,225-240,242
+  611d7ea924a94637 173-212,221
+include/platform/stm32l4/usart.h
+  b66029c0caa22cbf 37-40
+.github/workflows/build.yml
+  b66029c0caa22cbf 17,101,103-107,126
+  611d7ea924a94637 69-99
+Documentation/quick-start.md
+  557bbcf060820150 10-11,92-93,96-98,101-103
+scripts/qemu-kdb.sh
+  b66029c0caa22cbf 22,36-38,51
+platform/stm32-common/usart.c
+  b66029c0caa22cbf 61,63-67,96,98
+include/platform/stm32l4/exti.h
+  b66029c0caa22cbf 1-2,4
+platform/kdb_uart.c
+  b66029c0caa22cbf 1-88
+user/root_thread.c
+  05418cd9282a2f79 106,108,132,140,142-143,145,147-155,178,180,186-187,189
+  09257024955dabbd 26
+  b66029c0caa22cbf 20-23,25,28,55-61,63,65-74,80-84,86,88-90,92,97-98,114,116,127,130,134-138,156,161-164,169-171,173,175-177,179,191,200,206-213,222-223
+platform/stm32-common/rcc.c
+  b66029c0caa22cbf 21-28,43,65-68,76,78,108-109,126-132,139-149,160-162,171-175,177-178,180,192-196,208,215,224,226,233,242,301-302,308-311,313,319,322,334-349,353-354
+include/platform/irq.h
+  b66029c0caa22cbf 203-252
+kernel/init.c
+  b66029c0caa22cbf 43-60,65-69
+mk/generic.mk
+  b66029c0caa22cbf 31,111,115-121,123,132-137
+kernel/ipc.c
+  b66029c0caa22cbf 506-508
+user/apps/tests/main.c
+  557bbcf060820150 168-169,172,176
+  b66029c0caa22cbf 184-189
+platform/stm32-common/gpio-l4.c
+  b66029c0caa22cbf 75-76,120-121,138-139
+user/lib/io/semihost-io.c
+  b66029c0caa22cbf 92-95
+include/platform/stm32l4/registers.h
+  05418cd9282a2f79 77
+  b66029c0caa22cbf 58-62,69,299,301,303,306,309,632,652-655
+include/platform/stm32l4/systick.h
+  b66029c0caa22cbf 1-2,6
+platform/debug_device.c
+  b66029c0caa22cbf 15-17,33,38-40,54-58,60,93-102,149
+README.md
+  b66029c0caa22cbf 39,127,129-130,136,155,157
+platform/stm32l4/f9_flash.ld
+  b66029c0caa22cbf 5,150-154
+platform/stm32l4/f9.ld
+  b66029c0caa22cbf 5,152-153,155-156
+platform/stm32l4/usart.c
+  b66029c0caa22cbf 1-101
+platform/stm32l4/f9_sram.ld
+  b66029c0caa22cbf 5,153-157
+kernel/start.c
+  b66029c0caa22cbf 54-64
+scripts/qemu-kdb-auto.py
+  b66029c0caa22cbf 84,122,124
+user/lib/l4/platform/syscalls.c
+  b66029c0caa22cbf 151-153,160-166,172,175
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "80e1bd80a5bda372da0b91f85045f4a3750758c1",
+  "prompts": {
+    "05418cd9282a2f79": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d217b-6e06-7483-87fb-dfe3fff1f51c",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Jim Huang <jserv@ccns.ncku.edu.tw>",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 96,
+      "overriden_lines": 0
+    },
+    "09257024955dabbd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d22a8-1fa6-70b0-858a-81275430b70f",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Jim Huang <jserv@ccns.ncku.edu.tw>",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    },
+    "557bbcf060820150": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d23ef-496c-7f43-93a5-01e9109bc20c",
+        "model": "gpt-5.4"
+      },
+      "human_author": null,
+      "messages": [],
+      "total_additions": 17953,
+      "total_deletions": 18,
+      "accepted_lines": 43,
+      "overriden_lines": 0
+    },
+    "611d7ea924a94637": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d4a2213f-ddc4-44ae-ad33-f9d346351ca0",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": null,
+      "messages": [],
+      "total_additions": 218,
+      "total_deletions": 71,
+      "accepted_lines": 148,
+      "overriden_lines": 0
+    },
+    "b66029c0caa22cbf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6d1b60e2-13d3-458b-9e40-4f818801d7a5",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": null,
+      "messages": [],
+      "total_additions": 67,
+      "total_deletions": 54,
+      "accepted_lines": 709,
+      "overriden_lines": 0
+    }
+  }
+}
