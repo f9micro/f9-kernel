@@ -1,0 +1,107 @@
+platform/debug_device.c
+  b66029c0caa22cbf 15-17,33,38-40,54-58,60,93-102,149
+platform/Kconfig.debug
+  b66029c0caa22cbf 6-13,16,18-19,21-26,30,32-35,37-49
+scripts/qemu-test.py
+  b66029c0caa22cbf 157-161,163-167,394
+  05418cd9282a2f79 9,31,170-198,214,228,232,264,267,315-319,339-343,395,409,413,441
+platform/semihosting.c
+  b66029c0caa22cbf 64-77
+platform/stm32-common/rcc.c
+  b66029c0caa22cbf 21-28,43,65-68,76,78,108-109,126-132,139-149,160-162,171-175,177-178,180,192-196,208,215,224,226,233,242,301-302,308-311,313,319,322,331,333-349,352-354,356
+kernel/init.c
+  b66029c0caa22cbf 43-60,65-69
+include/platform/debug_device.h
+  b66029c0caa22cbf 12-13,25-26
+user/root_thread.c
+  09257024955dabbd 26
+  05418cd9282a2f79 106-108,110,132,140,142-145,147-155,157-158,178,180-181,186-189
+  b66029c0caa22cbf 13,20-23,25,27-28,30,33-34,55-63,65-76,80-86,88-92,94,97-100,103,114-116,118,127,129-130,134-139,156,161-166,169-173,175-177,179,182,191-193,199-200,202,206-215,222-225
+platform/build.mk
+  b66029c0caa22cbf 16-24,35
+mk/generic.mk
+  b66029c0caa22cbf 31,111,115-121,123,132-137
+include/platform/irq.h
+  b66029c0caa22cbf 203-256
+user/lib/l4/platform/syscalls.c
+  b66029c0caa22cbf 151-153,160-166,172,175
+platform/stm32l4/f9_sram.ld
+  b66029c0caa22cbf 5
+  05418cd9282a2f79 153
+platform/stm32-common/usart.c
+  b66029c0caa22cbf 61,63-67,96,98
+user/lib/io/semihost-io.c
+  b66029c0caa22cbf 92-95
+platform/stm32l4/f9_flash.ld
+  b66029c0caa22cbf 5,150
+platform/stm32l4/f9.ld
+  b66029c0caa22cbf 5
+platform/kdb_uart.c
+  b66029c0caa22cbf 1-88
+kernel/ipc.c
+  b66029c0caa22cbf 506-508
+user/apps/tests/main.c
+  b66029c0caa22cbf 184-189
+include/platform/stm32l4/registers.h
+  b66029c0caa22cbf 58-62,299,301,303,306,309,632,652-655
+  05418cd9282a2f79 77
+platform/stm32-common/gpio-l4.c
+  b66029c0caa22cbf 75-76,120-121,138-139
+kernel/thread.c
+  05418cd9282a2f79 135-137,139,142-143,145,148,151,153,164,185,210-213,215-217,267,269,271-276,454-472,502,504-505,545-550,562-568
+  b66029c0caa22cbf 59,91-127,367-373
+kernel/start.c
+  b66029c0caa22cbf 29,54-64
+include/platform/stm32l4/usart.h
+  b66029c0caa22cbf 37-40
+platform/stm32l4/usart.c
+  b66029c0caa22cbf 1-101
+README.md
+  b66029c0caa22cbf 39,127,129-130,136,155,157
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "016da2042378093a4cf5e1933d02686d88be1ff6",
+  "prompts": {
+    "05418cd9282a2f79": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d217b-6e06-7483-87fb-dfe3fff1f51c",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Jim Huang <jserv@ccns.ncku.edu.tw>",
+      "messages": [],
+      "total_additions": 199,
+      "total_deletions": 168,
+      "accepted_lines": 146,
+      "overriden_lines": 0
+    },
+    "09257024955dabbd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d22a8-1fa6-70b0-858a-81275430b70f",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Jim Huang <jserv@ccns.ncku.edu.tw>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    },
+    "b66029c0caa22cbf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6d1b60e2-13d3-458b-9e40-4f818801d7a5",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Jim Huang <jserv@ccns.ncku.edu.tw>",
+      "messages": [],
+      "total_additions": 1037,
+      "total_deletions": 543,
+      "accepted_lines": 709,
+      "overriden_lines": 0
+    }
+  }
+}
